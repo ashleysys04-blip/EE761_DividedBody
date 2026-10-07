@@ -1,0 +1,115 @@
+# ============================================================
+# n+ island (30 nm, 1e20, full Tsi) at mid-channel under the same gate
+# Left body = 5e17, right body = 5e17 (two separate floating bodies)
+# Left body: source = S.   Right body: source = island.
+# -> two parasitic BJTs / two feedback loops in series.
+# CPU = 1
+# ============================================================
+
+go atlas simflags="-P 1"
+
+set Lg = 0.3
+set Lsd = 0.5
+set tox = 0.02
+set tbox = 0.2
+set tgate = 0.1
+set te = 1e-7
+set tp = 1e-7
+set LT = 300
+set Xsplit = $Lsd+$Lg*0.50
+set W = 0.5
+set tsi = 0.05
+set Wisl = 0.03
+set XiL = $Xsplit-$Wisl/2
+set XiR = $Xsplit+$Wisl/2
+
+#### mesh define ####
+mesh space.mult = 1.0 width = $W
+
+x.mesh loc=0.00 spac=0.1
+x.mesh loc=$Lsd spac=0.005
+x.mesh loc=$XiL spac=0.003
+x.mesh loc=$XiR spac=0.003
+x.mesh loc=$Lsd+$Lg spac=0.005
+x.mesh loc=$Lsd+$Lg+$Lsd spac=0.1
+
+y.mesh loc=-$tox-$tgate spac=0.05
+y.mesh loc=-$tox spac=0.005
+y.mesh loc=0.00 spac=0.005
+y.mesh loc=$tsi/2 spac=0.01
+y.mesh loc=$tsi spac=0.005
+y.mesh loc=$tsi+$tbox spac=0.1
+
+#### regions ####
+region num=1 x.min=$Lsd x.max=$Lsd+$Lg y.max=-$tox poly
+region num=2 x.min=$Lsd x.max=$Lsd+$Lg y.max=0 y.min=-$tox oxide
+region num=3 y.min=0 y.max=$tsi silicon
+region num=4 x.min=0 x.max=$Lsd y.min=0 y.max=$tsi silicon
+region num=5 x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.min=0 y.max=$tsi silicon
+region num=6 y.min=$tsi y.max=$tsi+$tbox oxide
+region num=7 x.min=0 x.max=$Lsd y.max=0 material=vacuum
+region num=8 x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.max=0 material=vacuum
+
+#### electrodes ####
+electrode name=gate x.min=$Lsd x.max=$Lsd+$Lg y.min=-$tox y.max=-$tox
+electrode name=source x.max=$Lsd y.min=0 y.max=0
+electrode name=drain x.min=$Lsd+$Lg y.min=0 y.max=0
+electrode substrate
+
+#### doping ####
+doping uniform conc=5.0e17 p.type x.min=$Lsd x.max=$XiL y.min=0 y.max=$tsi
+doping uniform conc=5.0e17 p.type x.min=$XiR x.max=$Lsd+$Lg y.min=0 y.max=$tsi
+doping uniform conc=1e20 n.type x.min=$XiL x.max=$XiR y.min=0 y.max=$tsi
+doping uniform conc=1e20 n.type reg=4
+doping uniform conc=1e20 n.type reg=5
+doping uniform conc=1e21 n.type reg=1
+
+save outf=IDVG_ISL_W30_L5_R5_INIT.str
+
+#### contacts ####
+contact name=drain
+contact name=source
+contact name=substrate
+
+#### probes ####
+probe name=VB_left  potential x=0.5675 y=0.035
+probe name=VB_right potential x=0.7325 y=0.035
+probe name=V_island potential x=0.65 y=0.025
+probe name=PH_left  P.CONC x=0.5675 y=0.035
+probe name=PH_right P.CONC x=0.7325 y=0.035
+probe name=QH_left  integrated LEFT=$Lsd RIGHT=$XiL BOTTOM=0 TOP=$tsi P.CONC
+probe name=QH_right integrated LEFT=$XiR RIGHT=$Lsd+$Lg BOTTOM=0 TOP=$tsi P.CONC
+
+#### physical models ####
+material material=silicon taun0=$te taup0=$tp
+
+models print bgn hcte consrh conmob fldmob fermi trap.tunnel bbt.std temp=$LT
+impact selb length.rel
+
+output band.param con.band val.band recomb u.srh u.bbt qtunn.bbt impact e.field traps
+
+#### numerical method ####
+method block newton climit=100 itlimit=200 NBLOCKIT=200 trap maxtraps=10
+
+#### Id-Vg, Vd = 0.05 V ####
+solve vfinal=-0.5 vstep=-0.05 name=gate
+solve vdrain=0.05
+log outf=IDVG_ISL_W30_L5_R5_vd0p05.log j.electron j.hole
+solve vfinal=2.5 vstep=0.01 name=gate
+log off
+save outf=IDVG_ISL_W30_L5_R5_vd0p05_VG2p5.str
+extract init infile="IDVG_ISL_W30_L5_R5_vd0p05.log"
+extract name="vt_lin_vd0p05" (xintercept(maxslope(curve(abs(v."gate"),abs(i."drain")))) - abs(ave(v."drain"))/2.0)
+extract name="vt_cc_vd0p05" x.val from curve(v."gate", abs(i."drain")) where y.val=1e-7
+
+#### Id-Vg, Vd = 1.0 V (start again from Vg = -0.5 V) ####
+solve vfinal=-0.5 vstep=-0.05 name=gate
+solve vfinal=1.0 vstep=0.05 name=drain
+log outf=IDVG_ISL_W30_L5_R5_vd1.log j.electron j.hole
+solve vfinal=2.5 vstep=0.01 name=gate
+log off
+save outf=IDVG_ISL_W30_L5_R5_vd1_VG2p5.str
+extract init infile="IDVG_ISL_W30_L5_R5_vd1.log"
+extract name="vt_cc_vd1" x.val from curve(v."gate", abs(i."drain")) where y.val=1e-7
+
+quit

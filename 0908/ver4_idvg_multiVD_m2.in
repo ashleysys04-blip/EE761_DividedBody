@@ -1,0 +1,217 @@
+#=====================================================================
+#  ver4_idvg_multiVD.in
+#  Split-body FDSOI :  ID-VG @ multiple VD   (Silvaco ATLAS MixedMode)
+#
+#  - 구조는 맨 앞에서 한 번만 만들어 .str 로 저장하고,
+#    loop 안에서 MixedMode 부분만 VD 를 바꿔가며 반복 실행한다.
+#  - VG 는 0 -> VG_MAX -> 0 (up / down) 으로 쓸어서 latch hysteresis 확인.
+#  - Doping split 방향은 NA_SRC / NA_DRN 두 줄만 바꾸면 뒤집힌다.
+#
+#  ※ 기존 ver2_bodypotential.in 대비 바뀐 점
+#     (1) solve init + save outf 추가  <-- 이게 없어서 MixedMode 가 읽을
+#         .str 이 생성되지 않았음
+#     (2) substrate(back-gate) electrode 추가. SOI 에서 BOX 아래가
+#         전극 없이 열려 있으면 reflecting boundary 라 back-interface
+#         potential 이 물리적으로 정의되지 않는다.
+#         기존 데이터와 1:1 비교하려면 이 두 줄을 주석 처리할 것.
+#     (3) source/drain junction (0.45, 1.05) 에 mesh refinement 추가
+#=====================================================================
+#  ── 경량 메시 버전 (_m2) ─────────────────────────────────────────
+#  원본 대비 노드 약 2.7배 감소 (x 400->279, y 104->56).
+#  줄인 곳 : 게이트 poly / 좌우 air (y 0~0.045), n+ 소스·드레인 안쪽.
+#  조인 곳 : drain junction x=1.05 을 0.002 -> 0.001 (II peak, Emax 위치).
+#  유지    : Si body 두께 20 nm 에 20 점, split 경계 x=0.75 fine band.
+#  .str 과 .log 이름에 m2 표시가 붙어 원본 결과와 겹치지 않는다.
+#  ─────────────────────────────────────────────────────────────────
+
+go atlas simflag="-P 2"
+
+# ---------------------------------------------------------------
+# Structure parameters (um)
+# ---------------------------------------------------------------
+set LDEV      = 1.50
+
+set XG_L      = 0.45
+# Lg = 0.60 um
+set XG_R      = 1.05
+set XS_END    = 0.45
+set XD_START  = 1.05
+# body doping split 위치
+set X_SPLIT   = 0.75
+
+set YTOP      = 0.00
+# poly = 50 nm
+set YPOLY_BOT = 0.05
+# tox  = 5 nm
+set YOX_BOT   = 0.055
+# tsi  = 20 nm
+set YSI_BOT   = 0.075
+# tbox = 200 nm
+set YBOX_BOT  = 0.275
+set YSI_TOP   = $YOX_BOT
+
+# ---- Split 조건 : 이 두 줄만 바꾸면 방향/비율이 바뀐다 ----
+# source-side body
+set NA_SRC    = 1e17
+# drain-side  body
+set NA_DRN    = 3e18
+# 덱마다 고유. 동시 실행 시 충돌 방지
+set STRFILE   = split_ds_idvg_m2.str
+
+# ---------------------------------------------------------------
+# Mesh   (x.mesh 는 반드시 증가 순서. X_SPLIT 을 옮기면 아래 fine
+#         band(0.68~0.82)도 같이 옮겨줘야 한다)
+# ---------------------------------------------------------------
+mesh space.mult=1.0
+
+x.mesh loc=0.00  spac=0.02
+x.mesh loc=0.15  spac=0.01
+x.mesh loc=0.40  spac=0.005
+x.mesh loc=0.45  spac=0.002
+x.mesh loc=0.60  spac=0.008
+x.mesh loc=0.72  spac=0.003
+x.mesh loc=0.75  spac=0.001
+x.mesh loc=0.78  spac=0.003
+x.mesh loc=0.95  spac=0.008
+x.mesh loc=1.02  spac=0.002
+x.mesh loc=1.05  spac=0.001
+x.mesh loc=1.10  spac=0.003
+x.mesh loc=1.35  spac=0.01
+x.mesh loc=1.50  spac=0.02
+
+y.mesh loc=0.000  spac=0.010
+y.mesh loc=0.045  spac=0.005
+y.mesh loc=0.050  spac=0.001
+y.mesh loc=0.055  spac=0.001
+y.mesh loc=0.075  spac=0.001
+y.mesh loc=0.150  spac=0.01
+y.mesh loc=0.275  spac=0.02
+
+# ---------------------------------------------------------------
+# Regions
+# ---------------------------------------------------------------
+region num=1 material=air \
+       x.min=0.00   x.max=$XG_L  y.min=$YTOP    y.max=$YOX_BOT
+region num=2 material=polysilicon \
+       x.min=$XG_L  x.max=$XG_R  y.min=$YTOP    y.max=$YPOLY_BOT
+region num=3 material=oxide \
+       x.min=$XG_L  x.max=$XG_R  y.min=$YPOLY_BOT y.max=$YOX_BOT
+region num=4 material=air \
+       x.min=$XG_R  x.max=$LDEV  y.min=$YTOP    y.max=$YOX_BOT
+region num=5 material=silicon \
+       x.min=0.00   x.max=$LDEV  y.min=$YSI_TOP y.max=$YSI_BOT
+region num=6 material=oxide \
+       x.min=0.00   x.max=$LDEV  y.min=$YSI_BOT y.max=$YBOX_BOT
+
+# ---------------------------------------------------------------
+# Electrodes
+# ---------------------------------------------------------------
+electrode name=gate   x.min=$XG_L x.max=$XG_R y.min=$YTOP y.max=$YTOP
+electrode name=source x.min=0.00  x.max=0.00  y.min=$YSI_TOP y.max=$YSI_BOT
+electrode name=drain  x.min=$LDEV x.max=$LDEV y.min=$YSI_TOP y.max=$YSI_BOT
+
+# back-gate (BOX 하단). 기존 결과와 비교할 땐 아래 2줄 + VSUB 주석 처리
+electrode name=substrate bottom
+
+# ---------------------------------------------------------------
+# Doping
+# ---------------------------------------------------------------
+doping uniform p.type conc=$NA_SRC \
+       x.min=$XS_END   x.max=$X_SPLIT  y.min=$YSI_TOP y.max=$YSI_BOT
+doping uniform p.type conc=$NA_DRN \
+       x.min=$X_SPLIT  x.max=$XD_START y.min=$YSI_TOP y.max=$YSI_BOT
+doping uniform n.type conc=1e20 \
+       x.min=0.00      x.max=$XS_END   y.min=$YSI_TOP y.max=$YSI_BOT
+doping uniform n.type conc=1e20 \
+       x.min=$XD_START x.max=$LDEV     y.min=$YSI_TOP y.max=$YSI_BOT
+
+contact name=gate      n.poly
+contact name=substrate n.poly
+
+# ---------------------------------------------------------------
+# Models / output
+# ---------------------------------------------------------------
+models cvt srh fermi bgn print
+impact selb
+method newton trap maxtraps=20
+
+output con.band val.band e.field ex.field ey.field flowlines \
+       impact charge qfn qfp j.electron j.hole recomb
+
+solve init
+save outf=$STRFILE
+
+# =====================================================================
+#  ID-VG sweep :  VD = 0.05 / 0.5 / 1.0 / 1.5 V
+# =====================================================================
+#  시간 배치 (전부 명시적 숫자. DeckBuild 산술 중첩 피함)
+#     0        ~ 1e-6    : 전부 0
+#     1e-6     ~ 5e-6    : VD 를 목표값까지 ramp
+#     5e-6     ~ 1.05e-4 : VG 0 -> 3.0 V   (up sweep, 1e-4 s)
+#     1.05e-4  ~ 1.10e-4 : VG hold  (latch 가 시간에 따라 자라는지 확인)
+#     1.10e-4  ~ 2.10e-4 : VG 3.0 -> 0 V   (down sweep, hysteresis)
+# =====================================================================
+set VG_MAX      = 3.0
+set T_VD_ON     = 5e-6
+set T_UP_END    = 1.05e-4
+set T_HOLD_END  = 1.10e-4
+set T_DN_END    = 2.10e-4
+
+loop steps=4
+
+assign name=VDVAL n.value=(0.05, 0.5, 1.0, 1.5)
+# c.value(문자) 변수는 이 형태로 치환되지 않는 것이 확인되어 제거.
+# 파일명은 치환이 확인된 n.value 변수만 사용한다.
+# 도핑 방향을 뒤집으면 아래 .LOG 의 ds 를 sd 로 바꿀 것.
+
+go atlas simflag="-P 2"
+
+.BEGIN
+
+ASPLIT 1=drain 2=gate 0=source 3=substrate \
+       INFILE=$STRFILE
+
+# back-gate 0 V 고정 (substrate electrode 를 뺐으면 이 줄도 삭제)
+VSUB 3 0 0
+
+VD 1 0 PWL ( \
+   0            0 \
+   1e-6         0 \
+   $T_VD_ON     $VDVAL \
+   $T_DN_END    $VDVAL )
+
+VG 2 0 PWL ( \
+   0            0 \
+   $T_VD_ON     0 \
+   $T_UP_END    $VG_MAX \
+   $T_HOLD_END  $VG_MAX \
+   $T_DN_END    0 )
+
+# latch transition 을 시간축에서 놓치지 않으려면 LTE 를 조인다.
+# 너무 오래 걸리면 0.1 -> 0.2 로 완화.
+.NUMERIC LTE=0.1 TOLTR=1e-6
+
+# WRITE 는 structure file 저장 주기(timestep 수). ID-VG 스캔에서는
+# .str 이 수천 개 쏟아지지 않게 크게 잡는다. 단면도는 snapshot 덱에서.
+.OPTIONS PRINT RELPOT WRITE=2000
+
+.LOG OUTFILE=m2_idvg_ds_vd$VDVAL
+.TRAN 1e-9 $T_DN_END
+
+.END
+
+MODELS DEVICE=ASPLIT CVT SRH FERMI BGN
+IMPACT DEVICE=ASPLIT SELB
+METHOD NEWTON TRAP MAXTRAPS=20
+
+# --- body potential / hole 저장량을 log 에 직접 기록 ---
+#     (source-side body 중앙 / drain-side body 중앙, BOX 쪽 5 nm 위)
+#     PROBE 문법은 ATLAS 버전마다 조금 다르니 첫 run 에서 확인할 것.
+PROBE DEVICE=ASPLIT NAME=vb_src POTENTIAL X=0.60 Y=0.070
+PROBE DEVICE=ASPLIT NAME=vb_drn POTENTIAL X=0.90 Y=0.070
+PROBE DEVICE=ASPLIT NAME=p_src  P.CONC    X=0.60 Y=0.070
+PROBE DEVICE=ASPLIT NAME=p_drn  P.CONC    X=0.90 Y=0.070
+
+l.end
+
+quit

@@ -1,0 +1,156 @@
+#=====================================================================
+#  bg_backgate_idvd.in : back-gate 바이어스가 VLD 에 미치는 영향
+#
+#  현재 구조(tsi 20 nm, split 0.75) 그대로, VG = 0.5 V 고정.
+#  substrate 바이어스만 +2 / 0 / -2 / -5 V 로 바꾼다.
+#  
+#  왜 : substrate 를 n.poly 로 두고 0 V 를 걸면 p-body 에 대한 플랫밴드가
+#  약 -0.86 V 라 뒷면이 공핍 쪽으로 밀린다. 앞뒤 공핍영역이 이어지면
+#  body 가 완전공핍이 되고 source-body 장벽이 무너져 소자를 끌 수 없게
+#  된다. Fan et al. 4.3 절이 방사선 유발 BOX 전하로 같은 상황을 보고한다.
+#  substrate 를 음으로 걸면 뒷면에 정공이 쌓여 중성 body 가 복원되므로
+#  VLD 가 선명해질 것으로 기대한다.
+#  
+#  r1 = +2 V / r2 = 0 V (현재 조건) / r3 = -2 V / r4 = -5 V
+#=====================================================================
+
+set LDEV      = 1.50
+set XG_L      = 0.45
+set XG_R      = 1.05
+set XS_END    = 0.45
+set XD_START  = 1.05
+set XSPLIT    = 0.75
+set NA_SRC    = 1e17
+set NA_DRN    = 3e18
+
+set YTOP      = 0.00
+set YPOLY_BOT = 0.05
+set YOX_BOT   = 0.055
+set YSI_BOT   = 0.075
+set YBOX_BOT  = 0.275
+set YSI_TOP   = $YOX_BOT
+set STRFILE   = bg_backgate.str
+set VD_MAX    = 2.5
+set VG_TGT    = 0.5
+
+set T_BIAS    = 2e-6
+set T_SETTLE  = 5.2e-5
+set T_UP      = 1.52e-4
+set T_HD      = 1.62e-4
+set T_DN      = 2.62e-4
+
+loop steps=4
+
+assign name=RUNID n.value=(1, 2, 3, 4)
+assign name=VSUBV n.value=(2.0, 0.0, -2.0, -5.0)
+
+go atlas simflag="-P 2"
+
+mesh space.mult=1.0
+
+x.mesh loc=0.00  spac=0.02
+x.mesh loc=0.15  spac=0.01
+x.mesh loc=0.40  spac=0.005
+x.mesh loc=0.45  spac=0.002
+x.mesh loc=0.60  spac=0.008
+x.mesh loc=0.72  spac=0.003
+x.mesh loc=0.75  spac=0.001
+x.mesh loc=0.78  spac=0.003
+x.mesh loc=0.95  spac=0.008
+x.mesh loc=1.02  spac=0.002
+x.mesh loc=1.05  spac=0.001
+x.mesh loc=1.10  spac=0.003
+x.mesh loc=1.35  spac=0.01
+x.mesh loc=1.50  spac=0.02
+
+y.mesh loc=0.000  spac=0.010
+y.mesh loc=0.045  spac=0.005
+y.mesh loc=0.050  spac=0.001
+y.mesh loc=0.055  spac=0.001
+y.mesh loc=0.075  spac=0.001
+y.mesh loc=0.150  spac=0.01
+y.mesh loc=0.275  spac=0.02
+
+region num=1 material=air \
+       x.min=0.00   x.max=$XG_L  y.min=$YTOP    y.max=$YOX_BOT
+region num=2 material=polysilicon \
+       x.min=$XG_L  x.max=$XG_R  y.min=$YTOP    y.max=$YPOLY_BOT
+region num=3 material=oxide \
+       x.min=$XG_L  x.max=$XG_R  y.min=$YPOLY_BOT y.max=$YOX_BOT
+region num=4 material=air \
+       x.min=$XG_R  x.max=$LDEV  y.min=$YTOP    y.max=$YOX_BOT
+region num=5 material=silicon \
+       x.min=0.00   x.max=$LDEV  y.min=$YSI_TOP y.max=$YSI_BOT
+region num=6 material=oxide \
+       x.min=0.00   x.max=$LDEV  y.min=$YSI_BOT y.max=$YBOX_BOT
+
+electrode name=gate   x.min=$XG_L x.max=$XG_R y.min=$YTOP y.max=$YTOP
+electrode name=source x.min=0.00  x.max=0.00  y.min=$YSI_TOP y.max=$YSI_BOT
+electrode name=drain  x.min=$LDEV x.max=$LDEV y.min=$YSI_TOP y.max=$YSI_BOT
+electrode name=substrate bottom
+
+doping uniform p.type conc=$NA_SRC \
+       x.min=$XS_END   x.max=$XSPLIT   y.min=$YSI_TOP y.max=$YSI_BOT
+doping uniform p.type conc=$NA_DRN \
+       x.min=$XSPLIT   x.max=$XD_START y.min=$YSI_TOP y.max=$YSI_BOT
+doping uniform n.type conc=1e20 \
+       x.min=0.00      x.max=$XS_END   y.min=$YSI_TOP y.max=$YSI_BOT
+doping uniform n.type conc=1e20 \
+       x.min=$XD_START x.max=$LDEV     y.min=$YSI_TOP y.max=$YSI_BOT
+
+contact name=gate      n.poly
+contact name=substrate n.poly
+
+models cvt srh fermi bgn print
+impact selb
+method newton trap maxtraps=20
+
+output con.band val.band e.field ex.field ey.field flowlines \
+       impact charge qfn qfp j.electron j.hole recomb
+
+solve init
+save outf=$STRFILE
+
+go atlas simflag="-P 2"
+
+.BEGIN
+
+ASPLIT 1=drain 2=gate 0=source 3=substrate \
+       INFILE=$STRFILE
+
+VSUB 3 0 $VSUBV
+
+VG 2 0 PWL ( \
+   0            0 \
+   1e-6         0 \
+   $T_BIAS      $VG_TGT \
+   $T_DN        $VG_TGT )
+
+VD 1 0 PWL ( \
+   0            0 \
+   $T_SETTLE    0 \
+   $T_UP        $VD_MAX \
+   $T_HD        $VD_MAX \
+   $T_DN        0 )
+
+.NUMERIC LTE=0.1 TOLTR=1e-6
+.OPTIONS PRINT RELPOT WRITE=100000
+
+.LOG OUTFILE=bg_backgate_r$RUNID
+.TRAN 1e-10 $T_DN
+
+.END
+
+MODELS DEVICE=ASPLIT CVT SRH FERMI BGN
+IMPACT DEVICE=ASPLIT SELB
+METHOD NEWTON TRAP MAXTRAPS=20
+
+PROBE DEVICE=ASPLIT NAME=vb_s  POTENTIAL X=0.50 Y=0.070
+PROBE DEVICE=ASPLIT NAME=vb_d  POTENTIAL X=1.00 Y=0.070
+PROBE DEVICE=ASPLIT NAME=p_s   P.CONC    X=0.50 Y=0.070
+PROBE DEVICE=ASPLIT NAME=p_d   P.CONC    X=1.00 Y=0.070
+PROBE DEVICE=ASPLIT NAME=p_jn  P.CONC    X=1.04 Y=0.058
+
+l.end
+
+quit

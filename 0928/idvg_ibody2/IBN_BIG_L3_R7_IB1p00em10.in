@@ -1,0 +1,135 @@
+# ============================================================
+# Body-current extraction during Id-Vg up/down (IBN_BIG_L3_R7_IB1p00em10)
+# Structure : BIG_L3_R7_X50 (Left=3e17, Right=7e17, split 50%)
+#
+# Body tie through a narrow Si neck in the BOX:
+#   a 20 nm wide p-type Si neck (5e17) runs from the bottom of the
+#   floating body straight down through the 200 nm BOX; the ohmic
+#   contact (with a p+ cap) sits at the far end of the neck, so the
+#   contact is ~200 nm away from the channel electrons.
+#   (A lateral tab like SOI_2_L/bodycontact is not possible here
+#    because the n+ S/D reach the BOX and block any lateral path.)
+#
+# I_body = -1.000e-10 A  (negative = holes extracted, current boundary)
+# Reference (no tie): latch at Vg=1.39 V, release at 1.335 V (Vd=1 V)
+# CPU = 1
+# ============================================================
+
+go atlas simflags="-P 1"
+
+set Lg = 0.3
+set Lsd = 0.5
+set tsi = 0.05
+set tox = 0.02
+set tbox = 0.2
+set tgate = 0.1
+set W = 0.5
+set te = 1e-7
+set tp = 1e-7
+set LT = 300
+set Xsplit = $Lsd+$Lg*0.50
+set Wn = 0.02
+set XnL = $Xsplit-$Wn/2
+set XnR = $Xsplit+$Wn/2
+set Ybot = $tsi+$tbox
+
+#### mesh define ####
+mesh space.mult = 1.0 width = $W
+
+x.mesh loc=0.00 spac=0.1
+x.mesh loc=$Lsd spac=0.01
+x.mesh loc=$XnL spac=0.004
+x.mesh loc=$XnR spac=0.004
+x.mesh loc=$Lsd+$Lg spac=0.005
+x.mesh loc=$Lsd+$Lg+$Lsd spac=0.1
+
+y.mesh loc=-$tox-$tgate spac=0.05
+y.mesh loc=-$tox spac=0.005
+y.mesh loc=0.00 spac=0.005
+y.mesh loc=$tsi/2 spac=0.01
+y.mesh loc=$tsi spac=0.005
+y.mesh loc=$tsi+0.05 spac=0.02
+y.mesh loc=$Ybot-0.03 spac=0.01
+y.mesh loc=$Ybot spac=0.005
+
+#### regions ####
+region num=1 x.min=$Lsd x.max=$Lsd+$Lg y.max=-$tox poly
+region num=2 x.min=$Lsd x.max=$Lsd+$Lg y.max=0 y.min=-$tox oxide
+region num=3 y.min=0 y.max=$tsi silicon
+region num=4 x.min=0 x.max=$Lsd y.min=0 y.max=$tsi silicon
+region num=5 x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.min=0 y.max=$tsi silicon
+region num=6 y.min=$tsi y.max=$Ybot oxide
+region num=7 x.min=0 x.max=$Lsd y.max=0 material=vacuum
+region num=8 x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.max=0 material=vacuum
+# Si neck through the BOX (body tie)
+region num=9 x.min=$XnL x.max=$XnR y.min=$tsi y.max=$Ybot silicon
+
+#### electrodes (body must stay electrode #4 -> solve i4=...) ####
+electrode name=gate x.min=$Lsd x.max=$Lsd+$Lg y.min=-$tox y.max=-$tox
+electrode name=source x.max=$Lsd y.min=0 y.max=0
+electrode name=drain x.min=$Lsd+$Lg y.min=0 y.max=0
+electrode name=body x.min=$XnL x.max=$XnR y.min=$Ybot y.max=$Ybot
+electrode name=substrate x.max=$XnL-0.03 y.min=$Ybot y.max=$Ybot
+electrode name=substrate x.min=$XnR+0.03 y.min=$Ybot y.max=$Ybot
+
+#### doping ####
+doping uniform conc=3.0e17 p.type reg=3
+doping uniform conc=4.0e17 p.type x.min=$Xsplit x.max=$Lsd+$Lg y.min=0 y.max=$tsi
+doping uniform conc=5.0e17 p.type reg=9
+# p+ cap at the far end of the neck (ohmic hole contact)
+doping uniform conc=1e20 p.type x.min=$XnL x.max=$XnR y.min=$Ybot-0.02 y.max=$Ybot
+doping uniform conc=1e20 n.type reg=4
+doping uniform conc=1e20 n.type reg=5
+doping uniform conc=1e21 n.type reg=1
+
+save outf=IBN_BIG_L3_R7_IB1p00em10_INIT.str
+
+#### contacts ####
+contact name=drain
+contact name=source
+contact name=substrate
+# body tie driven by a current source
+contact name=body current
+
+#### probes ####
+probe name=VB_left  potential x=0.575 y=0.035
+probe name=VB_right potential x=0.725 y=0.035
+probe name=V_neck   potential x=$Xsplit y=$tsi+0.1
+probe name=QH_left  integrated LEFT=$Lsd RIGHT=$Xsplit BOTTOM=0 TOP=$tsi P.CONC
+probe name=QH_right integrated LEFT=$Xsplit RIGHT=$Lsd+$Lg BOTTOM=0 TOP=$tsi P.CONC
+
+#### physical models ####
+material material=silicon taun0=$te taup0=$tp
+
+models print bgn hcte consrh conmob fldmob fermi trap.tunnel bbt.std temp=$LT
+impact selb length.rel
+
+output band.param con.band val.band recomb u.srh u.bbt qtunn.bbt impact e.field traps
+
+#### numerical method ####
+method block newton climit=100 itlimit=200 NBLOCKIT=200 trap maxtraps=10
+
+#### bias set-up : Vg=-0.5 V, Vd=1 V, then ramp body current ####
+solve i4=0
+solve vfinal=-0.5 vstep=-0.05 name=gate
+solve vfinal=1.0 vstep=0.05 name=drain
+solve i4=-1.0000e-14
+solve i4=-3.1623e-14
+solve i4=-1.0000e-13
+solve i4=-3.1623e-13
+solve i4=-1.0000e-12
+solve i4=-3.1623e-12
+solve i4=-1.0000e-11
+solve i4=-3.1623e-11
+solve i4=-1.0000e-10
+save outf=IBN_BIG_L3_R7_IB1p00em10_START.str
+
+#### Id-Vg up / down at Vd = 1 V with constant body current ####
+log outf=IBN_BIG_L3_R7_IB1p00em10_vd1.log j.electron j.hole
+solve vfinal=2.5 vstep=0.01 name=gate
+save outf=IBN_BIG_L3_R7_IB1p00em10_vd1_UP_VG2p5.str
+# ---- return sweep ----
+solve vfinal=-0.5 vstep=-0.01 name=gate
+log off
+
+quit

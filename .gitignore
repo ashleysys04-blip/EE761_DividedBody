@@ -1,0 +1,47 @@
+# Whitelist: ignore everything, then allow only decks, tables, figures, docs, essential code and key logs.
+# Raw simulator output (.str, .out, most .log, MixedMode snapshots) stays on the server (see README.md, "저장소 구성").
+*
+!*/
+
+# decks / tables / figures / docs
+!*.in
+!*.dat
+!*.png
+!*.md
+!.gitignore
+
+# essential code
+!tools/plog.py
+!tools/strstruct.py
+!tools/make_struct_figs.py
+!0927/ebd/strcut.py
+!1001/tap/fig/strfig.py
+!1001/tap/fig/plot_double_latch.py
+
+# key logs (all < 30 MB; the two > 100 MB logs are committed as *_extract.dat instead)
+!0921/STL_NB5p0_localfine.log
+!0921/SPLIT_L5p0_R5p2_X50.log
+!0921/B10_W20_L5p0_R5p2.log
+!0927/BIG_L3_R7_X50.log
+!0927/BIG_L7_R3_X50.log
+!0927/BIG_L8_R2_X50.log
+!0928/ISL_W30_L3_R7.log
+!0928/idvg_return/IDVGR_BIG_L3_R7_X50_vd1.log
+!0929/splitgate/SG_G2D_m0p2.log
+!1001/tap/TAPT_ISL_W30_L3_R7_R3e5_VGm0p2.log
+!1001/tap/TAPT_ISL_W30_L3_R7_R3e4_VGm0p2.log
+!1001/tap/TAPT_ISL_W30_L3_R7_R1e4_UP_VGm0p2.log
+!1001/tap/TAPT_ISL_W100_L3_R7_R1e4_UD6S_VGm0p2.log
+!1001/tap/TAPT_ISL_W30TC_L3_R7_R1e4_UD6S_VGm0p2.log
+!1001/tap/TAPT_ISL_W30LK_L3_R7_R1e6_UD7S_VGm0p2.log
+!1001/tap/TAPT_ISL_W30LK_L3_R7_R1e6_RS50_NEWT_VGm0p2.log
+!1001/tap/TAPT_ISL_W30LK_L3_R7_R1e6_UD7S_MF_VGm0p2.log
+!1001/tap/TAPT_ISL_W30LK_L6_R7_R1e6_UD75S_MF_VGm0p2.log
+!1001/tap/LEFTONLY_L135_P3e17_UD6S_VGm0p2.log
+!1001/tap/LEFTONLY_L135_P5e17_UD6S_VGm0p2.log
+!1001/tap/LEFTONLY_L135_P6e17_UD6S_VGm0p2.log
+!1001/tap/LEFTONLY_L135_P7e17_UD6S_VGm0p2.log
+!1001/tap/LEFTONLY_L135_P6e17_UD3_VGm0p2.log
+!1001/tap/LEFTONLY_L135_P6e17_UD3_R7_VGm0p2.log
+!1001/tap/LEFTONLY_L135_P*_DD_UP4_VGm0p2.log
+!1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_DD_VGm0p2.log_tr.log

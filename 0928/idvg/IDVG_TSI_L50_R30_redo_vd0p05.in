@@ -1,0 +1,99 @@
+# ============================================================
+# Tsi split: source-side Tsi = 50 nm, drain-side Tsi = 30 nm
+# Body doping uniform 5.0e17, split at 50% of Lg.
+# Each side keeps its own film thickness all the way into S/D.
+# CPU = 1
+# ============================================================
+
+go atlas simflags="-P 1"
+
+set Lg = 0.3
+set Lsd = 0.5
+set tox = 0.02
+set tbox = 0.2
+set tgate = 0.1
+set te = 1e-7
+set tp = 1e-7
+set LT = 300
+set Xsplit = $Lsd+$Lg*0.50
+set W = 0.5
+set tL = 0.05
+set tR = 0.03
+set tmax = 0.05
+
+#### mesh define ####
+mesh space.mult = 1.0 width = $W
+
+x.mesh loc=0.00 spac=0.1
+x.mesh loc=$Lsd spac=0.01
+x.mesh loc=$Xsplit spac=0.003
+x.mesh loc=$Lsd+$Lg spac=0.005
+x.mesh loc=$Lsd+$Lg+$Lsd spac=0.1
+
+y.mesh loc=-$tox-$tgate spac=0.05
+y.mesh loc=-$tox spac=0.005
+y.mesh loc=0.00 spac=0.003
+y.mesh loc=0.03 spac=0.003
+y.mesh loc=$tmax spac=0.003
+y.mesh loc=$tmax+$tbox spac=0.1
+
+#### regions ####
+# BOX everywhere first, then the Si films (later regions override)
+region num=1 y.min=0 y.max=$tmax+$tbox oxide
+region num=2 x.min=0 x.max=$Xsplit y.min=0 y.max=$tL silicon
+region num=3 x.min=$Xsplit x.max=$Lsd+$Lg+$Lsd y.min=0 y.max=$tR silicon
+region num=4 x.min=$Lsd x.max=$Lsd+$Lg y.max=-$tox poly
+region num=5 x.min=$Lsd x.max=$Lsd+$Lg y.min=-$tox y.max=0 oxide
+region num=6 x.min=0 x.max=$Lsd y.max=0 material=vacuum
+region num=7 x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.max=0 material=vacuum
+
+#### electrodes ####
+electrode name=gate x.min=$Lsd x.max=$Lsd+$Lg y.min=-$tox y.max=-$tox
+electrode name=source x.max=$Lsd y.min=0 y.max=0
+electrode name=drain x.min=$Lsd+$Lg y.min=0 y.max=0
+electrode substrate
+
+#### doping ####
+doping uniform conc=5.0e17 p.type x.min=$Lsd x.max=$Lsd+$Lg y.min=0 y.max=$tmax
+doping uniform conc=1e20 n.type x.min=0 x.max=$Lsd y.min=0 y.max=$tmax
+doping uniform conc=1e20 n.type x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.min=0 y.max=$tmax
+doping uniform conc=1e21 n.type reg=4
+
+save outf=IDVG_TSI_L50_R30_redo_INIT.str
+
+#### contacts ####
+contact name=drain
+contact name=source
+contact name=substrate
+
+#### probes : point body potential at the centre of each half ####
+probe name=VB_left  potential x=0.575 y=0.0350
+probe name=VB_right potential x=0.725 y=0.0210
+probe name=PH_left  P.CONC x=0.575 y=0.0350
+probe name=PH_right P.CONC x=0.725 y=0.0210
+probe name=QH_left  integrated LEFT=$Lsd RIGHT=$Xsplit BOTTOM=0 TOP=$tL P.CONC
+probe name=QH_right integrated LEFT=$Xsplit RIGHT=$Lsd+$Lg BOTTOM=0 TOP=$tR P.CONC
+
+#### physical models ####
+material material=silicon taun0=$te taup0=$tp
+
+models print bgn hcte consrh conmob fldmob fermi trap.tunnel bbt.std temp=$LT
+impact selb length.rel
+
+output band.param con.band val.band recomb u.srh u.bbt qtunn.bbt impact e.field traps
+
+#### numerical method ####
+method block newton climit=100 itlimit=200 NBLOCKIT=200 trap maxtraps=10
+
+#### Id-Vg, Vd = 0.05 V ####
+solve vfinal=-0.5 vstep=-0.05 name=gate
+solve vdrain=0.05
+log outf=IDVG_TSI_L50_R30_vd0p05.log j.electron j.hole
+solve vfinal=2.5 vstep=0.01 name=gate
+log off
+save outf=IDVG_TSI_L50_R30_vd0p05_VG2p5.str
+extract init infile="IDVG_TSI_L50_R30_vd0p05.log"
+extract name="vt_lin_vd0p05" (xintercept(maxslope(curve(abs(v."gate"),abs(i."drain")))) - abs(ave(v."drain"))/2.0)
+extract name="vt_cc_vd0p05" x.val from curve(v."gate", abs(i."drain")) where y.val=1e-7
+
+quit

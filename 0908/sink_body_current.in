@@ -1,0 +1,180 @@
+#=====================================================================
+#  sink_body_current.in : body 에서 일정 전류를 빼내 VLD 를 세운다
+#
+#  왜
+#  ------------------------------------------------------------------
+#  지금 body 에서 정공이 빠지는 경로가 재결합뿐이라 손실이 너무 작다.
+#  그래서 VD 를 낮춰도 되먹임이 안 죽고 latch-down 이 누워버린다.
+#  일정 전류로 정공을 계속 빼내면 II 로 생기는 정공 전류가 그 값 밑으로
+#  떨어지는 순간 풀리므로 VLD 가 선명해진다.
+#
+#  2D 에서의 타협
+#  ------------------------------------------------------------------
+#  실제 소자의 body tie 는 3차원에서 채널 밖으로 뺀다. 2D 단면에서는
+#  body 에 닿는 전극을 어디 놔도 채널을 건드리므로, 소스 아래에 묻힌
+#  p+ tap 을 쓴다.
+#    n+ source : x 0~0.45, y 0.055~0.065  (위쪽 10 nm 만)
+#    p+ tap    : x 0~0.45, y 0.065~0.075  (아래쪽 10 nm, 1e19)
+#    body      : x 0.45~1.05, 20 nm 전체 (1e17 / 3e18, split 0.75)
+#    n+ drain  : x 1.05~1.50, 20 nm 전체
+#  tap 을 1e19 로 진하게 둔 이유는, 1e17 로 두면 위 n+ 와의 접합
+#  공핍층이 10 nm 를 통째로 먹어 전도가 안 되기 때문이다.
+#
+#  ※ 소스-body 접합 면적이 절반으로 줄었으므로 기생 BJT 이득이 원래
+#     구조와 다르다. 그래서 r1(1 pA, 사실상 개방)을 내부 기준으로 두고
+#     r1 대비 변화로 읽어야 한다. idvd_orig_r4 와 직접 비교하면 안 된다.
+#
+#  전류원 방향 : IBODY 4 0 I 는 노드 4 에서 전류를 끌어내므로
+#  body 에서 정공을 빼내는 방향이 맞다.
+#
+#  r1 = 1 pA (사실상 개방) / r2 = 100 pA / r3 = 1 nA / r4 = 10 nA
+#=====================================================================
+
+set LDEV      = 1.50
+set XG_L      = 0.45
+set XG_R      = 1.05
+set XS_END    = 0.45
+set XD_START  = 1.05
+set XSPLIT    = 0.75
+set NA_SRC    = 1e17
+set NA_DRN    = 3e18
+set NA_TAP    = 1e19
+
+set YTOP      = 0.00
+set YPOLY_BOT = 0.05
+set YOX_BOT   = 0.055
+set YSD_BOT   = 0.065
+set YSI_BOT   = 0.075
+set YBOX_BOT  = 0.275
+set YSI_TOP   = $YOX_BOT
+
+set VG_TGT    = 0.5
+set VD_MAX    = 2.5
+set STRFILE   = sink_body.str
+
+set T_BIAS    = 2e-6
+set T_SETTLE  = 5.2e-5
+set T_UP      = 1.52e-4
+set T_HD      = 1.62e-4
+set T_DN      = 2.62e-4
+
+loop steps=4
+
+assign name=RUNID n.value=(1, 2, 3, 4)
+assign name=ISINK n.value=(1e-12, 1e-10, 1e-9, 1e-8)
+
+go atlas simflag="-P 2"
+
+mesh space.mult=1.0
+
+x.mesh loc=0.00  spac=0.02
+x.mesh loc=0.15  spac=0.01
+x.mesh loc=0.40  spac=0.005
+x.mesh loc=0.45  spac=0.002
+x.mesh loc=0.60  spac=0.008
+x.mesh loc=0.72  spac=0.003
+x.mesh loc=0.75  spac=0.001
+x.mesh loc=0.78  spac=0.003
+x.mesh loc=0.95  spac=0.008
+x.mesh loc=1.02  spac=0.002
+x.mesh loc=1.05  spac=0.001
+x.mesh loc=1.10  spac=0.003
+x.mesh loc=1.35  spac=0.01
+x.mesh loc=1.50  spac=0.02
+
+y.mesh loc=0.000  spac=0.010
+y.mesh loc=0.045  spac=0.005
+y.mesh loc=0.050  spac=0.001
+y.mesh loc=0.055  spac=0.0008
+y.mesh loc=0.065  spac=0.0005
+y.mesh loc=0.075  spac=0.0008
+y.mesh loc=0.150  spac=0.01
+y.mesh loc=0.275  spac=0.02
+
+region num=1 material=air \
+       x.min=0.00   x.max=$XG_L  y.min=$YTOP    y.max=$YOX_BOT
+region num=2 material=polysilicon \
+       x.min=$XG_L  x.max=$XG_R  y.min=$YTOP    y.max=$YPOLY_BOT
+region num=3 material=oxide \
+       x.min=$XG_L  x.max=$XG_R  y.min=$YPOLY_BOT y.max=$YOX_BOT
+region num=4 material=air \
+       x.min=$XG_R  x.max=$LDEV  y.min=$YTOP    y.max=$YOX_BOT
+region num=5 material=silicon \
+       x.min=0.00   x.max=$LDEV  y.min=$YSI_TOP y.max=$YSI_BOT
+region num=6 material=oxide \
+       x.min=0.00   x.max=$LDEV  y.min=$YSI_BOT y.max=$YBOX_BOT
+
+electrode name=gate      x.min=$XG_L x.max=$XG_R y.min=$YTOP     y.max=$YTOP
+electrode name=source    x.min=0.00  x.max=0.00  y.min=$YSI_TOP  y.max=$YSD_BOT
+electrode name=body      x.min=0.00  x.max=0.00  y.min=$YSD_BOT  y.max=$YSI_BOT
+electrode name=drain     x.min=$LDEV x.max=$LDEV y.min=$YSI_TOP  y.max=$YSI_BOT
+electrode name=substrate bottom
+
+doping uniform p.type conc=$NA_SRC \
+       x.min=$XS_END   x.max=$XSPLIT   y.min=$YSI_TOP y.max=$YSI_BOT
+doping uniform p.type conc=$NA_DRN \
+       x.min=$XSPLIT   x.max=$XD_START y.min=$YSI_TOP y.max=$YSI_BOT
+doping uniform n.type conc=1e20 \
+       x.min=0.00      x.max=$XS_END   y.min=$YSI_TOP y.max=$YSD_BOT
+doping uniform p.type conc=$NA_TAP \
+       x.min=0.00      x.max=$XS_END   y.min=$YSD_BOT y.max=$YSI_BOT
+doping uniform n.type conc=1e20 \
+       x.min=$XD_START x.max=$LDEV     y.min=$YSI_TOP y.max=$YSI_BOT
+
+contact name=gate      n.poly
+contact name=substrate n.poly
+
+models cvt srh fermi bgn print
+impact selb
+method newton trap maxtraps=20
+
+output con.band val.band e.field ex.field ey.field flowlines \
+       impact charge qfn qfp j.electron j.hole recomb
+
+solve init
+save outf=$STRFILE
+
+go atlas simflag="-P 2"
+
+.BEGIN
+
+ASPLIT 1=drain 2=gate 0=source 3=substrate 4=body \
+       INFILE=$STRFILE
+
+VSUB 3 0 0
+
+IBODY 4 0 $ISINK
+
+VG 2 0 PWL ( \
+   0            0 \
+   1e-6         0 \
+   $T_BIAS      $VG_TGT \
+   $T_DN        $VG_TGT )
+
+VD 1 0 PWL ( \
+   0            0 \
+   $T_SETTLE    0 \
+   $T_UP        $VD_MAX \
+   $T_HD        $VD_MAX \
+   $T_DN        0 )
+
+.NUMERIC LTE=0.1 TOLTR=1e-6
+.OPTIONS PRINT RELPOT WRITE=100000
+
+.LOG OUTFILE=sink_body_r$RUNID
+.TRAN 1e-10 $T_DN
+
+.END
+
+MODELS DEVICE=ASPLIT CVT SRH FERMI BGN
+IMPACT DEVICE=ASPLIT SELB
+METHOD NEWTON TRAP MAXTRAPS=20
+
+PROBE DEVICE=ASPLIT NAME=vb_s  POTENTIAL X=0.50 Y=0.070
+PROBE DEVICE=ASPLIT NAME=vb_d  POTENTIAL X=1.00 Y=0.070
+PROBE DEVICE=ASPLIT NAME=p_s   P.CONC    X=0.50 Y=0.070
+PROBE DEVICE=ASPLIT NAME=p_d   P.CONC    X=1.00 Y=0.070
+
+l.end
+
+quit

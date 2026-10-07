@@ -1,0 +1,216 @@
+#=====================================================================
+#  ver4_idvd_loadline_snapshot.in
+#  Split-body FDSOI :  load-line ID-VD + ramp-time sensitivity
+#
+#  왜 이 덱이 따로 필요한가
+#  ------------------------------------------------------------------
+#  (1) 이상적인 전압원으로 VD 를 쓸면 latch 순간에 동작점이 S-curve 의
+#      negative differential resistance(NDR) 구간을 "건너뛴다".
+#      로그에는 수직 점프만 남고, VLU / VLD 를 몇 V 라고 말할 근거가
+#      time step 해상도밖에 안 남는다.
+#      drain 에 직렬저항 RLOAD 를 달면 load line 이 S-curve 를 한 점에서
+#      만나므로 NDR 가지까지 안정적으로 따라갈 수 있다.
+#      -> Fig.3 의 VLU / VLD 를 정량적으로 정의할 수 있게 된다.
+#
+#  (2) ramp time 을 3 자리수 바꿔가며 같은 sweep 을 돌린다.
+#      transition 위치가 ramp time 에 따라 크게 움직이면 그건
+#      "regenerative latch" 가 아니라 floating-body 충전 시상수 문제다.
+#      제안서의 positive-feedback 주장을 지키려면 반드시 있어야 하는
+#      control 실험.
+#=====================================================================
+#  ── 경량 메시 버전 (_m2) ─────────────────────────────────────────
+#  원본 대비 노드 약 2.7배 감소 (x 400->279, y 104->56).
+#  줄인 곳 : 게이트 poly / 좌우 air (y 0~0.045), n+ 소스·드레인 안쪽.
+#  조인 곳 : drain junction x=1.05 을 0.002 -> 0.001 (II peak, Emax 위치).
+#  유지    : Si body 두께 20 nm 에 20 점, split 경계 x=0.75 fine band.
+#  .str 과 .log 이름에 m2 표시가 붙어 원본 결과와 겹치지 않는다.
+#  ─────────────────────────────────────────────────────────────────
+
+go atlas simflag="-P 2"
+
+set LDEV      = 1.50
+set XG_L      = 0.45
+set XG_R      = 1.05
+set XS_END    = 0.45
+set XD_START  = 1.05
+set X_SPLIT   = 0.75
+
+set YTOP      = 0.00
+set YPOLY_BOT = 0.05
+set YOX_BOT   = 0.055
+set YSI_BOT   = 0.075
+set YBOX_BOT  = 0.275
+set YSI_TOP   = $YOX_BOT
+
+set NA_SRC    = 1e17
+set NA_DRN    = 3e18
+# 덱마다 고유
+set STRFILE   = split_ds_loadline_m2.str
+
+mesh space.mult=1.0
+
+x.mesh loc=0.00  spac=0.02
+x.mesh loc=0.15  spac=0.01
+x.mesh loc=0.40  spac=0.005
+x.mesh loc=0.45  spac=0.002
+x.mesh loc=0.60  spac=0.008
+x.mesh loc=0.72  spac=0.003
+x.mesh loc=0.75  spac=0.001
+x.mesh loc=0.78  spac=0.003
+x.mesh loc=0.95  spac=0.008
+x.mesh loc=1.02  spac=0.002
+x.mesh loc=1.05  spac=0.001
+x.mesh loc=1.10  spac=0.003
+x.mesh loc=1.35  spac=0.01
+x.mesh loc=1.50  spac=0.02
+
+y.mesh loc=0.000  spac=0.010
+y.mesh loc=0.045  spac=0.005
+y.mesh loc=0.050  spac=0.001
+y.mesh loc=0.055  spac=0.001
+y.mesh loc=0.075  spac=0.001
+y.mesh loc=0.150  spac=0.01
+y.mesh loc=0.275  spac=0.02
+
+region num=1 material=air \
+       x.min=0.00   x.max=$XG_L  y.min=$YTOP    y.max=$YOX_BOT
+region num=2 material=polysilicon \
+       x.min=$XG_L  x.max=$XG_R  y.min=$YTOP    y.max=$YPOLY_BOT
+region num=3 material=oxide \
+       x.min=$XG_L  x.max=$XG_R  y.min=$YPOLY_BOT y.max=$YOX_BOT
+region num=4 material=air \
+       x.min=$XG_R  x.max=$LDEV  y.min=$YTOP    y.max=$YOX_BOT
+region num=5 material=silicon \
+       x.min=0.00   x.max=$LDEV  y.min=$YSI_TOP y.max=$YSI_BOT
+region num=6 material=oxide \
+       x.min=0.00   x.max=$LDEV  y.min=$YSI_BOT y.max=$YBOX_BOT
+
+electrode name=gate   x.min=$XG_L x.max=$XG_R y.min=$YTOP y.max=$YTOP
+electrode name=source x.min=0.00  x.max=0.00  y.min=$YSI_TOP y.max=$YSI_BOT
+electrode name=drain  x.min=$LDEV x.max=$LDEV y.min=$YSI_TOP y.max=$YSI_BOT
+electrode name=substrate bottom
+
+doping uniform p.type conc=$NA_SRC \
+       x.min=$XS_END   x.max=$X_SPLIT  y.min=$YSI_TOP y.max=$YSI_BOT
+doping uniform p.type conc=$NA_DRN \
+       x.min=$X_SPLIT  x.max=$XD_START y.min=$YSI_TOP y.max=$YSI_BOT
+doping uniform n.type conc=1e20 \
+       x.min=0.00      x.max=$XS_END   y.min=$YSI_TOP y.max=$YSI_BOT
+doping uniform n.type conc=1e20 \
+       x.min=$XD_START x.max=$LDEV     y.min=$YSI_TOP y.max=$YSI_BOT
+
+contact name=gate      n.poly
+contact name=substrate n.poly
+
+models cvt srh fermi bgn print
+impact selb
+method newton trap maxtraps=20
+
+output con.band val.band e.field ex.field ey.field flowlines \
+       impact charge qfn qfp j.electron j.hole recomb
+
+solve init
+save outf=$STRFILE
+
+# =====================================================================
+#  Load-line ID-VD
+#
+#    VDS(node 4) --- RLOAD --- node 1 (device drain)
+#
+#  RLOAD 고르는 법 : latch 후 예상 전류 I_on 에 대해
+#      RLOAD ~ (VDS_MAX - VD_latch) / I_on
+#  ATLAS 2D 전류는 A/um 이고 MixedMode 기본 소자 폭이 1 um 이므로
+#  I_on ~ 1e-4 A 라면 RLOAD 는 수십 kohm 수준이 맞다.
+#  전류 점프가 여전히 수직이면 RLOAD 를 키우고, latch 자체가 안 걸리면
+#  RLOAD 를 줄이거나 VDS_MAX 를 올린다.
+# =====================================================================
+set VG_TGT   = 2.0
+set VDS_MAX  = 12.0
+set RLOAD    = 50e3
+set T_VG_END = 2e-6
+
+loop steps=3
+
+# ramp time 3 자리수 스캔. 시간 마커는 산술 중첩을 피해 전부 명시.
+# r1 = fast(ramp 1e-5) / r2 = mid(1e-4) / r3 = slow(1e-3)
+assign name=RID   n.value=(1, 2, 3)
+assign name=T_UP  n.value=(1.2e-5, 1.02e-4, 1.002e-3)
+assign name=T_HD  n.value=(1.3e-5, 1.12e-4, 1.102e-3)
+assign name=T_DN  n.value=(2.3e-5, 2.12e-4, 2.102e-3)
+
+go atlas simflag="-P 2"
+
+.BEGIN
+
+ASPLIT 1=drain 2=gate 0=source 3=substrate \
+       INFILE=$STRFILE
+
+VSUB 3 0 0
+
+VG 2 0 PWL ( \
+   0            0 \
+   1e-6         0 \
+   $T_VG_END    $VG_TGT \
+   $T_DN        $VG_TGT )
+
+VDS 4 0 PWL ( \
+   0            0 \
+   $T_VG_END    0 \
+   $T_UP        $VDS_MAX \
+   $T_HD        $VDS_MAX \
+   $T_DN        0 )
+
+RLOAD 4 1 $RLOAD
+
+# --- 대안 : 이상 전류원으로 강제 구동 (S-curve 를 가장 깔끔하게 뽑음)
+#     위의 VDS / RLOAD 두 줄을 지우고 아래를 쓴다.
+#     node 0 -> node 1 방향이므로 drain 으로 전류가 주입된다.
+# IDR 0 1 PWL ( \
+#    0          0 \
+#    $T_VG_END  0 \
+#    $T_UP      2e-4 \
+#    $T_HD      2e-4 \
+#    $T_DN      0 )
+
+.NUMERIC LTE=0.05 TOLTR=1e-6
+.OPTIONS PRINT RELPOT WRITE=100000
+
+.LOG OUTFILE=m2_idvd_loadline_ds_r$RID
+.TRAN 1e-9 $T_DN
+
+# =====================================================================
+#  Fig.4 용 structure snapshot
+#  ------------------------------------------------------------------
+#  위 .TRAN 을 한 번 돌려 transition 시각 t1, t2 를 로그에서 찾은 뒤,
+#  위의 .TRAN 한 줄을 지우고 아래 블록을 살린다.
+#  .OPTIONS 는 .TRAN 사이에서 다시 선언할 수 있고, 다음 .TRAN 은 앞
+#  상태에서 이어서 풀리므로, transition 구간에서만 WRITE=1 로 두면
+#  필요한 시점의 .str 만 골라 저장할 수 있다.
+#  (WRITE 는 timestep 개수 단위지 시간 단위가 아니다)
+# =====================================================================
+# .OPTIONS PRINT RELPOT WRITE=100000
+# .TRAN 1e-9 <t1 직전>
+# .OPTIONS PRINT RELPOT WRITE=1
+# .TRAN 1e-9 <t1 직후>
+# .OPTIONS PRINT RELPOT WRITE=100000
+# .TRAN 1e-9 <t2 직전>
+# .OPTIONS PRINT RELPOT WRITE=1
+# .TRAN 1e-9 <t2 직후>
+# .OPTIONS PRINT RELPOT WRITE=100000
+# .TRAN 1e-9 $T_DN
+
+.END
+
+MODELS DEVICE=ASPLIT CVT SRH FERMI BGN
+IMPACT DEVICE=ASPLIT SELB
+METHOD NEWTON TRAP MAXTRAPS=20
+
+PROBE DEVICE=ASPLIT NAME=vb_src POTENTIAL X=0.60 Y=0.070
+PROBE DEVICE=ASPLIT NAME=vb_drn POTENTIAL X=0.90 Y=0.070
+PROBE DEVICE=ASPLIT NAME=p_src  P.CONC    X=0.60 Y=0.070
+PROBE DEVICE=ASPLIT NAME=p_drn  P.CONC    X=0.90 Y=0.070
+PROBE DEVICE=ASPLIT NAME=ex_drn EX.FIELD  X=1.03 Y=0.060
+
+l.end
+
+quit

@@ -1,0 +1,237 @@
+go atlas
+
+# ============================================================
+# Split-body FDSOI with narrow polysilicon gate
+# - top space : air
+# - narrow gate : polysilicon
+# - gate oxide only under the gate
+# - silicon body laterally split into P / P+
+# ============================================================
+
+# -------------------------
+# Parameters (um)
+# -------------------------
+set LDEV      = 1.50
+
+set XG_L      = 0.45
+set XG_R      = 1.05      # gate width = 0.10 um (narrow)
+
+set XS_END    = 0.45
+set XD_START  = 1.05
+
+set X_SPLIT   = 0.75      # split point of body doping
+
+# Vertical coordinates
+set YTOP      = 0.00
+set YPOLY_BOT = 0.05      # poly thickness = 50 nm
+set YOX_BOT   = 0.055     # tox = 5 nm
+set YSI_BOT   = 0.075     # tsi = 20 nm
+set YBOX_BOT  = 0.275     # tbox = 200 nm
+
+set YSI_TOP   = $YOX_BOT
+set YJ        = $YSI_BOT  # source/drain contact spans Si thickness
+
+
+# -------------------------
+# Mesh
+# -------------------------
+mesh space.mult=1.0
+
+# X mesh
+x.mesh loc=0.00  spac=0.02
+x.mesh loc=0.15  spac=0.005
+
+x.mesh loc=0.60  spac=0.01
+x.mesh loc=0.68  spac=0.002
+x.mesh loc=0.70  spac=0.001
+x.mesh loc=0.80  spac=0.001
+x.mesh loc=0.82  spac=0.002
+x.mesh loc=0.90  spac=0.01
+
+x.mesh loc=1.35  spac=0.005
+x.mesh loc=1.50  spac=0.02
+
+# Y mesh
+y.mesh loc=0.000  spac=0.002
+y.mesh loc=0.050  spac=0.001
+y.mesh loc=0.055  spac=0.0005
+y.mesh loc=0.075  spac=0.0005
+y.mesh loc=0.150  spac=0.01
+y.mesh loc=0.275  spac=0.02
+
+
+# -------------------------
+# Regions
+# -------------------------
+
+# Left air
+region num=1 material=air \
+       x.min=0.00 x.max=$XG_L \
+       y.min=$YTOP y.max=$YOX_BOT
+
+# Gate polysilicon
+region num=2 material=polysilicon \
+       x.min=$XG_L x.max=$XG_R \
+       y.min=$YTOP y.max=$YPOLY_BOT
+
+# Gate oxide
+region num=3 material=oxide \
+       x.min=$XG_L x.max=$XG_R \
+       y.min=$YPOLY_BOT y.max=$YOX_BOT
+
+# Right air
+region num=4 material=air \
+       x.min=$XG_R x.max=$LDEV \
+       y.min=$YTOP y.max=$YOX_BOT
+
+# Silicon body
+region num=5 material=silicon \
+       x.min=0.00 x.max=$LDEV \
+       y.min=$YSI_TOP y.max=$YSI_BOT
+
+# Buried oxide (BOX)
+region num=6 material=oxide \
+       x.min=0.00 x.max=$LDEV \
+       y.min=$YSI_BOT y.max=$YBOX_BOT
+
+
+# -------------------------
+# Electrodes
+# -------------------------
+
+# Gate contact on top of poly
+electrode name=gate \
+          x.min=$XG_L x.max=$XG_R \
+          y.min=$YTOP y.max=$YTOP
+
+# Source contact (left side of Si)
+electrode name=source \
+          x.min=0.00 x.max=0.00 \
+          y.min=$YSI_TOP y.max=$YSI_BOT
+
+# Drain contact (right side of Si)
+electrode name=drain \
+          x.min=$LDEV x.max=$LDEV \
+          y.min=$YSI_TOP y.max=$YSI_BOT
+
+
+# -------------------------
+# Doping
+# -------------------------
+
+# Source-side body: P = 1e18
+doping uniform p.type conc=1e17 \
+       x.min=$XS_END x.max=$X_SPLIT \
+       y.min=$YSI_TOP y.max=$YSI_BOT
+
+# Drain-side body: P+ = 1e20
+doping uniform p.type conc=3e18 \
+       x.min=$X_SPLIT x.max=$XD_START \
+       y.min=$YSI_TOP y.max=$YSI_BOT
+
+# Source n+
+doping uniform n.type conc=1e20 \
+       x.min=0.00 x.max=$XS_END \
+       y.min=$YSI_TOP y.max=$YSI_BOT
+
+# Drain n+
+doping uniform n.type conc=1e20 \
+       x.min=$XD_START x.max=$LDEV \
+       y.min=$YSI_TOP y.max=$YSI_BOT
+
+
+# -------------------------
+# Contact property
+# -------------------------
+contact name=gate n.poly
+
+
+# -------------------------
+# Models
+# -------------------------
+models cvt srh fermi bgn print
+impact selb
+
+method newton trap maxtraps=20
+
+# -------------------------
+# Output
+# -------------------------
+output con.band val.band e.field flowlines impact charge qfn qfp
+
+go atlas
+
+.BEGIN
+
+ASPLIT 1=drain 2=gate 0=source \
+       INFILE=split_body_init.str
+
+
+# ------------------------------------------------------------
+# Drain fixed at 0.1 V
+# 처음부터 0.1 V로 점프시키기보다 천천히 올림
+# ------------------------------------------------------------
+
+#VD 1 0 PWL ( \
+#   0        0 \
+#   1e-6     0.1 \
+#   1.1e-4     0.1 )
+
+
+#VD = 0.05
+#VD 1 0 PWL ( \
+#   0        0 \
+#   1e-6     0.05 \
+#   1.1e-4     0.05 )
+
+
+
+#VD = 1.0
+VD 1 0 PWL ( \
+   0        0 \
+   1e-6     1.0 \
+   1.1e-4     1.0 )
+
+
+
+#VD = 1.5
+#VD 1 0 PWL ( \
+#   0        0 \
+#   1e-7     1.5 \
+#   4e-6     1.5 )
+
+
+
+# ------------------------------------------------------------
+# Gate sweep
+#
+# 0 ~ 0.1 us      : wait while VD settles
+# 0.1 ~ 3.1 us    : VG = 0 -> 3 V
+# ------------------------------------------------------------
+
+VG 2 0 PWL ( \
+   0        0 \
+   1e-6     0 \
+   1.01e-4   3.0 \
+   1.1e-4     3.0 )
+
+.NUMERIC LTE=0.3 TOLTR=1e-5
+
+.OPTIONS PRINT RELPOT WRITE=10
+
+#.LOG OUTFILE=split_body_idvg_VD01
+#.LOG OUTFILE=split_body_idvg_VD005
+.LOG OUTFILE=split_body_idvg_VD10
+#.LOG OUTFILE=split_body_idvg_VD15
+.TRAN 1e-9 1.1e-4
+
+.END
+
+
+MODELS DEVICE=ASPLIT CVT SRH FERMI BGN
+
+IMPACT DEVICE=ASPLIT SELB
+
+METHOD NEWTON TRAP MAXTRAPS=20
+
+quit

@@ -1,0 +1,268 @@
+go atlas
+
+
+# ------------------------------------------------------------
+# 1. PARAMETERS  (unit: um)
+# ------------------------------------------------------------
+
+set LDEV      = 2.00
+
+set XG_L      = 0.40
+set XG_R      = 1.60
+
+set XFIN_L    = 0.95
+set XFIN_R    = 1.05
+
+set YOX_TOP   = 0.00
+set YSI_TOP   = 0.01
+
+# Total Si thickness = 100 nm
+set YFIN_TOP  = 0.06
+set YBOX_TOP  = 0.11
+set YBOX_BOT  = 0.25
+
+# Source/drain geometry
+set XS_END    = 0.20
+set XD_START  = 1.80
+set YJ        = 0.045
+
+
+# ------------------------------------------------------------
+# 2. MESH
+# ------------------------------------------------------------
+
+mesh space.mult=1.0
+
+
+# X mesh
+x.mesh loc=0.00  spac=0.02
+x.mesh loc=0.20  spac=0.01
+
+x.mesh loc=0.40  spac=0.01
+
+x.mesh loc=0.85  spac=0.01
+x.mesh loc=0.95  spac=0.002
+
+x.mesh loc=1.05  spac=0.002
+x.mesh loc=1.15  spac=0.01
+
+x.mesh loc=1.60  spac=0.01
+
+x.mesh loc=1.80  spac=0.01
+x.mesh loc=2.00  spac=0.02
+
+
+# Y mesh
+y.mesh loc=0.000 spac=0.002
+
+# gate oxide / Si interface
+y.mesh loc=0.010 spac=0.001
+
+# junction depth
+y.mesh loc=0.045 spac=0.002
+
+# top of BOX fin
+y.mesh loc=0.060 spac=0.001
+
+# Si / BOX interface
+y.mesh loc=0.110 spac=0.002
+
+y.mesh loc=0.250 spac=0.01
+
+
+
+# ------------------------------------------------------------
+# 3. REGIONS
+# ------------------------------------------------------------
+
+# Region 1 : Gate oxide
+region num=1 material=oxide \
+       x.min=0.00 x.max=$LDEV \
+       y.min=$YOX_TOP y.max=$YSI_TOP
+
+# ------------------------------------------------------------
+# Continuous upper Si layer
+# This part connects source and drain across the BOX fin.
+#
+# thickness:
+# YFIN_TOP - YSI_TOP = 50 nm
+# ------------------------------------------------------------
+
+region num=2 material=silicon \
+       x.min=0.00 x.max=$LDEV \
+       y.min=$YSI_TOP y.max=$YFIN_TOP
+
+
+# ------------------------------------------------------------
+# Lower source-side floating body reservoir
+# ------------------------------------------------------------
+
+region num=3 material=silicon \
+       x.min=0.00 x.max=$XFIN_L \
+       y.min=$YFIN_TOP y.max=$YBOX_TOP
+
+
+# ------------------------------------------------------------
+# Lower drain-side floating body reservoir
+# ------------------------------------------------------------
+
+region num=4 material=silicon \
+       x.min=$XFIN_R x.max=$LDEV \
+       y.min=$YFIN_TOP y.max=$YBOX_TOP
+
+
+# ------------------------------------------------------------
+# Central oxide fin
+# ------------------------------------------------------------
+
+region num=5 material=oxide \
+       x.min=$XFIN_L x.max=$XFIN_R \
+       y.min=$YFIN_TOP y.max=$YBOX_TOP
+
+
+# ------------------------------------------------------------
+# Main buried oxide
+# ------------------------------------------------------------
+
+region num=6 material=oxide \
+       x.min=0.00 x.max=$LDEV \
+       y.min=$YBOX_TOP y.max=$YBOX_BOT
+
+
+
+# ------------------------------------------------------------
+# 4. ELECTRODES
+# ------------------------------------------------------------
+
+# Gate on top of gate oxide
+electrode name=gate \
+          x.min=$XG_L x.max=$XG_R \
+          y.min=0.000 y.max=0.000
+
+
+# Source contact
+electrode name=source \
+          x.min=0.000 x.max=0.000 \
+          y.min=$YSI_TOP y.max=$YJ
+
+
+# Drain contact
+electrode name=drain \
+          x.min=$LDEV x.max=$LDEV \
+          y.min=$YSI_TOP y.max=$YJ
+
+
+
+# ------------------------------------------------------------
+# 5. DOPING
+# ------------------------------------------------------------
+
+# p-type floating body
+doping uniform p.type conc=1.0e17 region=2
+doping uniform p.type conc=1.0e17 region=3
+doping uniform p.type conc=1.0e17 region=4
+
+
+# n+ source
+doping uniform n.type conc=1.0e20 \
+       x.min=0.00 x.max=$XS_END \
+       y.min=$YSI_TOP y.max=$YJ
+
+
+# n+ drain
+doping uniform n.type conc=1.0e20 \
+       x.min=$XD_START x.max=$LDEV \
+       y.min=$YSI_TOP y.max=$YJ
+
+
+
+# ------------------------------------------------------------
+# 6. CONTACT PROPERTY
+# ------------------------------------------------------------
+
+contact name=gate workfunction=4.17
+
+
+
+# ------------------------------------------------------------
+# 7. PHYSICAL MODELS
+# ------------------------------------------------------------
+
+models cvt srh fermi bgn print
+
+impact selb
+
+
+
+# ------------------------------------------------------------
+# 8. NUMERICAL METHOD
+# ------------------------------------------------------------
+
+method newton trap maxtraps=20 \
+       autonr maxit=50
+
+
+
+# ------------------------------------------------------------
+# 9. INITIAL SOLUTION
+# ------------------------------------------------------------
+
+solve init
+
+save outf=dual_body_initial.str
+
+
+
+# ------------------------------------------------------------
+# 10. SET GATE BIAS
+#
+# Start around moderate inversion.
+# Later sweep VG because double latch may occur only in
+# a narrow VG range.
+# ------------------------------------------------------------
+
+solve vgate=0.0
+
+solve vgate=0.5 name=gate
+
+save outf=dual_body_VG05.str
+
+
+
+# ------------------------------------------------------------
+# 11. DRAIN SWEEP UP
+# ------------------------------------------------------------
+
+log outf=dual_body_up.log
+
+solve vdrain=0.00 name=drain
+
+solve name=drain \
+      vdrain=0.02 \
+      vstep=0.02 \
+      vfinal=5.00
+
+log off
+
+save outf=dual_body_after_up.str
+
+
+
+# ------------------------------------------------------------
+# 12. DRAIN SWEEP DOWN
+# ------------------------------------------------------------
+
+log outf=dual_body_down.log
+
+solve name=drain \
+      vdrain=4.98 \
+      vstep=-0.02 \
+      vfinal=0.00
+
+log off
+
+save outf=dual_body_after_down.str
+
+
+
+quit

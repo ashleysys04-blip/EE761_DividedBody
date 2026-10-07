@@ -1,0 +1,191 @@
+#=====================================================================
+#  ver4_numerics_cycling.in
+#  Split-body FDSOI : cycle-to-cycle 차이의 원인 규명 (B) 수치 쪽
+#
+#  가설 B : latch 를 통과할 때 solver 가 큰 스텝으로 transition 을
+#           건너뛰면서 매 사이클 착지점이 조금씩 달라진다.
+#           latch 이후는 self-sustaining 상태라 VLD 가 그 착지점에
+#           민감하다. 물리가 아니라 경로 의존성.
+#
+#  검증 방법
+#  ------------------------------------------------------------------
+#  ver3_sourceside.in 의 bias 조건을 그대로 재현하고 (rest 없음, VG=2.9,
+#  VD 0->5->0, ramp 1e-4, 3 cycle), solver tolerance 만 3 단계로 조인다.
+#
+#     level   LTE     TOLTR   초기 dt
+#     ---------------------------------
+#     loose   0.30    1e-5    1e-8      <- ver3 원본 조건
+#     mid     0.10    1e-6    1e-9
+#     tight   0.02    1e-8    1e-10
+#
+#  판정
+#  ------------------------------------------------------------------
+#   tolerance 를 조일수록 사이클 간 차이가 줄어들어 사라진다
+#       -> 수치 artifact 였다. 논문에는 tight 조건 결과만 쓴다.
+#   loose / mid / tight 에서 사이클 간 차이가 같은 크기로 유지된다
+#       -> 수치 문제가 아니다. 물리(잔류 body charge)로 가야 한다.
+#          ver4_cycling_recovery.in 의 rest-time 스캔이 그걸 정한다.
+#
+#  ※ 정량화할 때 눈으로 겹쳐보지 말고 숫자를 뽑을 것.
+#     각 사이클의 VLU (up sweep 에서 dID/dVD 최대인 VD) 와
+#     VLD (down sweep 쪽) 를 구해서
+#       dVLU(k) = VLU(k) - VLU(1)
+#     를 tolerance level 별로 표로 만들면 판정이 명확해진다.
+#=====================================================================
+
+go atlas simflag="-P 2"
+
+set LDEV      = 1.50
+set XG_L      = 0.45
+set XG_R      = 1.05
+set XS_END    = 0.45
+set XD_START  = 1.05
+set X_SPLIT   = 0.75
+
+set YTOP      = 0.00
+set YPOLY_BOT = 0.05
+set YOX_BOT   = 0.055
+set YSI_BOT   = 0.075
+set YBOX_BOT  = 0.275
+set YSI_TOP   = $YOX_BOT
+
+set NA_SRC    = 3e18
+set NA_DRN    = 1e17
+set STRFILE   = split_ss_num.str   # 덱마다 고유
+
+mesh space.mult=1.0
+
+x.mesh loc=0.00  spac=0.02
+x.mesh loc=0.15  spac=0.005
+x.mesh loc=0.45  spac=0.002
+x.mesh loc=0.60  spac=0.01
+x.mesh loc=0.68  spac=0.002
+x.mesh loc=0.70  spac=0.001
+x.mesh loc=0.75  spac=0.001
+x.mesh loc=0.80  spac=0.001
+x.mesh loc=0.82  spac=0.002
+x.mesh loc=0.90  spac=0.01
+x.mesh loc=1.05  spac=0.002
+x.mesh loc=1.35  spac=0.005
+x.mesh loc=1.50  spac=0.02
+
+y.mesh loc=0.000  spac=0.002
+y.mesh loc=0.050  spac=0.001
+y.mesh loc=0.055  spac=0.0005
+y.mesh loc=0.075  spac=0.0005
+y.mesh loc=0.150  spac=0.01
+y.mesh loc=0.275  spac=0.02
+
+region num=1 material=air \
+       x.min=0.00   x.max=$XG_L  y.min=$YTOP    y.max=$YOX_BOT
+region num=2 material=polysilicon \
+       x.min=$XG_L  x.max=$XG_R  y.min=$YTOP    y.max=$YPOLY_BOT
+region num=3 material=oxide \
+       x.min=$XG_L  x.max=$XG_R  y.min=$YPOLY_BOT y.max=$YOX_BOT
+region num=4 material=air \
+       x.min=$XG_R  x.max=$LDEV  y.min=$YTOP    y.max=$YOX_BOT
+region num=5 material=silicon \
+       x.min=0.00   x.max=$LDEV  y.min=$YSI_TOP y.max=$YSI_BOT
+region num=6 material=oxide \
+       x.min=0.00   x.max=$LDEV  y.min=$YSI_BOT y.max=$YBOX_BOT
+
+electrode name=gate   x.min=$XG_L x.max=$XG_R y.min=$YTOP y.max=$YTOP
+electrode name=source x.min=0.00  x.max=0.00  y.min=$YSI_TOP y.max=$YSI_BOT
+electrode name=drain  x.min=$LDEV x.max=$LDEV y.min=$YSI_TOP y.max=$YSI_BOT
+electrode name=substrate bottom
+
+doping uniform p.type conc=$NA_SRC \
+       x.min=$XS_END   x.max=$X_SPLIT  y.min=$YSI_TOP y.max=$YSI_BOT
+doping uniform p.type conc=$NA_DRN \
+       x.min=$X_SPLIT  x.max=$XD_START y.min=$YSI_TOP y.max=$YSI_BOT
+doping uniform n.type conc=1e20 \
+       x.min=0.00      x.max=$XS_END   y.min=$YSI_TOP y.max=$YSI_BOT
+doping uniform n.type conc=1e20 \
+       x.min=$XD_START x.max=$LDEV     y.min=$YSI_TOP y.max=$YSI_BOT
+
+contact name=gate      n.poly
+contact name=substrate n.poly
+
+models cvt srh fermi bgn print
+impact selb
+method newton trap maxtraps=20
+
+output con.band val.band e.field ex.field ey.field flowlines \
+       impact charge qfn qfp j.electron j.hole recomb
+
+solve init
+save outf=$STRFILE
+
+# =====================================================================
+#  ver3_sourceside.in 과 동일한 bias 타이밍
+#     T_GATE_END = 2e-6, T_RAMP = 1e-4, T_CYCLE = 2e-4 (rest 없음)
+#     cycle end : 2.02e-4 / 4.02e-4 / 6.02e-4
+# =====================================================================
+set VG_TGT     = 2.9
+set VD_MAX     = 5.0
+set T_GATE_END = 2e-6
+set T_RAMP     = 1e-4
+set T_CYCLE    = 2e-4
+set T_END1     = 2.02e-4
+set T_END2     = 4.02e-4
+set T_END3     = 6.02e-4
+
+loop steps=3
+
+# n1 = loose(LTE 0.30) / n2 = mid(0.10) / n3 = tight(0.02)
+assign name=NID   n.value=(1, 2, 3)
+assign name=LTEV  n.value=(0.30, 0.10, 0.02)
+assign name=TOLV  n.value=(1e-5, 1e-6, 1e-8)
+assign name=DTV   n.value=(1e-8, 1e-9, 1e-10)
+
+go atlas simflag="-P 2"
+
+.BEGIN
+
+ASPLIT 1=drain 2=gate 0=source 3=substrate \
+       INFILE=$STRFILE
+
+VSUB 3 0 0
+
+VG 2 0 PWL ( \
+   0             0 \
+   1e-6          0 \
+   $T_GATE_END   $VG_TGT \
+   $T_END3       $VG_TGT )
+
+VD 1 0 PULSE ( \
+   0 $VD_MAX \
+   $T_GATE_END \
+   $T_RAMP $T_RAMP \
+   0 $T_CYCLE )
+
+.NUMERIC LTE=$LTEV TOLTR=$TOLV
+
+.OPTIONS PRINT RELPOT WRITE=100000
+
+.LOG OUTFILE=pre_num_ss_n$NID
+.TRAN $DTV $T_GATE_END
+
+.LOG OUTFILE=c1_num_ss_n$NID
+.TRAN $DTV $T_END1
+
+.LOG OUTFILE=c2_num_ss_n$NID
+.TRAN $DTV $T_END2
+
+.LOG OUTFILE=c3_num_ss_n$NID
+.TRAN $DTV $T_END3
+
+.END
+
+MODELS DEVICE=ASPLIT CVT SRH FERMI BGN
+IMPACT DEVICE=ASPLIT SELB
+METHOD NEWTON TRAP MAXTRAPS=20
+
+PROBE DEVICE=ASPLIT NAME=vb_src POTENTIAL X=0.60 Y=0.070
+PROBE DEVICE=ASPLIT NAME=vb_drn POTENTIAL X=0.90 Y=0.070
+PROBE DEVICE=ASPLIT NAME=p_src  P.CONC    X=0.60 Y=0.070
+PROBE DEVICE=ASPLIT NAME=p_drn  P.CONC    X=0.90 Y=0.070
+
+l.end
+
+quit

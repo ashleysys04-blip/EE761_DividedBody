@@ -1,0 +1,166 @@
+# ============================================================
+# Split-body STL - local fine voltage sweep (L5p0_R5p2_X50)
+# Left=5.0e17 cm^-3, Right=5.2e17 cm^-3, split=50% of channel length
+# CPU = 2
+#
+# Fine regions from convergence-loss analysis:
+#   Forward : ~3.7568 V
+#   Reverse : ~6.575 V
+#   Reverse : ~3.26 V
+#
+# Geometry / mesh / physics / solver family are kept the same
+# as the original DC voltage-sweep deck.
+# ============================================================
+
+go atlas simflags="-P 2"
+
+set Lg = 0.3
+set Lsd = 0.5
+set tsi = 0.05
+set tox = 0.02
+set tbox = 0.2
+set tgate = 0.1
+set W = 0.5
+set te = 1e-7
+set tp = 1e-7
+set LT = 300
+set Xsplit = $Lsd+$Lg*0.50
+
+#### mesh define ####
+mesh space.mult = 1.0 width = $W
+
+x.mesh loc=0.00 spac=0.1
+x.mesh loc=$Lsd spac=0.01
+x.mesh loc=$Lsd+$Lg/2 spac=0.02
+x.mesh loc=$Lsd+$Lg spac=0.005
+x.mesh loc=$Lsd+$Lg+$Lsd spac=0.1
+
+y.mesh loc=-$tox-$tgate spac=0.05
+y.mesh loc=-$tox spac=0.005
+y.mesh loc=0.00 spac=0.005
+y.mesh loc=$tsi/2 spac=0.01
+y.mesh loc=$tsi spac=0.005
+y.mesh loc=$tsi+$tbox spac=0.1
+
+#### regions ####
+region num=1 x.min=$Lsd x.max=$Lsd+$Lg y.max=-$tox poly
+region num=2 x.min=$Lsd x.max=$Lsd+$Lg y.max=0 y.min=-$tox oxide
+region num=3 y.min=0 y.max=$tsi silicon
+region num=4 x.min=0 x.max=$Lsd y.min=0 y.max=$tsi silicon
+region num=5 x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.min=0 y.max=$tsi silicon
+region num=6 y.min=$tsi y.max=$tsi+$tbox oxide
+region num=7 x.min=0 x.max=$Lsd y.max=0 material=vacuum
+region num=8 x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.max=0 material=vacuum
+
+#### electrodes ####
+electrode name=gate x.min=$Lsd x.max=$Lsd+$Lg y.min=-$tox y.max=-$tox
+electrode name=source x.max=$Lsd y.min=0 y.max=0
+electrode name=drain x.min=$Lsd+$Lg y.min=0 y.max=0
+electrode substrate
+
+#### doping ####
+# Single continuous Si body; spatial doping split implemented by superposed profiles.
+# Base body doping across the whole channel
+doping uniform conc=5.0e17 p.type reg=3
+# Incremental doping on the higher-doped side
+doping uniform conc=0.2e17 p.type x.min=$Xsplit x.max=$Lsd+$Lg y.min=0 y.max=$tsi
+doping uniform conc=1e20 n.type reg=4
+doping uniform conc=1e20 n.type reg=5
+doping uniform conc=1e21 n.type reg=1
+
+save outf=SPLIT_L5p0_R5p2_X50_INIT.str
+
+#### contacts ####
+contact name=drain
+contact name=source
+contact name=substrate
+
+#### probes ####
+probe name=EB_recomb integrated LEFT=$Lsd RIGHT=$Lsd+0.05 BOTTOM=0 TOP=$tsi recombination
+probe name=sum_holenum integrated LEFT=$Lsd RIGHT=$Lsd+0.13 BOTTOM=0 TOP=0.007 P.CONC
+
+probe name=body_holeconc MAX x.min=$Lsd x.max=$Lsd+$Lg y.min=0 y.max=$tsi P.CONC
+probe name=body_holeconc_7nm MAX x.min=$Lsd x.max=$Lsd+$Lg y.min=0.007 y.max=0.007 P.CONC
+probe name=body_holeconc_top MAX x.min=$Lsd x.max=$Lsd+$Lg y.min=0.005 y.max=0.005 P.CONC
+probe name=body_holeconc_mid MAX x.min=$Lsd x.max=$Lsd+$Lg y.min=0.025 y.max=0.025 P.CONC
+probe name=body_holeconc_bottom MAX x.min=$Lsd x.max=$Lsd+$Lg y.min=0.045 y.max=0.045 P.CONC
+
+probe name=body_elecconc MAX x.min=$Lsd x.max=$Lsd+$Lg y.min=0 y.max=$tsi N.CONC
+probe name=body_elecconc_top MAX x.min=$Lsd x.max=$Lsd+$Lg y.min=0.005 y.max=0.005 N.CONC
+probe name=body_elecconc_mid MAX x.min=$Lsd x.max=$Lsd+$Lg y.min=0.025 y.max=0.025 N.CONC
+probe name=body_elecconc_bottom MAX x.min=$Lsd x.max=$Lsd+$Lg y.min=0.045 y.max=0.045 N.CONC
+
+probe name=FB_potential MIN x.min=$Lsd x.max=$Lsd+$Lg y.min=0 y.max=$tsi potential
+probe name=Source_potential MAX x.min=0 x.max=$Lsd/2 y.min=0 y.max=$tsi potential
+
+probe name=electron_ionization_cff_1nm_dir90 x.min=$Lsd x.max=$Lsd+$Lg y.min=0.001 y.max=0.001 alphan dir=90
+probe name=hole_ionization_cff_1nm_dir90 x.min=$Lsd x.max=$Lsd+$Lg y.min=0.001 y.max=0.001 alphap dir=0
+probe name=electron_ionization_cff_1nm_dir0 x.min=$Lsd+$Lg-0.02 x.max=$Lsd+$Lg-0.02 y.min=0 y.max=0.001 alphan dir=0
+
+#### physical models ####
+material material=silicon taun0=$te taup0=$tp
+
+models print bgn hcte consrh conmob fldmob fermi trap.tunnel bbt.std temp=$LT
+impact selb length.rel
+
+output band.param con.band val.band recomb u.srh u.bbt qtunn.bbt impact e.field traps
+
+#### numerical method ####
+method block newton climit=100 itlimit=200 NBLOCKIT=200
+
+#### gate bias ####
+solve vfinal=-0.2 vstep=-0.05 name=gate
+save outf=SPLIT_L5p0_R5p2_X50_HRS.str
+
+#### log ####
+log outf=SPLIT_L5p0_R5p2_X50.log j.electron j.hole
+
+# ============================================================
+# FORWARD : 0 -> 7 V
+# ============================================================
+
+solve vdrain=0 vfinal=3.60 vstep=0.05 name=drain cname=drain compl=1e-2
+save outf=SPLIT_L5p0_R5p2_X50_FWD_3p60.str
+
+solve vfinal=3.70 vstep=0.01 name=drain cname=drain compl=1e-2
+save outf=SPLIT_L5p0_R5p2_X50_FWD_3p70.str
+
+# Critical forward region (~3.7568 V)
+solve vfinal=3.82 vstep=0.0005 name=drain cname=drain compl=1e-2
+save outf=SPLIT_L5p0_R5p2_X50_FWD_3p82.str
+
+solve vfinal=5.00 vstep=0.01 name=drain cname=drain compl=1e-2
+save outf=SPLIT_L5p0_R5p2_X50_FWD_5p00.str
+
+solve vfinal=7.00 vstep=0.05 name=drain cname=drain compl=1e-2
+save outf=SPLIT_L5p0_R5p2_X50_FWD_7p00.str
+
+# ============================================================
+# REVERSE : 7 -> 0 V
+# ============================================================
+
+solve vfinal=6.70 vstep=-0.01 name=drain cname=drain compl=1e-2
+save outf=SPLIT_L5p0_R5p2_X50_REV_6p70.str
+
+# Critical reverse high-state region (~6.575 V)
+solve vfinal=6.50 vstep=-0.0005 name=drain cname=drain compl=1e-2
+save outf=SPLIT_L5p0_R5p2_X50_REV_6p50.str
+
+solve vfinal=5.00 vstep=-0.05 name=drain cname=drain compl=1e-2
+save outf=SPLIT_L5p0_R5p2_X50_REV_5p00.str
+
+solve vfinal=3.35 vstep=-0.01 name=drain cname=drain compl=1e-2
+save outf=SPLIT_L5p0_R5p2_X50_REV_3p35.str
+
+# Critical reverse transition (~3.26 V)
+solve vfinal=3.15 vstep=-0.0005 name=drain cname=drain compl=1e-2
+save outf=SPLIT_L5p0_R5p2_X50_REV_3p15.str
+
+solve vfinal=3.00 vstep=-0.01 name=drain cname=drain compl=1e-2
+save outf=SPLIT_L5p0_R5p2_X50_REV_3p00.str
+
+solve vfinal=0.00 vstep=-0.05 name=drain cname=drain compl=1e-2
+save outf=SPLIT_L5p0_R5p2_X50_END.str
+
+log off
+quit

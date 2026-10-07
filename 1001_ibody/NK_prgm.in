@@ -1,0 +1,95 @@
+# NK_prgm.in : program the nitride exactly like SOI_2_L neuron/bodycontact (+10 V, 50 us)
+go atlas simflags="-P 2"
+
+set LG=0.88
+set WCH=0.28
+set XG1=0.30
+set XG2=$XG1+$LG
+set XMAX=$XG2+0.30
+set YTOX=-0.003
+set YNIT=-0.009
+set YBOX=-0.017
+set YGTOP=-0.067
+set YSIBOT=0.040
+set YBOT=0.200
+
+# body tie: p-Si neck (width WN) through the BOX, centred at XG1+XNPOS*LG
+set WN=0.04
+set XNC=$XG1+0.5*$LG
+set XNL=$XNC-$WN/2
+set XNR=$XNC+$WN/2
+
+mesh space.mult=1.0 width=$WCH
+
+x.mesh loc=0.00       spac=0.05
+x.mesh loc=$XG1-0.05  spac=0.01
+x.mesh loc=$XG1       spac=0.01
+x.mesh loc=$XNL-0.02  spac=0.01
+x.mesh loc=$XNL       spac=0.004
+x.mesh loc=$XNR       spac=0.004
+x.mesh loc=$XNR+0.02  spac=0.01
+x.mesh loc=$XG2       spac=0.01
+x.mesh loc=$XG2+0.05  spac=0.01
+x.mesh loc=$XMAX      spac=0.05
+
+y.mesh loc=$YGTOP  spac=0.010
+y.mesh loc=$YBOX   spac=0.001
+y.mesh loc=$YNIT   spac=0.001
+y.mesh loc=$YTOX   spac=0.0005
+y.mesh loc=0.000   spac=0.0005
+y.mesh loc=0.010   spac=0.002
+y.mesh loc=$YSIBOT spac=0.004
+y.mesh loc=0.100   spac=0.02
+y.mesh loc=$YBOT-0.02 spac=0.005
+y.mesh loc=$YBOT   spac=0.005
+
+region num=1 silicon y.min=0.0 y.max=$YSIBOT
+region num=2 oxide   x.min=$XG1 x.max=$XG2 y.min=$YTOX y.max=0.0
+region num=3 nitride x.min=$XG1 x.max=$XG2 y.min=$YNIT y.max=$YTOX
+region num=4 oxide   x.min=$XG1 x.max=$XG2 y.min=$YBOX y.max=$YNIT
+region num=5 oxide   y.min=$YSIBOT y.max=$YBOT
+region num=6 oxide   y.min=$YGTOP y.max=0.0 x.max=$XG1
+region num=7 oxide   y.min=$YGTOP y.max=0.0 x.min=$XG2
+# p-Si neck through the BOX = body tie
+region num=8 silicon x.min=$XNL x.max=$XNR y.min=$YSIBOT y.max=$YBOT
+
+electrode name=gate   x.min=$XG1 x.max=$XG2 y.min=$YGTOP y.max=$YBOX
+electrode name=source y.min=0.0 y.max=0.0 x.max=$XG1-0.10
+electrode name=drain  y.min=0.0 y.max=0.0 x.min=$XG2+0.10
+electrode name=body   x.min=$XNL x.max=$XNR y.min=$YBOT y.max=$YBOT
+
+doping uniform conc=1e17 p.type region=1
+doping uniform conc=1e17 p.type region=8
+doping gauss conc=1e20 n.type junc=0.040 x.right=$XG1 ratio.lat=0.10 region=1
+doping gauss conc=1e20 n.type junc=0.040 x.left=$XG2  ratio.lat=0.10 region=1
+# p+ ohmic cap at the far end of the neck (~140 nm from the channel)
+doping uniform conc=1e20 p.type x.min=$XNL x.max=$XNR y.min=$YBOT-0.02 y.max=$YBOT region=8
+
+interface n.i dynasonos
+
+
+material region=2 semiconductor nc300=2e19 nv300=2e19 eg300=9.0 \
+         affinity=0.9 mun=1e-5 mup=1e-5 mc=0.25 mv=0.25
+material region=4 semiconductor nc300=2e19 nv300=2e19 eg300=9.0 \
+         affinity=0.9 mun=1e-5 mup=1e-5 mc=0.25 mv=0.25
+material region=3 semiconductor nc300=1e19 nv300=1e19 eg300=5.3 \
+         affinity=2.0 permittivity=7.5 mun=0.1 mup=0.01 mc=0.5 mv=0.5
+
+contact name=gate n.poly
+nitridecharge nt.n=4e19 elec.depth=1.5 tau.n=1e-7 tau.p=1e-7 \
+              sigmat.n=1e-12 sigman.p=1e-15
+models cvt srh fermi bgn hei pf.nitride
+output sonos.rates con.band val.band
+method newton
+
+solve init
+solve v4=0.0
+save outf=NK_before_prgm.str
+
+log outf=NK_prgm.log sonos.curr
+solve vgate=10.0 ramptime=1e-9 tstep=1e-11 tstop=5.0e-5
+log off
+solve vgate=0.0 ramptime=1e-9 tstep=1e-11 tstop=1.000005e-4
+solve vgate=0.0 tstep=1e-11 tstop=1.00011e-4
+save outf=NK_after_prgm.str master
+quit

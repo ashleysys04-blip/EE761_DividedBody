@@ -1,0 +1,123 @@
+go atlas simflag=" -P 6"
+
+#set scale = -1
+set lg = 0.3
+set lsd = 0.5
+set tsi = 0.01
+set tox = 0.013
+set tbox = 0.14 
+set tpoly = 0.1
+set width = 1
+
+set Nchannel = 2e17
+set Ndrain = 1e20
+set Nsource = 1e20
+set Npoly = 1e20
+
+set VG = -1
+set WK = 4.2
+
+set cap = 8e-11
+set rampup = 1e-7
+set incurrent = -1e-7
+
+set temperature = 300
+
+mesh space.mult=1.0	width=$width
+
+x.mesh loc=0.0         spac=0.1
+x.mesh loc=$lsd         spac=0.01
+x.mesh loc=$lsd+$lg/2         spac=0.01
+x.mesh loc=$lsd+$lg         spac=0.01
+x.mesh loc=$lsd+$lg+$lsd      spac=0.1
+
+y.mesh loc=0.0         spac=0.01
+y.mesh loc=$tbox         spac=0.01
+y.mesh loc=$tbox+$tsi/2      spac=0.001
+y.mesh loc=$tbox+$tsi      	spac=0.001
+y.mesh loc=$tbox+$tsi+$tox      spac=0.001
+y.mesh loc=$tbox+$tsi+$tox+$tpoly      spac=0.01
+
+
+region num=1 x.min=0      x.max=2*$lsd+$lg      y.min=0      y.max=$tbox+$tsi+$tox+$tpoly   material=vacuum
+region num=2 x.min=0      x.max=2*$lsd+$lg      y.min=0      y.max=$tbox      material=oxide
+region num=3 x.min=$lsd      x.max=$lsd+$lg      y.min=$tbox+$tsi   y.max=$tbox+$tsi+$tox   material=oxide
+region num=4 x.min=0      x.max=$lsd      y.min=$tbox   y.max=$tbox+$tsi      material=silicon
+region num=5 x.min=$lsd      x.max=$lsd+$lg      y.min=$tbox   y.max=$tbox+$tsi      material=silicon
+region num=6 x.min=$lsd+$lg      x.max=2*$lsd+$lg      y.min=$tbox   y.max=$tbox+$tsi      material=silicon
+region num=7 x.min=$lsd      x.max=$lsd+$lg      y.min=$tbox+$tsi+$tox   y.max=$tbox+$tsi+$tox+$tpoly      material=polysilicon
+
+electrode name=source   x.min=0         x.max=0       y.min=$tbox   y.max=$tbox+$tsi
+electrode name=drain   x.min=2*$lsd+$lg      x.max=2*$lsd+$lg   y.min=$tbox   y.max=$tbox+$tsi
+#electrode name=gate   x.min=$lsd      x.max=$lsd+$lg      y.min=0         y.max=0
+electrode name=gate      x.min=$lsd      x.max=$lsd+$lg      y.min=$tbox+$tsi+$tox+$tpoly   y.max=$tbox+$tsi+$tox+$tpoly
+electrode name=substrate top
+
+doping uniform conc=$Nsource   n.type reg=4
+doping uniform conc=$Nchannel   p.type reg=5
+doping uniform conc=$Ndrain   n.type reg=6
+doping uniform conc=$Npoly   n.type reg=7
+
+models print bgn hcte conmob consrh fldmob fermi srh trap.tunnel temp=$temperature bbt.std mass.tunnel=0.4
+impact selb length.rel LREL.EL = 0.035 LREL.HO = 0.025
+
+#trap e.level=0.42 acceptor density=2e16 degen=12 sign=2e-16 sigp=2e-15
+
+#contact name=drain current
+contact name=drain 
+contact name=source
+contact name=substrate  
+contact name=gate workfunction=$WK
+
+output band.param con.band val.band impact e.field traps recomb u.srh u.bbt qtunn.bbt
+
+#save outf=VG_nobias.str
+
+solve init
+#save outf=VG_0.0V.str
+models print bgn hcte conmob consrh fldmob fermi srh trap.tunnel temp=$temperature bbt.std mass.tunnel=0.4
+method gummel newton climit=1e-4 maxtrap=10
+solve vgate=0.0 vstep=-0.05 vfinal=$VG name=gate
+save outf=ATAT_lg_$"lg"_VG_$"VG"V_Tsi_$"Tsi".str
+
+go atlas simflag="-P 6"
+.begin
+
+Vgate 2 0 pwl 0, 0, $rampup, $VG
+#pwl = 0초일때 0V / rampup초에 VG만큼 전압을 인가. linear 함수로. pulse.
+Vdrain 1 0 pwl 0,0, 1,0, 601,6 1201,0	
+# 0초 0 / 601초 6v / 1201초 0V
+# 여기에다가 전류 빼면 다같이 뺄수 있음
+
+
+Aneuron 1=drain 0=source 2=gate infile=ATAT_lg_$"lg"_VG_$"VG"V_Tsi_$"Tsi".str
+#C1 1 0 $cap
+# 이렇게 cap 혹은 저항 달아서 
+
+.numeric LTE=0.3 TOLTR=1e-5
+.options print relpot
+
+.log outfile=ATAT_lg_$"lg"_VG_$"VG"V_Tsi_$"Tsi"
+
+.tran 5e-9 1201.01
+# 시간 어디까지 sweep할지
+
+.save master=ATAT_lg_$"lg"_VG_$"VG"V_Tsi_$"Tsi" tsave=251
+
+.end
+
+models print bgn hcte conmob consrh fldmob fermi trap.tunnel srh temp=$temperature bbt.std mass.tunnel=0.4
+impact selb length.rel LREL.EL = 0.035 LREL.HO = 0.025
+contact device=Aneuron name=gate workfunction=$WK
+
+#trap e.level=0.42 acceptor density=2e16 degen=12 sign=2e-16 sigp=2e-15
+
+output band.param con.band val.band impact e.field traps recomb u.srh u.bbt qtunn.bbt
+
+method gummel newton climit=1e-4 maxtrap=5
+
+
+go atlas simflag="-P 6"
+quit
+
+

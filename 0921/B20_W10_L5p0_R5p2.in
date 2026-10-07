@@ -1,0 +1,160 @@
+# ============================================================
+# BOLD BODY-ISOLATION STL TEST
+# Case: B20_W10_L5p0_R5p2
+#
+# Left body doping  = 5.0e17
+# Right body doping = 5.2e17
+# Top Si bridge     = 20.0 nm
+# Oxide-notch width = 10.0 nm
+#
+# Concept:
+# A bottom-up oxide notch partitions the lower floating body,
+# while a thin top-Si bridge preserves the electron conduction path.
+# Goal: make left/right hole reservoirs more independent and test
+# whether one global latch can split into sequential transitions.
+#
+# CPU = 2
+# ============================================================
+
+go atlas simflags="-P 2"
+
+set Lg = 0.30
+set Lsd = 0.50
+set tsi = 0.05
+set tox = 0.02
+set tbox = 0.20
+set tgate = 0.10
+set W = 0.50
+set te = 1e-7
+set tp = 1e-7
+set LT = 300
+
+set Xsplit = $Lsd+$Lg/2
+set Wnotch = 0.010
+set XnL = $Xsplit-$Wnotch/2
+set XnR = $Xsplit+$Wnotch/2
+set Tbridge = 0.020
+
+#### mesh ####
+mesh space.mult=1.0 width=$W
+
+x.mesh loc=0.00 spac=0.10
+x.mesh loc=$Lsd spac=0.01
+x.mesh loc=$XnL spac=0.002
+x.mesh loc=$Xsplit spac=0.002
+x.mesh loc=$XnR spac=0.002
+x.mesh loc=$Lsd+$Lg spac=0.005
+x.mesh loc=$Lsd+$Lg+$Lsd spac=0.10
+
+y.mesh loc=-$tox-$tgate spac=0.05
+y.mesh loc=-$tox spac=0.005
+y.mesh loc=0.00 spac=0.002
+y.mesh loc=$Tbridge spac=0.002
+y.mesh loc=$tsi spac=0.005
+y.mesh loc=$tsi+$tbox spac=0.10
+
+#### regions ####
+region num=1 x.min=$Lsd x.max=$Lsd+$Lg y.max=-$tox poly
+region num=2 x.min=$Lsd x.max=$Lsd+$Lg y.min=-$tox y.max=0 oxide
+
+# Thin top Si bridge, continuous under the whole gate
+region num=3 x.min=$Lsd x.max=$Lsd+$Lg y.min=0 y.max=$Tbridge silicon
+
+# Lower left and right floating-body reservoirs
+region num=9  x.min=$Lsd x.max=$XnL y.min=$Tbridge y.max=$tsi silicon
+region num=10 x.min=$XnR x.max=$Lsd+$Lg y.min=$Tbridge y.max=$tsi silicon
+
+# Bottom-up oxide notch between the two reservoirs
+region num=11 x.min=$XnL x.max=$XnR y.min=$Tbridge y.max=$tsi oxide
+
+# Source / drain silicon
+region num=4 x.min=0 x.max=$Lsd y.min=0 y.max=$tsi silicon
+region num=5 x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.min=0 y.max=$tsi silicon
+
+# BOX and top vacuum
+region num=6 y.min=$tsi y.max=$tsi+$tbox oxide
+region num=7 x.min=0 x.max=$Lsd y.max=0 material=vacuum
+region num=8 x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.max=0 material=vacuum
+
+#### electrodes ####
+electrode name=gate x.min=$Lsd x.max=$Lsd+$Lg y.min=-$tox y.max=-$tox
+electrode name=source x.max=$Lsd y.min=0 y.max=0
+electrode name=drain x.min=$Lsd+$Lg y.min=0 y.max=0
+electrode substrate
+
+#### doping ####
+# Use a common base + incremental doping so the Si remains one
+# electrically continuous device wherever silicon physically exists.
+doping uniform conc=5.0e17 p.type x.min=$Lsd x.max=$Lsd+$Lg y.min=0 y.max=$tsi
+doping uniform conc=2.0e+16 p.type x.min=$Xsplit x.max=$Lsd+$Lg y.min=0 y.max=$tsi
+
+doping uniform conc=1e20 n.type reg=4
+doping uniform conc=1e20 n.type reg=5
+doping uniform conc=1e21 n.type reg=1
+
+save outf=B20_W10_L5p0_R5p2_INIT.str
+
+#### contacts ####
+contact name=drain
+contact name=source
+contact name=substrate
+
+#### left/right body diagnostics ####
+probe name=VB_left MAX x.min=$Lsd x.max=$XnL y.min=$Tbridge y.max=$tsi potential
+probe name=VB_right MAX x.min=$XnR x.max=$Lsd+$Lg y.min=$Tbridge y.max=$tsi potential
+
+probe name=PH_left MAX x.min=$Lsd x.max=$XnL y.min=$Tbridge y.max=$tsi P.CONC
+probe name=PH_right MAX x.min=$XnR x.max=$Lsd+$Lg y.min=$Tbridge y.max=$tsi P.CONC
+
+probe name=QH_left integrated LEFT=$Lsd RIGHT=$XnL BOTTOM=$Tbridge TOP=$tsi P.CONC
+probe name=QH_right integrated LEFT=$XnR RIGHT=$Lsd+$Lg BOTTOM=$Tbridge TOP=$tsi P.CONC
+
+probe name=II_drain x.min=$Lsd+$Lg-0.02 x.max=$Lsd+$Lg-0.02 y.min=0.001 y.max=0.001 alphan dir=0
+
+#### physics: same family as working baseline ####
+material material=silicon taun0=$te taup0=$tp
+
+models print bgn hcte consrh conmob fldmob fermi trap.tunnel bbt.std temp=$LT
+impact selb length.rel
+
+output band.param con.band val.band recomb u.srh u.bbt qtunn.bbt impact e.field traps
+
+#### solver: same family as working baseline ####
+method block newton climit=100 itlimit=200 NBLOCKIT=200
+
+#### initial bias ####
+solve vfinal=-0.2 vstep=-0.05 name=gate
+save outf=B20_W10_L5p0_R5p2_HRS.str
+
+log outf=B20_W10_L5p0_R5p2.log j.electron j.hole
+
+# ============================================================
+# FORWARD 0 -> 7 V
+# Broad fine window because the new geometry may shift latch.
+# ============================================================
+
+solve vdrain=0 vfinal=3.0 vstep=0.05 name=drain cname=drain compl=1e-2
+save outf=B20_W10_L5p0_R5p2_FWD_3p0.str
+
+solve vfinal=5.0 vstep=0.001 name=drain cname=drain compl=1e-2
+save outf=B20_W10_L5p0_R5p2_FWD_5p0.str
+
+solve vfinal=7.0 vstep=0.02 name=drain cname=drain compl=1e-2
+save outf=B20_W10_L5p0_R5p2_FWD_7p0.str
+
+# ============================================================
+# REVERSE 7 -> 0 V
+# Same voltage-controlled method, symmetric fine window.
+# ============================================================
+
+solve vfinal=5.0 vstep=-0.02 name=drain cname=drain compl=1e-2
+save outf=B20_W10_L5p0_R5p2_REV_5p0.str
+
+solve vfinal=3.0 vstep=-0.001 name=drain cname=drain compl=1e-2
+save outf=B20_W10_L5p0_R5p2_REV_3p0.str
+
+solve vfinal=0.0 vstep=-0.05 name=drain cname=drain compl=1e-2
+save outf=B20_W10_L5p0_R5p2_END.str
+
+log off
+quit

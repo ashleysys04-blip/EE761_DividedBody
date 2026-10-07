@@ -1,0 +1,119 @@
+# ============================================================
+# Large-contrast split-body STL (IDVGR_BIG_L10_R1_X50)
+# Left=10e17 cm^-3, Right=1e17 cm^-3, split=50% of channel length
+# CPU = 1
+#
+# Transition voltages are unknown for large contrast, so the whole
+# 2.5-6 V window is swept finely, with trap (step cutback) enabled
+# to survive convergence failures near the latch points.
+# Geometry / physics are identical to 0921 SPLIT decks.
+# ============================================================
+
+go atlas simflags="-P 1"
+
+set Lg = 0.3
+set Lsd = 0.5
+set tsi = 0.05
+set tox = 0.02
+set tbox = 0.2
+set tgate = 0.1
+set W = 0.5
+set te = 1e-7
+set tp = 1e-7
+set LT = 300
+set Xsplit = $Lsd+$Lg*0.50
+
+#### mesh define ####
+mesh space.mult = 1.0 width = $W
+
+x.mesh loc=0.00 spac=0.1
+x.mesh loc=$Lsd spac=0.01
+# finer mesh at the abrupt P/P+ interface
+x.mesh loc=$Xsplit spac=0.003
+x.mesh loc=$Lsd+$Lg spac=0.005
+x.mesh loc=$Lsd+$Lg+$Lsd spac=0.1
+
+y.mesh loc=-$tox-$tgate spac=0.05
+y.mesh loc=-$tox spac=0.005
+y.mesh loc=0.00 spac=0.005
+y.mesh loc=$tsi/2 spac=0.01
+y.mesh loc=$tsi spac=0.005
+y.mesh loc=$tsi+$tbox spac=0.1
+
+#### regions ####
+region num=1 x.min=$Lsd x.max=$Lsd+$Lg y.max=-$tox poly
+region num=2 x.min=$Lsd x.max=$Lsd+$Lg y.max=0 y.min=-$tox oxide
+region num=3 y.min=0 y.max=$tsi silicon
+region num=4 x.min=0 x.max=$Lsd y.min=0 y.max=$tsi silicon
+region num=5 x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.min=0 y.max=$tsi silicon
+region num=6 y.min=$tsi y.max=$tsi+$tbox oxide
+region num=7 x.min=0 x.max=$Lsd y.max=0 material=vacuum
+region num=8 x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.max=0 material=vacuum
+
+#### electrodes ####
+electrode name=gate x.min=$Lsd x.max=$Lsd+$Lg y.min=-$tox y.max=-$tox
+electrode name=source x.max=$Lsd y.min=0 y.max=0
+electrode name=drain x.min=$Lsd+$Lg y.min=0 y.max=0
+electrode substrate
+
+#### doping ####
+# Single continuous Si body; split made by base (lower value) + increment on the higher side.
+doping uniform conc=1.0e17 p.type reg=3
+doping uniform conc=9.0e17 p.type x.min=$Lsd x.max=$Xsplit y.min=0 y.max=$tsi
+doping uniform conc=1e20 n.type reg=4
+doping uniform conc=1e20 n.type reg=5
+doping uniform conc=1e21 n.type reg=1
+
+save outf=IDVGR_BIG_L10_R1_X50_INIT.str
+
+#### contacts ####
+contact name=drain
+contact name=source
+contact name=substrate
+
+#### probes ####
+# left(source-side) / right(drain-side) body diagnostics
+probe name=VB_left  MAX x.min=$Lsd+0.01 x.max=$Xsplit-0.01 y.min=0.01 y.max=$tsi potential
+probe name=VB_right MAX x.min=$Xsplit+0.01 x.max=$Lsd+$Lg-0.01 y.min=0.01 y.max=$tsi potential
+probe name=PH_left  MAX x.min=$Lsd+0.01 x.max=$Xsplit-0.01 y.min=0.01 y.max=$tsi P.CONC
+probe name=PH_right MAX x.min=$Xsplit+0.01 x.max=$Lsd+$Lg-0.01 y.min=0.01 y.max=$tsi P.CONC
+probe name=QH_left  integrated LEFT=$Lsd RIGHT=$Xsplit BOTTOM=0 TOP=$tsi P.CONC
+probe name=QH_right integrated LEFT=$Xsplit RIGHT=$Lsd+$Lg BOTTOM=0 TOP=$tsi P.CONC
+
+probe name=body_holeconc MAX x.min=$Lsd x.max=$Lsd+$Lg y.min=0 y.max=$tsi P.CONC
+probe name=FB_potential MIN x.min=$Lsd x.max=$Lsd+$Lg y.min=0 y.max=$tsi potential
+probe name=electron_ionization_cff_1nm_dir0 x.min=$Lsd+$Lg-0.02 x.max=$Lsd+$Lg-0.02 y.min=0 y.max=0.001 alphan dir=0
+
+#### physical models ####
+material material=silicon taun0=$te taup0=$tp
+
+models print bgn hcte consrh conmob fldmob fermi trap.tunnel bbt.std temp=$LT
+impact selb length.rel
+
+output band.param con.band val.band recomb u.srh u.bbt qtunn.bbt impact e.field traps
+
+#### numerical method ####
+# trap: on non-convergence, the bias step is halved up to maxtraps times
+method block newton climit=100 itlimit=200 NBLOCKIT=200 trap maxtraps=10
+
+#### Id-Vg, Vd = 0.05 V ####
+solve vfinal=-0.5 vstep=-0.05 name=gate
+solve vdrain=0.05
+log outf=IDVGR_BIG_L10_R1_X50_vd0p05.log j.electron j.hole
+solve vfinal=2.5 vstep=0.01 name=gate
+save outf=IDVGR_BIG_L10_R1_X50_vd0p05_UP_VG2p5.str
+# ---- return sweep ----
+solve vfinal=-0.5 vstep=-0.01 name=gate
+log off
+
+#### Id-Vg, Vd = 1.0 V (start again from Vg = -0.5 V) ####
+solve vfinal=-0.5 vstep=-0.05 name=gate
+solve vfinal=1.0 vstep=0.05 name=drain
+log outf=IDVGR_BIG_L10_R1_X50_vd1.log j.electron j.hole
+solve vfinal=2.5 vstep=0.01 name=gate
+save outf=IDVGR_BIG_L10_R1_X50_vd1_UP_VG2p5.str
+# ---- return sweep ----
+solve vfinal=-0.5 vstep=-0.01 name=gate
+log off
+
+quit

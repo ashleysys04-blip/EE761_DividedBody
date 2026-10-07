@@ -1,0 +1,112 @@
+
+#dy-current extraction during Id-Vg up/down (IBX_BIG_L3_R7_IB0)
+# Structure : BIG_L3_R7_X50 (Left=3e17, Right=7e17, split 50%)
+# Body contact : 20 nm ohmic p+ contact at the bottom of the Si film
+#                (Si/BOX interface) centred on the split, CURRENT boundary.
+# I_body = -0 A  (negative = holes extracted from the body)
+# Reference: without extraction this device latches at Vg=1.39 V
+#            (Id just before latch ~1.35e-9 A) and releases at 1.335 V.
+# CPU = 1
+# ============================================================
+
+go atlas simflags="-P 1"
+
+set Lg = 0.3
+set Lsd = 0.5
+set tsi = 0.05
+set tox = 0.02
+set tbox = 0.2
+set tgate = 0.1
+set W = 0.5
+set te = 1e-7
+set tp = 1e-7
+set LT = 300
+set Xsplit = $Lsd+$Lg*0.50
+set Wbc = 0.02
+
+#### mesh define ####
+mesh space.mult = 1.0 width = $W
+
+x.mesh loc=0.00 spac=0.1
+x.mesh loc=$Lsd spac=0.01
+x.mesh loc=$Xsplit-$Wbc/2 spac=0.003
+x.mesh loc=$Xsplit spac=0.003
+x.mesh loc=$Xsplit+$Wbc/2 spac=0.003
+x.mesh loc=$Lsd+$Lg spac=0.005
+x.mesh loc=$Lsd+$Lg+$Lsd spac=0.1
+
+y.mesh loc=-$tox-$tgate spac=0.05
+y.mesh loc=-$tox spac=0.005
+y.mesh loc=0.00 spac=0.005
+y.mesh loc=$tsi/2 spac=0.01
+y.mesh loc=$tsi spac=0.003
+y.mesh loc=$tsi+$tbox spac=0.1
+
+#### regions ####
+region num=1 x.min=$Lsd x.max=$Lsd+$Lg y.max=-$tox poly
+region num=2 x.min=$Lsd x.max=$Lsd+$Lg y.max=0 y.min=-$tox oxide
+region num=3 y.min=0 y.max=$tsi silicon
+region num=4 x.min=0 x.max=$Lsd y.min=0 y.max=$tsi silicon
+region num=5 x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.min=0 y.max=$tsi silicon
+region num=6 y.min=$tsi y.max=$tsi+$tbox oxide
+region num=7 x.min=0 x.max=$Lsd y.max=0 material=vacuum
+region num=8 x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.max=0 material=vacuum
+
+#### electrodes ####
+electrode name=gate x.min=$Lsd x.max=$Lsd+$Lg y.min=-$tox y.max=-$tox
+electrode name=source x.max=$Lsd y.min=0 y.max=0
+electrode name=drain x.min=$Lsd+$Lg y.min=0 y.max=0
+electrode name=body x.min=$Xsplit-$Wbc/2 x.max=$Xsplit+$Wbc/2 y.min=$tsi y.max=$tsi
+electrode substrate
+
+#### doping ####
+doping uniform conc=3.0e17 p.type reg=3
+doping uniform conc=4.0e17 p.type x.min=$Xsplit x.max=$Lsd+$Lg y.min=0 y.max=$tsi
+# thin p+ pocket under the body contact (ohmic for holes)
+doping uniform conc=1e20 p.type x.min=$Xsplit-$Wbc/2 x.max=$Xsplit+$Wbc/2 y.min=$tsi-0.005 y.max=$tsi
+doping uniform conc=1e20 n.type reg=4
+doping uniform conc=1e20 n.type reg=5
+doping uniform conc=1e21 n.type reg=1
+
+save outf=IBX_BIG_L3_R7_IB0_INIT.str
+
+#### contacts ####
+contact name=drain
+contact name=source
+contact name=substrate
+# body is driven by a current source (current boundary condition)
+contact name=body current
+
+#### probes ####
+probe name=VB_left  potential x=0.575 y=0.035
+probe name=VB_right potential x=0.725 y=0.035
+probe name=QH_left  integrated LEFT=$Lsd RIGHT=$Xsplit BOTTOM=0 TOP=$tsi P.CONC
+probe name=QH_right integrated LEFT=$Xsplit RIGHT=$Lsd+$Lg BOTTOM=0 TOP=$tsi P.CONC
+
+#### physical models ####
+material material=silicon taun0=$te taup0=$tp
+
+models print bgn hcte consrh conmob fldmob fermi trap.tunnel bbt.std temp=$LT
+impact selb length.rel
+
+output band.param con.band val.band recomb u.srh u.bbt qtunn.bbt impact e.field traps
+
+#### numerical method ####
+method block newton climit=100 itlimit=200 NBLOCKIT=200 trap maxtraps=10
+
+#### bias set-up : Vg=-0.5 V, Vd=1 V, body current ramped in decades ####
+solve ibody=0
+solve vfinal=-0.5 vstep=-0.05 name=gate
+solve vfinal=1.0 vstep=0.05 name=drain
+# I_body = 0 (floating reference)
+save outf=IBX_BIG_L3_R7_IB0_START.str
+
+#### Id-Vg up / down at Vd = 1 V with constant body current ####
+log outf=IBX_BIG_L3_R7_IB0_vd1.log j.electron j.hole
+solve vfinal=2.5 vstep=0.01 name=gate
+save outf=IBX_BIG_L3_R7_IB0_vd1_UP_VG2p5.str
+# ---- return sweep ----
+solve vfinal=-0.5 vstep=-0.01 name=gate
+log off
+
+quit

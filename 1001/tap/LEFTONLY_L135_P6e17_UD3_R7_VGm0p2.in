@@ -1,0 +1,151 @@
+# ============================================================
+# LEFTONLY_L135_P6e17_UD3_R7_VGm0p2 : STANDALONE LEFT STL of the tapped-island device (B / W30LK family)
+# Same mesh, gate, Tsi, models (incl. hcte) as TAPT_ISL_W30LK_L3_R7_*.
+# Body = 6e17 p (5e17: no jump, 7e17: sharp latch at 3.00 V) from x=0.500 to XiL=0.635 (L_body = 135 nm). Everything right of XiL
+# (island + former right body) is n+ 1e20 -> drain of this STL. No tap, no right STL.
+# Purpose: V_LU / V_LD of the left STL alone = island voltage needed for a 2nd latch.
+# RAMP-RATE TEST: 7 V/ms (10x faster than the 0.7 V/ms reference LEFTONLY_L135_P6e17_UD3), 0 -> 3.0 -> 0 V. VG = -0.2 V. CPU = 1
+# ============================================================
+
+go atlas simflags="-P 1"
+
+set Lg = 0.3
+set Lsd = 0.5
+set tox = 0.02
+set tbox = 0.2
+set tgate = 0.1
+set te = 1e-7
+set tp = 1e-7
+set LT = 300
+set Xsplit = $Lsd+$Lg*0.50
+set W = 0.5
+set tsi = 0.05
+set Wisl = 0.03
+set XiL = $Xsplit-$Wisl/2
+set XiR = $Xsplit+$Wisl/2
+set Ybot = $tsi+$tbox
+
+#### mesh define ####
+mesh space.mult = 1.0 width = $W
+
+x.mesh loc=0.00 spac=0.1
+x.mesh loc=$Lsd spac=0.005
+x.mesh loc=$XiL spac=0.003
+x.mesh loc=$XiR spac=0.003
+x.mesh loc=$Lsd+$Lg spac=0.005
+x.mesh loc=$Lsd+$Lg+$Lsd spac=0.1
+
+y.mesh loc=-$tox-$tgate spac=0.05
+y.mesh loc=-$tox spac=0.005
+y.mesh loc=0.00 spac=0.005
+y.mesh loc=$tsi/2 spac=0.01
+y.mesh loc=$tsi spac=0.005
+y.mesh loc=$tsi+0.05 spac=0.02
+y.mesh loc=$Ybot-0.03 spac=0.01
+y.mesh loc=$Ybot spac=0.005
+
+#### regions ####
+region num=1 x.min=$Lsd x.max=$Lsd+$Lg y.max=-$tox poly
+region num=2 x.min=$Lsd x.max=$Lsd+$Lg y.max=0 y.min=-$tox oxide
+region num=3 y.min=0 y.max=$tsi silicon
+region num=4 x.min=0 x.max=$Lsd y.min=0 y.max=$tsi silicon
+region num=5 x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.min=0 y.max=$tsi silicon
+region num=6 y.min=$tsi y.max=$tsi+$tbox oxide
+region num=7 x.min=0 x.max=$Lsd y.max=0 material=vacuum
+region num=8 x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.max=0 material=vacuum
+# (former tap neck under the island -> oxide: no tap in this standalone device)
+region num=9 x.min=$XiL x.max=$XiR y.min=$tsi y.max=$Ybot oxide
+# n+ island as a separate silicon region (for region-specific lifetime)
+region num=10 x.min=$XiL x.max=$XiR y.min=0 y.max=$tsi silicon
+
+#### electrodes ####
+electrode name=gate x.min=$Lsd x.max=$Lsd+$Lg y.min=-$tox y.max=-$tox
+electrode name=source x.max=$Lsd y.min=0 y.max=0
+electrode name=drain x.min=$Lsd+$Lg y.min=0 y.max=0
+electrode name=substrate y.min=$Ybot y.max=$Ybot
+
+#### doping ####
+doping uniform conc=6.0e17 p.type x.min=$Lsd x.max=$XiL y.min=0 y.max=$tsi
+doping uniform conc=1e20 n.type x.min=$XiR x.max=$Lsd+$Lg y.min=0 y.max=$tsi
+doping uniform conc=1e20 n.type x.min=$XiL x.max=$XiR y.min=0 y.max=$tsi
+doping uniform conc=1e20 n.type reg=4
+doping uniform conc=1e20 n.type reg=5
+doping uniform conc=1e21 n.type reg=1
+
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_INIT.str
+
+#### contacts ####
+contact name=drain
+contact name=source
+contact name=substrate
+# island tap to ground through a series resistor
+
+#### probes ####
+probe name=VB_left  potential x=0.5675 y=0.035
+probe name=V_island potential x=0.65 y=0.025
+probe name=PH_left  P.CONC x=0.5675 y=0.035
+probe name=QH_left  integrated LEFT=$Lsd RIGHT=$XiL BOTTOM=0 TOP=$tsi P.CONC
+
+#### physical models ####
+material material=silicon taun0=$te taup0=$tp
+# lifetime killing in the island and its tap neck
+material region=10 taun0=1e-12 taup0=1e-12
+
+models print bgn hcte consrh conmob fldmob fermi trap.tunnel bbt.std temp=$LT
+impact selb length.rel
+
+output band.param con.band val.band recomb u.srh u.bbt qtunn.bbt impact e.field traps
+
+#### numerical method ####
+method block newton climit=100 itlimit=200 NBLOCKIT=200 trap maxtraps=10
+
+#### gate bias ####
+solve vfinal=-0.2 vstep=-0.05 name=gate
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_VG.str
+
+#### transient drain ramp, 7 V/ms, 0 -> 3.0 -> 0 V ####
+log outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2.log j.electron j.hole
+solve vdrain=1.0 ramptime=1.428571e-04 tstop=1.428571e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_UP_1p0.str
+solve vdrain=1.5 ramptime=7.142857e-05 tstop=2.142857e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_UP_1p5.str
+solve vdrain=2.0 ramptime=7.142857e-05 tstop=2.857143e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_UP_2p0.str
+solve vdrain=2.3 ramptime=4.285714e-05 tstop=3.285714e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_UP_2p3.str
+solve vdrain=2.4 ramptime=1.428571e-05 tstop=3.428571e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_UP_2p4.str
+solve vdrain=2.5 ramptime=1.428571e-05 tstop=3.571429e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_UP_2p5.str
+solve vdrain=2.6 ramptime=1.428571e-05 tstop=3.714286e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_UP_2p6.str
+solve vdrain=2.8 ramptime=2.857143e-05 tstop=4.000000e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_UP_2p8.str
+solve vdrain=3.0 ramptime=2.857143e-05 tstop=4.285714e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_UP_3p0.str
+solve vdrain=2.8 ramptime=2.857143e-05 tstop=4.571429e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_DN_2p8.str
+solve vdrain=2.6 ramptime=2.857143e-05 tstop=4.857143e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_DN_2p6.str
+solve vdrain=2.5 ramptime=1.428571e-05 tstop=5.000000e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_DN_2p5.str
+solve vdrain=2.4 ramptime=1.428571e-05 tstop=5.142857e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_DN_2p4.str
+solve vdrain=2.3 ramptime=1.428571e-05 tstop=5.285714e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_DN_2p3.str
+solve vdrain=2.2 ramptime=1.428571e-05 tstop=5.428571e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_DN_2p2.str
+solve vdrain=2.0 ramptime=2.857143e-05 tstop=5.714286e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_DN_2p0.str
+solve vdrain=1.8 ramptime=2.857143e-05 tstop=6.000000e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_DN_1p8.str
+solve vdrain=1.5 ramptime=4.285714e-05 tstop=6.428571e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_DN_1p5.str
+solve vdrain=1.0 ramptime=7.142857e-05 tstop=7.142857e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_DN_1p0.str
+solve vdrain=0.5 ramptime=7.142857e-05 tstop=7.857143e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_DN_0p5.str
+solve vdrain=0.0 ramptime=7.142857e-05 tstop=8.571429e-04 tstep=1e-9
+save outf=LEFTONLY_L135_P6e17_UD3_R7_VGm0p2_DN_0p0.str
+log off
+quit

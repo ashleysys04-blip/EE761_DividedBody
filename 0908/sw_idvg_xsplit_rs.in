@@ -1,0 +1,185 @@
+#=====================================================================
+#  sw_idvg_xsplit_rs.in : ID-VG, split 위치 sweep
+#
+#  Split 위치 sweep
+#  게이트가 0.45 ~ 1.05 (Lg = 0.6) 이므로
+#    xsplit = 0.60 -> xsplit/Lg = 0.25 (drain-side 를 넓게)
+#    xsplit = 0.75 -> 0.50 (원래 구조)
+#    xsplit = 0.90 -> 0.75 (drain-side 를 좁게)
+#  도핑비는 1e17 / 3e18 로 고정하고 경계 위치만 옮긴다.
+#  
+#  제안서 가설대로면 trigger zone(drain-side, II 발생)과
+#  feedback zone(source-side, body-potential feedback)을 공간적으로
+#  떼어놓는 가장 직접적인 손잡이가 이 변수다.
+#  두 번째 전이가 어느 위치에서 가장 잘 분리되는지 본다.
+#  
+#  메시는 0.60 / 0.75 / 0.90 세 지점 모두에 미리 세밀화해 두었으므로
+#  세 조건의 격자가 동일하다. 곡선 비교에 메시 차이가 섞이지 않는다.
+#
+#  이어달리기 : r5 ~ r6 (xsplit = 0.90, VD 0.05 / 1.0)
+#  r1 ~ r4 는 이미 완료되어 제외.
+#=====================================================================
+
+
+set LDEV      = 1.50
+set XG_L      = 0.45
+set XG_R      = 1.05
+set XS_END    = 0.45
+set XD_START  = 1.05
+
+set YTOP      = 0.00
+set YPOLY_BOT = 0.05
+set YOX_BOT   = 0.055
+set YSI_BOT   = 0.075
+set YBOX_BOT  = 0.275
+set YSI_TOP   = $YOX_BOT
+
+set NA_SRC    = 1e17
+set NA_DRN    = 3e18
+set VG_LO     = -1.0
+set VG_HI     = 3.0
+
+set STRFILE   = sw_xsp_idvg_rs.str
+
+# 시간 배치 (전부 명시적 숫자)
+#   0        ~ 1e-6    : 전부 0
+#   1e-6     ~ 2e-6    : bias 를 목표값까지 세움
+#   2e-6     ~ 5.2e-5  : SETTLE 50 us. 측정된 정착 시간 4 us 의 12배
+#   5.2e-5   ~ 1.52e-4 : up sweep   (ramp 1e-4 s)
+#   1.52e-4  ~ 1.62e-4 : 꼭대기 hold
+#   1.62e-4  ~ 2.62e-4 : down sweep (ramp 1e-4 s)
+set T_BIAS    = 2e-6
+set T_SETTLE  = 5.2e-5
+set T_UP      = 1.52e-4
+set T_HD      = 1.62e-4
+set T_DN      = 2.62e-4
+
+# xsplit    VD
+# r1   0.60     0.05     r3   0.75    0.05     r5   0.90   0.05
+# r2   0.60     1.0      r4   0.75    1.0      r6   0.90   1.0
+loop steps=2
+
+assign name=RUNID  n.value=(5, 6)
+assign name=XSPLIT n.value=(0.90, 0.90)
+assign name=VDVAL  n.value=(0.05, 1.0)
+
+go atlas simflag="-P 2"
+
+mesh space.mult=1.0
+
+x.mesh loc=0.00  spac=0.02
+x.mesh loc=0.15  spac=0.01
+x.mesh loc=0.40  spac=0.005
+x.mesh loc=0.45  spac=0.002
+x.mesh loc=0.52  spac=0.004
+x.mesh loc=0.58  spac=0.002
+x.mesh loc=0.60  spac=0.001
+x.mesh loc=0.62  spac=0.002
+x.mesh loc=0.68  spac=0.004
+x.mesh loc=0.73  spac=0.002
+x.mesh loc=0.75  spac=0.001
+x.mesh loc=0.77  spac=0.002
+x.mesh loc=0.83  spac=0.004
+x.mesh loc=0.88  spac=0.002
+x.mesh loc=0.90  spac=0.001
+x.mesh loc=0.92  spac=0.002
+x.mesh loc=0.98  spac=0.004
+x.mesh loc=1.03  spac=0.002
+x.mesh loc=1.05  spac=0.001
+x.mesh loc=1.10  spac=0.003
+x.mesh loc=1.35  spac=0.01
+x.mesh loc=1.50  spac=0.02
+
+y.mesh loc=0.000  spac=0.010
+y.mesh loc=0.045  spac=0.005
+y.mesh loc=0.050  spac=0.001
+y.mesh loc=0.055  spac=0.001
+y.mesh loc=0.075  spac=0.001
+y.mesh loc=0.150  spac=0.01
+y.mesh loc=0.275  spac=0.02
+
+region num=1 material=air \
+       x.min=0.00   x.max=$XG_L  y.min=$YTOP    y.max=$YOX_BOT
+region num=2 material=polysilicon \
+       x.min=$XG_L  x.max=$XG_R  y.min=$YTOP    y.max=$YPOLY_BOT
+region num=3 material=oxide \
+       x.min=$XG_L  x.max=$XG_R  y.min=$YPOLY_BOT y.max=$YOX_BOT
+region num=4 material=air \
+       x.min=$XG_R  x.max=$LDEV  y.min=$YTOP    y.max=$YOX_BOT
+region num=5 material=silicon \
+       x.min=0.00   x.max=$LDEV  y.min=$YSI_TOP y.max=$YSI_BOT
+region num=6 material=oxide \
+       x.min=0.00   x.max=$LDEV  y.min=$YSI_BOT y.max=$YBOX_BOT
+
+electrode name=gate   x.min=$XG_L x.max=$XG_R y.min=$YTOP y.max=$YTOP
+electrode name=source x.min=0.00  x.max=0.00  y.min=$YSI_TOP y.max=$YSI_BOT
+electrode name=drain  x.min=$LDEV x.max=$LDEV y.min=$YSI_TOP y.max=$YSI_BOT
+electrode name=substrate bottom
+
+doping uniform p.type conc=$NA_SRC \
+       x.min=$XS_END   x.max=$XSPLIT   y.min=$YSI_TOP y.max=$YSI_BOT
+doping uniform p.type conc=$NA_DRN \
+       x.min=$XSPLIT   x.max=$XD_START y.min=$YSI_TOP y.max=$YSI_BOT
+
+doping uniform n.type conc=1e20 \
+       x.min=0.00      x.max=$XS_END   y.min=$YSI_TOP y.max=$YSI_BOT
+doping uniform n.type conc=1e20 \
+       x.min=$XD_START x.max=$LDEV     y.min=$YSI_TOP y.max=$YSI_BOT
+
+contact name=gate      n.poly
+contact name=substrate n.poly
+
+models cvt srh fermi bgn print
+impact selb
+method newton trap maxtraps=20
+
+output con.band val.band e.field ex.field ey.field flowlines \
+       impact charge qfn qfp j.electron j.hole recomb
+
+solve init
+save outf=$STRFILE
+
+go atlas simflag="-P 2"
+
+.BEGIN
+
+ASPLIT 1=drain 2=gate 0=source 3=substrate \
+       INFILE=$STRFILE
+
+VSUB 3 0 0
+VD 1 0 PWL ( \
+   0            0 \
+   1e-6         0 \
+   $T_BIAS      $VDVAL \
+   $T_DN        $VDVAL )
+
+VG 2 0 PWL ( \
+   0            0 \
+   1e-6         0 \
+   $T_BIAS      $VG_LO \
+   $T_SETTLE    $VG_LO \
+   $T_UP        $VG_HI \
+   $T_HD        $VG_HI \
+   $T_DN        $VG_LO )
+.NUMERIC LTE=0.1 TOLTR=1e-6
+.OPTIONS PRINT RELPOT WRITE=100000
+
+.LOG OUTFILE=idvg_xsp_r$RUNID
+.TRAN 1e-10 $T_DN
+
+.END
+MODELS DEVICE=ASPLIT CVT SRH FERMI BGN
+IMPACT DEVICE=ASPLIT SELB
+METHOD NEWTON TRAP MAXTRAPS=20
+
+PROBE DEVICE=ASPLIT NAME=vb_s1 POTENTIAL X=0.50 Y=0.070
+PROBE DEVICE=ASPLIT NAME=vb_s2 POTENTIAL X=0.60 Y=0.070
+PROBE DEVICE=ASPLIT NAME=vb_d1 POTENTIAL X=0.90 Y=0.070
+PROBE DEVICE=ASPLIT NAME=vb_d2 POTENTIAL X=1.00 Y=0.070
+PROBE DEVICE=ASPLIT NAME=p_s1  P.CONC    X=0.50 Y=0.070
+PROBE DEVICE=ASPLIT NAME=p_d2  P.CONC    X=1.00 Y=0.070
+PROBE DEVICE=ASPLIT NAME=p_jn  P.CONC    X=1.04 Y=0.058
+
+l.end
+
+quit

@@ -1,0 +1,72 @@
+#OI MOSFET Id-Vd Hysteresis Simulation (Paper Standard)
+#=========================================================
+go atlas
+
+# 1. MESH & GEOMETRY (SOI FD-MOSFET 구조 정의)
+mesh space.mult=1.0
+x.mesh l=0.0  spac=0.05
+x.mesh l=0.4  spac=0.01
+x.mesh l=0.6  spac=0.01
+x.mesh l=1.0  spac=0.05
+
+y.mesh l=-0.002 spac=0.001
+y.mesh l=0.0    spac=0.001
+y.mesh l=0.01   spac=0.002
+y.mesh l=0.05   spac=0.01
+y.mesh l=0.2    spac=0.05
+
+# REGIONS & ELECTRODES
+region num=1 oxide y.max=0.0
+region num=2 silicon y.min=0.0 y.max=0.05
+region num=3 oxide y.min=0.05 y.max=0.2
+
+electrode name=gate top
+electrode name=source left  length=0.1 y.min=0.0 y.max=0.01
+electrode name=drain  right length=0.1 y.min=0.0 y.max=0.01
+electrode name=substrate bottom
+
+# DOPING PROFILES
+doping uniform p.type=5e17 region=2
+doping uniform n.type=1e20 region=2 x.max=0.2
+doping uniform n.type=1e20 region=2 x.min=0.8
+
+#---------------------------------------------------------
+# 2. PHYSICAL MODELS & PAPERS' HYSTERESIS CAPABILITY
+#----------------=========================================
+# CVT(이동도), SRH(재결합), FERMI 통계 모델 정의
+models srh cvt fermi print
+
+# [핵심] 논문에서 이력 현상 재현시 필수적인 Heiman 터널링/트랩 세팅
+# 실리콘(Silicon)과 게이트 산화막(Oxide) 계면(S.I)에 Acceptor 타입 공간 트랩 배치
+interface charge=1e11 s.i
+trap acceptor density=2e12 energy=0.35 sign=1e-15 sigp=1e-15 intface region=2
+
+# Heiman 트랩 터널링 타임 상수 선언 (전하가 갇히고 빠지는 시간 지연 유도)
+models hetero
+material region=2 taun0=1e-9 taup0=1e-9
+
+contact name=gate workf=4.5
+
+save outf=example.str
+
+solve init
+
+#---------------------------------------------------------
+# 3. BIDIRECTIONAL BIAS RAMPING (양방향 전압 스위프)
+#--------------------------------=========================
+# 측정할 Gate bias 고정
+solve vgate=1.2
+
+# 데이터 저장을 위한 로그 파일 지정
+log outf=soi_idvd_hysteresis.log
+
+# [Forward Sweep] Vd를 0V에서 2.0V까지 상승 (0.1V 간격)
+solve vdrain=0.0 vstep=0.1 vfinal=2.0 name=drain
+
+# [Reverse Sweep] 동일한 로그 파일에 이어서 Vd를 2.0V에서 0V로 하강
+solve vdrain=2.0 vstep=-0.1 vfinal=0.0 name=drain
+
+# 4. PLOTTING RESULT
+log off
+quit
+
