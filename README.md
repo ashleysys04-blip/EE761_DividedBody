@@ -5,7 +5,7 @@ EE762 (KAIST, 2026 가을) 프로젝트 연구 기록 · Silvaco ATLAS 2D (devic
 > **한 줄 요약 (2026-10-07)** · 결론은 [최종 결과](#최종-결과)
 > SOI body를 n+ 섬으로 둘로 나누고, 섬을 저항(1e7 Ω)으로 접지하고, 섬 lifetime을 줄여 두 body를 분리했다.
 > 그 결과 **drift-diffusion(DD) MixedMode 시뮬레이션에서 Id-Vd에 래치가 두 번(2.254 V, 3.296 V) 히스테리시스와 함께 나왔다.**
-> 같은 소자를 에너지 균형 모델(hcte)로 계산하면 4.42 V에서 전자 온도 폭주로 멈춰, hcte에서의 두 번째 래치는 아직 확인하지 못했다 (Step 11).
+> 같은 소자를 에너지 균형 모델(hcte)로 계산하면 12가지 대책에도 3.6–5.3 V에서 전자 온도 폭주로 멈춰, hcte에서의 두 번째 래치는 확인하지 못했다 (Step 11). 지금은 DD로 설계 변수 split 43개를 돌리는 중이다 (Step 12).
 
 ![double latch](1001/tap/fig/DOUBLE_LATCH_DD_MM.png)
 *그림 0. 최종 결과 (DD, MixedMode). 데이터: `1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_DD_VGm0p2.log_tr.log` · 덱: `1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_DD_VGm0p2.in` · 그린 코드: `1001/tap/fig/plot_double_latch.py`*
@@ -28,7 +28,8 @@ EE762 (KAIST, 2026 가을) 프로젝트 연구 기록 · Silvaco ATLAS 2D (devic
 - [Step 8. 고전압 수치 폭주 (10/05 – 10/07)](#step-8-고전압-수치-폭주-1005--1007)
 - [Step 9. 왼쪽 STL은 래치할 수 있나? → 단독 소자 (10/06)](#step-9-왼쪽-stl은-래치할-수-있나--단독-소자-1006)
 - [Step 10. 본 소자: 래치 두 번 (10/07)](#step-10-본-소자-래치-두-번-1007)
-- [Step 11. hcte로 확인 (10/07)](#step-11-hcte로-확인-1007)
+- [Step 11. hcte로 확인 → 실패 기록 (10/05 – 10/07)](#step-11-hcte로-확인--실패-기록-1005--1007)
+- [Step 12. DD split: 설계 변수별 데이터 (10/07 –, 진행 중)](#step-12-dd-split-설계-변수별-데이터-1007---진행-중)
 - [최종 결과](#최종-결과)
 - [트레이드오프 요약](#트레이드오프-요약)
 - [현재 상태와 다음 단계](#현재-상태와-다음-단계)
@@ -116,7 +117,8 @@ Vd, Id, Is, Itap = d[:, o+11], d[:, o+12], d[:, o+7], d[:, o+17]
 | 8 | solver, 격자, hcte 제거 시도 | 원인 = 오른쪽 STL 전압 | 큰 R 필요 |
 | 9 | **왼쪽 STL 단독 소자**, 도핑 탐색 | 3e17은 래치 불가, **6e17 래치** | 본 소자에 적용 |
 | 10 | 왼쪽 6e17 + **R 1e7 Ω**, MixedMode | **DD에서 래치 2번** | hcte로 확인 필요 |
-| 11 | 같은 소자를 hcte MixedMode로 | 20배 빠름, 그러나 4.42 V에서 중단 | drain 접합 완만화 시험 중 |
+| 11 | 같은 소자를 hcte로 (12가지 수렴 대책) | 모두 3.6–5.3 V에서 중단 | hcte 접고 DD로 |
+| 12 | DD split 43개 (R, 도핑, Vg, lifetime, 섬 폭·위치, Tsi, ramp) | 진행 중 | 설계 지도 |
 
 ---
 
@@ -496,35 +498,86 @@ Adev 1=drain 0=source 2=gate 3=tap 0=substrate infile=MM_TAPT_ISL_W30LK_L6_R7_R1
 
 ---
 
-## Step 11. hcte로 확인 (10/07)
+## Step 11. hcte로 확인 → 실패 기록 (10/05 – 10/07)
 
-🎯 **왜** Step 10의 래치 두 번은 DD 결과다. DD는 impact ionization을 과대평가하므로, 더 현실적인 에너지 균형 모델(hcte)에서도 나오는지 확인해야 한다.
+🎯 **왜** Step 10의 래치 두 번은 DD 결과다. DD는 impact ionization을 과대평가하므로, 더 현실적인 에너지 균형 모델(hcte)에서도 나오는지 확인하려 했다.
 
-🛠 **어떻게** Step 10과 같은 소자·회로를 hcte로 MixedMode에서 계산했다. 이번엔 `Adev … width=0.5`로 소자 폭을 소자 단독 run들과 맞췄다 (`1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_HC_VGm0p2.in`). 같은 소자를 소자 단독 방식(`TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_VGm0p2.in`)으로도 돌려 비교했다.
+🛠 **어떻게** 같은 소자를 hcte로 계산했다. 처음엔 소자 단독 방식, 나중엔 MixedMode(`Adev … width=0.5`)로 했다.
 
-![](1001/tap/fig/MM_HC_vs_device_R1e7.png)
-*데이터: `1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_HC_VGm0p2.log_tr.log`, `…_T_tr_7`(4.0 V 스냅샷), `1001/tap/TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_VGm0p2.log` · 일회성 스크립트*
+⚠️ **문제** **hcte run은 모두 두 번째 래치 전에 멈췄다.** 증상은 매번 같다:
+`Warning: Updated temperatures exceeding limits` → time step이 1e-25 s까지 줄어듦 → `Cannot reduce time step`.
+멈추는 위치는 항상 **오른쪽 STL의 drain 접합 표면(x ≈ 285 nm)**이고, 전자 온도가 1만 K를 넘었다.
 
-| 비교 | 소자 단독 방식 | MixedMode |
-|---|---|---|
-| 0 → 4.42 V 계산 시간 | 4시간 8분 | **11분** (155 step) |
-| Vd = 4.0 V의 Id / 탭 전압 | 5.128e-8 A / 0.513 V | 5.128e-8 A / 0.513 V (**4자리 일치**) |
-| 첫 번째(오른쪽) 래치 | 2.99 V | 2.98–3.00 V |
-| 중단 | 4.42 V | 4.42 V |
+![](docs/fig/hcte_stop_points.png)
+*데이터: 각 run의 마지막 수렴점. `1001/tap/TAPT_ISL_W30LK_*.log`, `1001/tap/MM_TAPT_ISL_W30LK_*_HC*.log_tr.log` · 코드: 일회성 스크립트 (`tools/plog.py`로 읽음)*
 
-⚠️ **문제** MixedMode는 결과가 같으면서 약 20배 빠르다. 하지만 **hcte는 두 방식 모두 Vd = 4.42 V에서 멈췄다** ("temperatures exceeding limits" → time step 1e-25 s). 그때 섬 전압은 0.82 V로, 왼쪽 래치에 필요한 약 2.54 V에 못 미친다. 핫스팟은 이번에도 오른쪽 drain 접합 표면(x = 285 nm, 4.0 V에서 11080 K)이다.
+### 시도 기록 (수렴 실패 완화)
 
-✅ **해결 시도 (진행 중)**
-| 시험 | 바꾼 것 | 결과 |
-|---|---|---|
-| A (`…_HC_GD_VGm0p2.in`) | 오른쪽 drain n+ 경계를 계단형 → Gaussian 경사(lat.char 10 nm)로. 전계 피크와 전자 온도를 직접 낮춘다 | 실행 중 |
-| B (`…_HCEL_VGm0p2.in`, `…_HCEL_NW_VGm0p2.in`) | 전자 온도만 계산 (`hcte.el`), block / 연립 newton | **실패**: MixedMode 시작점(t = 0)에서 온도 발산 ("Unable to trap bias") |
+| # | 시도 | 분류 | 덱 (`1001/tap/`) | 결과 |
+|---|---|---|---|---|
+| 0 | 기준: R = 1e6 Ω, 왼쪽 3e17 | – | `TAPT_ISL_W30LK_L3_R7_R1e6_UD7S_VGm0p2.in` | 5.284 V에서 중단 (가짜 "점프", Step 8) |
+| 1 | solver를 연립 Newton으로 (5.0 V `.str`에서 재시작) | 수치 | `…_R1e6_RS50_NEWT_VGm0p2.in` | 원래 run과 5자리 일치, **같은 5.284 V에서 중단** |
+| 2 | time step 상한 `dt.max` 2e-8 s | 수치 | (1과 같은 덱) | 효과 없음 |
+| 3 | hcte를 빼고 4.5 V `.str`에서 DD로 재시작 | 모델 | `…_R1e6_RS45_NOHC_VGm0p2.in` | 0.35 ns 만에 양쪽 래치 → **모델이 달라 이어지지 않음** (이후 모델 섞기 금지) |
+| 4 | drain 접합 격자 5 nm → 1 nm, 표면 2 nm | 수치 | `…_R1e6_UD7S_MF_VGm0p2.in` | 래치 전압 2 % 보정, **5.033 V에서 중단** |
+| 5 | 왼쪽 도핑 6e17 (원래 격자) | 구조 | `TAPT_ISL_W30LK_L6_R7_R1e6_UD75S_VGm0p2.in` | 5.201 V에서 중단 |
+| 6 | R = 1e7 Ω ("오른쪽 STL 전압을 낮게" 가설) | 구조 | `…_L6_R7_R1e7_UD75S_MF_VGm0p2.in` | **4.422 V에서 중단** (가설 틀림) |
+| 7 | MixedMode로 전환 | 계산 방식 | `MM_…_L6_R7_R1e7_UD75S_MF_HC_VGm0p2.in` | 결과 4자리 일치, **약 20배 빠름** (4시간 8분 → 11분). 같은 4.422 V에서 중단 |
+| 8 | drain 경계를 Gaussian 경사로 (lat.char 10 nm) | 구조 | `MM_…_R1e7_…_HC_GD_VGm0p2.in` | **3.607 V**에서 중단 (더 나빠짐) |
+| 9 | 전자 온도만 계산 `hcte.el` (block / 연립 newton) | 모델 | `MM_…_HCEL_VGm0p2.in`, `MM_…_HCEL_NW_VGm0p2.in` | **MixedMode 시작점(Vd = 0)부터 온도 발산** ("Unable to trap bias") |
+| 10 | 온도 수렴 허용치 완화 (`tcx.tol` 1e-5 → 1e-3, `tcr.tol` 100 → 1e4) | 수치 | `MM_…_R1e7_…_HC_TOL_VGm0p2.in` | 같은 4.422 V에서 중단 |
+| 11 | R = 3e7 Ω | 구조 | `MM_…_R3e7_UD75S_MF_HC_VGm0p2.in` | 4.167 V에서 중단 |
+| 12 | R = 1e8 Ω | 구조 | `MM_…_R1e8_UD75S_MF_HC_VGm0p2.in` | 4.084 V에서 중단 |
 
-```
-# 시험 A의 drain 도핑. 출처: 1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_HC_GD_VGm0p2.in
-doping gaussian n.type conc=1e20 x.left=$Lsd+$Lg+0.02 x.right=$Lsd+$Lg+$Lsd peak=$tsi/2 characteristic=0.1 lat.char=0.010
-#   (기존: doping uniform conc=1e20 n.type reg=5  → x = 0.80 µm에서 계단형)
-```
+| ![](1001/tap/fig/MM_HC_vs_device_R1e7.png) | ![](1001/tap/fig/NEWT_hotspot_5p25.png) |
+|---|---|
+| 소자 단독 vs MixedMode (같은 결과, 20배 빠름) + 4.0 V 전자 온도. 데이터: `MM_…_R1e7_…_HC_VGm0p2.log_tr.log`, `…_T_tr_7`, `TAPT_…_L6_R7_R1e7_UD75S_MF_VGm0p2.log` · 일회성 스크립트 | 핫스팟: 12000 K → 300 K가 격자 2칸 안에서 떨어짐 (격자 세분화의 동기). 데이터: `…_R1e6_RS50_NEWT_VGm0p2_UP_5p25.str` · 일회성 스크립트 |
+
+### 실패에서 알게 된 것
+- **수치 설정(solver, time step, 격자, 허용치)으로는 멈추는 위치가 거의 안 바뀐다.** 수치 기법 문제라기보다 이 소자에서 hcte 해 자체가 불안정해지는 것으로 본다.
+- **R을 키울수록 오히려 일찍 멈춘다** (1e6: 5.0–5.3 V → 1e7: 4.42 → 3e7: 4.17 → 1e8: 4.08 V). 섬 전위를 올리려면 R을 키워야 하는데, hcte 계산이 버티는 방향은 그 반대다. 두 번째 래치에는 Vd 약 5.6–7 V가 필요하다.
+- drain 접합을 완만하게 하면 더 나빠졌다. 왜 그런지는 확인하지 못했다.
+- 멈추는 Vd가 오른쪽 STL 전압 하나로 정해지지는 않는다 (Step 8 가설 정정).
+- 얻은 것: **MixedMode(20배 빠름, 결과 동일)**, 정확한 고운 격자, 수치 오류 판정 기준(time step, KCL, 내부 상태, gate 변위전류).
+
+✅ **결정** hcte 전체 소자 계산은 여기서 접는다. hcte로 확인된 것은 **각 STL 단독의 래치**(왼쪽 6e17 2.539 V 히스테리시스 포함, 오른쪽 7e17 3.002 V)와 **본 소자의 첫 번째 래치**까지다. 두 번째 래치를 포함한 동작은 DD로 넓게 조사한다 (Step 12).
+
+---
+
+## Step 12. DD split: 설계 변수별 데이터 (10/07 –, 진행 중)
+
+🎯 **왜** DD에서 래치 두 번이 나오는 소자를 얻었으니, 어떤 설계 변수가 두 래치 전압·점프 크기·히스테리시스를 어떻게 바꾸는지 넓게 본다. 설계 지도를 만들기 위해서다.
+
+🛠 **어떻게**
+- 기준 덱(`1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_DD_W05_VGm0p2.in`)에서 **한 번에 변수 하나만** 바꾼다.
+- 덱은 [`1007_ddsplit/make_ddsplit.py`](1007_ddsplit/make_ddsplit.py)가 만든다 (`1007_ddsplit/DDS_*.in`).
+- DD, MixedMode, `width=0.5`, 고운 격자, 0 → 6 → 0 V, 0.7 V/ms. 고정 Vd(올라갈 때 1.5–6 V, 내려올 때 5–0 V)마다 `.str` 스냅샷을 저장한다.
+- 덱 하나에 30–40분, CPU 2개로 순서대로 돈다.
+
+먼저 기준 덱의 소자 폭을 0.5 µm로 맞춰 다시 돌렸다. **래치 두 번이 그대로 나왔다** (2.2535 V / 3.3019 V; 1 µm일 때 2.254 / 3.296 V).
+
+![](1001/tap/fig/MM_DD_W05_vs_W1.png)
+*데이터: `1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_DD_VGm0p2.log_tr.log` (1 µm), `…_DD_W05_VGm0p2.log_tr.log` (0.5 µm) · 일회성 스크립트*
+
+### 계획된 덱 (43개)
+
+기준: 왼쪽 6e17 · 오른쪽 7e17 · R 1e7 Ω · Vg −0.2 V · 섬 30 nm, 중앙(Lg 50 %), lifetime 1e-12 s · Tsi 50 nm · 0.7 V/ms
+
+| 변수 | 덱 (`1007_ddsplit/`) | 값 | 보려는 것 | 구조 변경 |
+|---|---|---|---|---|
+| 기준 | `DDS_BASE` | – | 같은 sweep(0–6–0 V)의 기준값 | |
+| 탭 저항 R | `DDS_R3e5`, `DDS_R1e6`, `DDS_R3e6`, `DDS_R3e7`, `DDS_R1e8`, `DDS_R3e8` | 3e5 – 3e8 Ω | 첫 번째 점프 크기 vs 두 번째 래치 전압 | |
+| 왼쪽 body 도핑 | `DDS_NL4e17`, `DDS_NL5e17`, `DDS_NL5p5e17`, `DDS_NL6p5e17`, `DDS_NL7e17`, `DDS_NL8e17` | 4e17 – 8e17 | 두 번째 래치 전압, 래치가 생기는 경계 | |
+| 오른쪽 body 도핑 | `DDS_NR5e17`, `DDS_NR6e17`, `DDS_NR6p5e17`, `DDS_NR7p5e17`, `DDS_NR8e17`, `DDS_NR9e17`, `DDS_NR1e18` | 5e17 – 1e18 | 첫 번째 래치 전압, 래치 순서가 뒤바뀌는 지점 | |
+| Vg | `DDS_VGm1p0`, `DDS_VGm0p5`, `DDS_VGm0p3`, `DDS_VGm0p1`, `DDS_VG0`, `DDS_VGp0p2` | −1.0 – +0.2 V | gate로 두 래치를 함께 조절할 수 있나 | |
+| 섬 lifetime | `DDS_TAU1em13`, `DDS_TAU1em11`, `DDS_TAU1em10`, `DDS_TAU1em9` | 1e-13 – 1e-9 s | 두 body 분리가 깨지는 lifetime | |
+| 섬 폭 | `DDS_WISL20`, `DDS_WISL50`, `DDS_WISL100` | 20, 50, 100 nm | 섬 폭과 결합, 래치 전압 | ✔ (`set Wisl`) |
+| 섬 위치 | `DDS_XS40`, `DDS_XS60` | Lg의 40 %, 60 % | 왼쪽/오른쪽 body 길이 비 | ✔ (`set Xsplit`) |
+| Si 두께 | `DDS_TSI30`, `DDS_TSI70` | 30, 70 nm | 막 두께 의존성 | ✔ (`set tsi`) |
+| ramp 속도 | `DDS_RATE0p07`, `DDS_RATE7` | 0.07, 7 V/ms | DD에서의 ramp 의존성 (준정적 확인) | |
+| 2변수 조합 | `DDS_NL5p5e17_R3e6`, `DDS_NL5p5e17_R3e7`, `DDS_NL6p5e17_R3e6`, `DDS_NL6p5e17_R3e7` | 왼쪽 도핑 × R | 설계 지도 (두 번째 래치 전압 등고선) | |
+
+결과가 나오면 변수별로 두 래치 전압(켜짐/꺼짐), 점프 크기, 히스테리시스 창을 표와 그림으로 이 Step에 추가한다. 구조를 바꾼 split은 `.str` 구조 그림을 함께 넣는다.
 
 ---
 
@@ -550,9 +603,9 @@ SOI body를 n+ 섬으로 나누고(Step 3), 섬을 1e7 Ω으로 접지하고(Ste
 - R은 섬 전위를 올리기에 충분히 커야 하지만, 클수록 첫 번째 점프는 작아진다 (Step 10).
 
 **3. 아직 확정하지 못한 것**
-- 더 현실적인 hcte 모델에서는 오른쪽 drain 접합의 전자 온도 폭주 때문에 4.42 V 이후를 계산하지 못해서, **두 번째 래치를 아직 확인하지 못했다** (Step 11). 첫 번째 래치까지는 hcte와 DD 모두 같은 모양이다.
+- 더 현실적인 hcte 모델에서는 오른쪽 drain 접합의 전자 온도 폭주 때문에 12가지 시도 모두 3.6–5.3 V에서 멈춰서, **두 번째 래치를 확인하지 못했다** (Step 11). 첫 번째 래치까지는 hcte와 DD 모두 같은 모양이다.
 - DD 결과의 래치 전압은 실제보다 낮게 나온 값이다 (hcte 대비 0.7–0.8 V).
-- Step 10의 DD MixedMode run은 소자 폭이 1 µm로 계산되어, R = 1e7 Ω이 0.5 µm 기준 2e7 Ω에 해당한다.
+- (해결) Step 10의 첫 DD run은 소자 폭이 1 µm로 계산됐다. 0.5 µm로 다시 돌려도 래치 전압은 6 mV 이내로 같았다 (Step 12).
 
 ---
 
@@ -572,12 +625,11 @@ SOI body를 n+ 섬으로 나누고(Step 3), 섬을 1e7 Ω으로 접지하고(Ste
 
 ## 현재 상태와 다음 단계
 
-- **실행 중**: 시험 A (graded drain, hcte MixedMode). 4.42 V를 넘는지 확인 중이다.
+- **실행 중**: DD split 43개 (`1007_ddsplit/queue_ddsplit.sh`, `queue_ddsplit2.sh`, CPU 2개). 10/08 오전 완료 예상.
 - **다음**:
-  1. 시험 A가 4.42 V를 넘으면 → 같은 설정으로 hcte에서 두 번째 래치까지 확인
-  2. 넘지 못하면 → hcte는 첫 번째 래치까지만 확인한 것으로 정리하고, 두 번째 래치는 DD 결과로 제시
-  3. DD MixedMode를 `width=0.5`로 다시 돌려 R 기준 맞추기
-  4. 래치 창이 좁아지는 원인(lifetime 감소?) 확인
+  1. split 결과를 변수별 표·그림으로 정리 (Step 12)
+  2. 2변수 조합으로 두 번째 래치 전압 설계 지도
+  3. 래치 창이 좁아지는 원인(lifetime 감소?) 확인 (lifetime split에서)
 
 ---
 
@@ -598,5 +650,6 @@ SOI body를 n+ 섬으로 나누고(Step 3), 섬을 1e7 Ω으로 접지하고(Ste
 | 9 | `1001/tap/LEFTONLY_L135_P*_{UD6S,UD3,UD3_R7,DD_UP4}_VGm0p2.log` |
 | 10 | `1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_DD_VGm0p2.log_tr.log` |
 | 11 | `1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_HC_VGm0p2.log_tr.log` |
+| 12 | `1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_DD_W05_VGm0p2.log_tr.log` (split 결과는 완료 후 추가) |
 
 `*_extract.dat` 열: `time_s Vd_V Id_A Is_A Itap_A Vtap_internal_V VB_left_V VB_right_V V_island_V` (원본의 20행마다 1행 + |Id| 변화가 큰 행 전부).
