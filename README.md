@@ -118,7 +118,7 @@ Vd, Id, Is, Itap = d[:, o+11], d[:, o+12], d[:, o+7], d[:, o+17]
 | 9 | **왼쪽 STL 단독 소자**, 도핑 탐색 | 3e17은 래치 불가, **6e17 래치** | 본 소자에 적용 |
 | 10 | 왼쪽 6e17 + **R 1e7 Ω**, MixedMode | **DD에서 래치 2번** | hcte로 확인 필요 |
 | 11 | 같은 소자를 hcte로 (12가지 수렴 대책) | 모두 3.6–5.3 V에서 중단 | hcte 접고 DD로 |
-| 12 | DD split 43개 (R, 도핑, Vg, lifetime, 섬 폭·위치, Tsi, ramp) | 진행 중 | 설계 지도 |
+| 12 | DD split 50개 (R, 도핑, Vg, lifetime, 섬 폭·위치, Tsi, ramp, 꺼짐 급격화) | 진행 중 | 설계 지도 |
 
 ---
 
@@ -559,7 +559,7 @@ Adev 1=drain 0=source 2=gate 3=tap 0=substrate infile=MM_TAPT_ISL_W30LK_L6_R7_R1
 ![](1001/tap/fig/MM_DD_W05_vs_W1.png)
 *데이터: `1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_DD_VGm0p2.log_tr.log` (1 µm), `…_DD_W05_VGm0p2.log_tr.log` (0.5 µm) · 일회성 스크립트*
 
-### 계획된 덱 (43개)
+### 계획된 덱 (50개)
 
 기준: 왼쪽 6e17 · 오른쪽 7e17 · R 1e7 Ω · Vg −0.2 V · 섬 30 nm, 중앙(Lg 50 %), lifetime 1e-12 s · Tsi 50 nm · 0.7 V/ms
 
@@ -576,8 +576,128 @@ Adev 1=drain 0=source 2=gate 3=tap 0=substrate infile=MM_TAPT_ISL_W30LK_L6_R7_R1
 | Si 두께 | `DDS_TSI30`, `DDS_TSI70` | 30, 70 nm | 막 두께 의존성 | ✔ (`set tsi`) |
 | ramp 속도 | `DDS_RATE0p07`, `DDS_RATE7` | 0.07, 7 V/ms | DD에서의 ramp 의존성 (준정적 확인) | |
 | 2변수 조합 | `DDS_NL5p5e17_R3e6`, `DDS_NL5p5e17_R3e7`, `DDS_NL6p5e17_R3e6`, `DDS_NL6p5e17_R3e7` | 왼쪽 도핑 × R | 설계 지도 (두 번째 래치 전압 등고선) | |
+| **(3차) 메커니즘** | `DDS_BASE_SNAP` | 기준 + 래치 전후 촘촘한 스냅샷 28개 | 래치 원인 (장벽, body 정공) | |
+| **(3차) 꺼짐 급격화** | `DDS_RD1e4`, `DDS_RD3e4`, `DDS_RD1e5` | drain 직렬 저항 1e4 – 1e5 Ω (회로) | 부하선으로 두 번째 래치가 급격히 꺼지나 | |
+| **(3차) 꺼짐 급격화** | `DDS_TE1em8`, `DDS_TE1em9`, `DDS_RD3e4_TE1em8` | Si 수명 1e-8, 1e-9 s (+ 조합) | body 정공을 빨리 빼면 급격히 꺼지나 | |
 
-결과가 나오면 변수별로 두 래치 전압(켜짐/꺼짐), 점프 크기, 히스테리시스 창을 표와 그림으로 이 Step에 추가한다. 구조를 바꾼 split은 `.str` 구조 그림을 함께 넣는다.
+<!-- DDSPLIT-AUTO-START -->
+
+### 결과 (자동 생성: 2026-10-08 08:43, 완료 31/50)
+
+> 이 블록은 `1007_ddsplit/update_readme_ddsplit.py`가 다시 쓴다. 래치 검출 기준(`analyze_ddsplit.py`): 같은 Vd(2 mV 이내)에서 경로 전류가 1자리 넘게 뛰고 실제 수준(왼쪽 |Is| > 1e-7 A, 오른쪽 |Itap| > 1e-9 A)에 닿으면 래치. ON = 올라갈 때 켜지는 Vd, OFF = 내려올 때 꺼지는 Vd(왼쪽 |Is| < 1e-8 A, 오른쪽 |Itap| < 1e-9 A), OFF 폭 = 내려올 때 왼쪽 |Is|가 1e-6 → 1e-8 A로 떨어지는 데 걸린 Vd 폭 (0이면 급격).
+
+데이터: `1007_ddsplit/DDS_*.log_tr.log` · 표: `1007_ddsplit/ddsplit_summary.dat` · 코드: `analyze_ddsplit.py`, `plot_ddsplit.py`
+
+| 덱 | 바꾼 것 | 1번째 ON (V) | 점프 (dec) | 2번째 ON (V) | 점프 (dec) | 2번째 OFF (V) | 1번째 OFF (V) | OFF 폭 (V) | 판정 |
+|---|---|---|---|---|---|---|---|---|---|
+| `DDS_BASE` | base (same as the double-latch deck, 0-6-0 V sweep) | 2.251 | 3.5 | 3.300 | 2.5 | 2.24 | 1.20 | 0.264 | 래치 2번 |
+| `DDS_NL4e17` | left body 4e17 | 2.252 | 2.8 | 2.282 | 0.6 | 2.10 | 1.20 | 0.328 | 래치 2번 (간격 0.03 V, 거의 붙음) |
+| `DDS_NL5e17` | left body 5e17 | 2.251 | 3.8 | 2.724 | 1.8 | 2.18 | 1.20 | 0.323 | 래치 2번 |
+| `DDS_NL5p5e17` | left body 5.5e17 | 2.251 | 3.5 | 2.995 | 2.2 | 2.21 | 1.20 | 0.293 | 래치 2번 |
+| `DDS_NL6p5e17` | left body 6.5e17 | 2.252 | 3.3 | 3.608 | 2.8 | 2.26 | 1.20 | 0.244 | 래치 2번 |
+| `DDS_NL7e17` | left body 7e17 | 2.253 | 2.8 | 3.848 | 2.9 | 2.28 | 1.20 | 0.221 | 래치 2번 |
+| `DDS_NL8e17` | left body 8e17 | 2.250 | 3.8 | 4.010 | 3.0 | 2.32 | 1.20 | 0.305 | 래치 2번 |
+| `DDS_NR1e18` | right body 1e18 | 2.507 | 3.0 | 3.577 | 2.6 | 2.50 | 1.58 | 0.229 | 래치 2번 |
+| `DDS_NR5e17` | right body 5e17 | 1.237 | 2.5 | 3.105 | 2.5 | 2.04 | 0.91 | 0.334 | 래치 2번 |
+| `DDS_NR6e17` | right body 6e17 | 1.807 | 3.2 | 3.205 | 2.5 | 2.14 | 1.06 | 0.257 | 래치 2번 |
+| `DDS_NR6p5e17` | right body 6.5e17 | 2.076 | 3.1 | 3.253 | 2.5 | 2.19 | 1.13 | 0.265 | 래치 2번 |
+| `DDS_NR7p5e17` | right body 7.5e17 | 2.344 | 3.6 | 3.348 | 2.5 | 2.28 | 1.27 | 0.274 | 래치 2번 |
+| `DDS_NR8e17` | right body 8e17 | 2.404 | 3.7 | 3.396 | 2.6 | 2.33 | 1.33 | 0.263 | 래치 2번 |
+| `DDS_NR9e17` | right body 9e17 | 2.475 | 3.7 | 3.487 | 2.6 | 2.42 | 1.45 | 0.298 | 래치 2번 |
+| `DDS_R1e6` | Rtap 1e6 Ohm | 2.252 | 4.3 | 3.198 | 1.5 | 2.35 | 1.18 | 0.216 | 래치 2번 |
+| `DDS_R1e8` | Rtap 1e8 Ohm | 2.252 | 2.4 | 3.266 | 3.5 | 2.17 | 1.34 | 0.310 | 래치 2번 |
+| `DDS_R3e5` | Rtap 3e5 Ohm | 2.252 | 4.1 | 2.957 | 0.7 | 2.45 | 1.18 | 0.150 | 래치 2번 |
+| `DDS_R3e6` | Rtap 3e6 Ohm | 2.252 | 4.1 | 3.284 | 2.0 | 2.28 | 1.19 | 0.218 | 래치 2번 |
+| `DDS_R3e7` | Rtap 3e7 Ohm | 2.251 | 3.3 | 3.286 | 3.0 | 2.19 | 1.23 | 0.306 | 래치 2번 |
+| `DDS_R3e8` | Rtap 3e8 Ohm | 2.253 | 1.9 | 3.248 | 3.9 | 2.16 | 1.63 | 0.339 | 래치 2번 |
+| `DDS_TAU1em11` | island + neck lifetime 1e-11 s | 2.251 | 3.7 | 3.294 | 2.5 | 2.23 | 1.20 | 0.244 | 래치 2번 |
+| `DDS_TAU1em13` | island + neck lifetime 1e-13 s | 2.251 | 3.8 | 3.300 | 2.5 | 2.23 | 1.20 | 0.243 | 래치 2번 |
+| `DDS_TAU1em9` | island + neck lifetime 1e-9 s | 2.248 | 3.5 | 2.250 | 2.0 | 1.86 | 1.00 | 0.317 | 합쳐짐 (사실상 한 번) |
+| `DDS_VG0` | Vg 0 V | 1.839 | 3.2 | 2.811 | 2.0 | 2.10 | 1.04 | 0.342 | 래치 2번 |
+| `DDS_VGm0p1` | Vg -0.1 V | 2.090 | 3.6 | 3.076 | 2.3 | 2.17 | 1.13 | 0.270 | 래치 2번 |
+| `DDS_VGm0p3` | Vg -0.3 V | 2.332 | 3.6 | 3.465 | 2.6 | 2.28 | 1.26 | 0.271 | 래치 2번 |
+| `DDS_VGm0p5` | Vg -0.5 V | 2.372 | 3.7 | 3.642 | 2.8 | 2.35 | 1.34 | 0.288 | 래치 2번 |
+| `DDS_VGm1p0` | Vg -1.0 V | 2.307 | 3.3 | 3.702 | 2.8 | 2.43 | 1.45 | 0.281 | 래치 2번 |
+| `DDS_VGp0p2` | Vg +0.2 V | 1.308 | 2.2 | 2.274 | 1.2 | 1.89 | 0.81 | 0.485 | 래치 2번 |
+| `DDS_WISL20` | island width 20 nm | 2.355 | 3.1 | 3.533 | 2.6 | 2.33 | 1.26 | 0.253 | 래치 2번 |
+| `DDS_WISL50` | island width 50 nm | 1.921 | 3.4 | 2.793 | 2.2 | 2.03 | 1.08 | 0.277 | 래치 2번 |
+
+![](1007_ddsplit/fig/ddsplit_trends.png)
+*변수별 두 래치의 ON/OFF 전압(선)과 점프 크기(막대). 데이터: `1007_ddsplit/DDS_*.log_tr.log` · 코드: `1007_ddsplit/plot_ddsplit.py`*
+
+![](1007_ddsplit/fig/ddsplit_idvd_R.png)
+*Id-Vd (탭 저항). 실선 올라감, 점선 내려옴. 데이터: `1007_ddsplit/DDS_*.log_tr.log` · 코드: `plot_ddsplit.py`*
+
+
+![](1007_ddsplit/fig/ddsplit_idvd_NL.png)
+*Id-Vd (왼쪽 body 도핑). 실선 올라감, 점선 내려옴. 데이터: `1007_ddsplit/DDS_*.log_tr.log` · 코드: `plot_ddsplit.py`*
+
+
+![](1007_ddsplit/fig/ddsplit_idvd_NR.png)
+*Id-Vd (오른쪽 body 도핑). 실선 올라감, 점선 내려옴. 데이터: `1007_ddsplit/DDS_*.log_tr.log` · 코드: `plot_ddsplit.py`*
+
+
+![](1007_ddsplit/fig/ddsplit_idvd_VG.png)
+*Id-Vd (Vg). 실선 올라감, 점선 내려옴. 데이터: `1007_ddsplit/DDS_*.log_tr.log` · 코드: `plot_ddsplit.py`*
+
+
+![](1007_ddsplit/fig/ddsplit_idvd_TAU.png)
+*Id-Vd (섬 lifetime). 실선 올라감, 점선 내려옴. 데이터: `1007_ddsplit/DDS_*.log_tr.log` · 코드: `plot_ddsplit.py`*
+
+
+![](1007_ddsplit/fig/ddsplit_idvd_WISL.png)
+*Id-Vd (섬 폭). 실선 올라감, 점선 내려옴. 데이터: `1007_ddsplit/DDS_*.log_tr.log` · 코드: `plot_ddsplit.py`*
+
+![](1007_ddsplit/fig/ddsplit_struct_WISL.png)
+*구조 변경 (섬 폭). 출처: `1007_ddsplit/DDS_*_INIT.str` · 코드: `tools/strstruct.py` (via `plot_ddsplit.py`)*
+
+
+
+
+
+
+
+
+### 래치 메커니즘 (.str 스냅샷)
+
+각 split은 고정 Vd마다 `.str` 스냅샷(`DDS_*_T_tr_N`)을 저장한다. 채널(y = 25 nm)을 따라 전위와 정공 밀도를 읽고, STL마다 **source → body 전자 장벽**과 **body 평균 정공 밀도**를 계산했다 (`mech_ddsplit.py`).
+
+![](1007_ddsplit/fig/mech_DDS_BASE.png)
+*데이터: `1007_ddsplit/DDS_BASE_T_tr_N` · 코드: `1007_ddsplit/mech_ddsplit.py`*
+
+| 스냅샷 | Vd (V) | 왼쪽 장벽 (eV) | 왼쪽 body 정공 (cm⁻³) | 오른쪽 장벽 (eV) | 오른쪽 body 정공 (cm⁻³) |
+|---|---|---|---|---|---|
+| up | 1.50 | 0.979 | 8.619e+16 | 0.727 | 9.451e+16 |
+| up | 2.00 | 0.979 | 8.619e+16 | 0.692 | 7.187e+16 |
+| up | 2.50 | 0.705 | 7.909e+16 | 0.270 | 2.600e+17 |
+| up | 3.00 | 0.679 | 4.283e+16 | 0.259 | 2.677e+17 |
+| up | 3.50 | 0.092 | 7.469e+17 | 0.097 | 6.434e+17 |
+| up | 4.00 | 0.067 | 1.517e+18 | 0.076 | 1.135e+18 |
+| up | 5.00 | 0.010 | 8.763e+18 | 0.022 | 5.551e+18 |
+| up | 6.00 | -0.019 | 1.664e+19 | -0.020 | 1.046e+19 |
+| down | 5.00 | 0.010 | 8.763e+18 | 0.022 | 5.551e+18 |
+| down | 4.00 | 0.067 | 1.517e+18 | 0.076 | 1.135e+18 |
+| down | 3.50 | 0.092 | 7.469e+17 | 0.097 | 6.434e+17 |
+| down | 3.00 | 0.126 | 4.176e+17 | 0.127 | 3.997e+17 |
+| down | 2.50 | 0.203 | 2.883e+17 | 0.199 | 2.834e+17 |
+| down | 2.00 | 0.737 | 1.147e+17 | 0.287 | 2.504e+17 |
+| down | 1.50 | 0.838 | 1.219e+17 | 0.321 | 2.382e+17 |
+| down | 1.00 | 0.895 | 1.223e+17 | 0.740 | 1.274e+17 |
+| down | 0.00 | 0.907 | 1.172e+17 | 1.039 | 1.225e+17 |
+
+읽는 법: 오른쪽 STL은 첫 번째 래치에서 장벽이 약 0.7 → 0.27 eV로 떨어지고 body 정공이 늘어난다. 이때 섬 전위가 올라가 왼쪽 장벽도 일부 낮아진다 (0.98 → 0.70 eV). 두 번째 래치에서 왼쪽 장벽이 0.68 → 0.09 eV로 무너지며 왼쪽 body가 정공으로 찬다. 내려올 때 왼쪽 장벽은 0.13 → 0.20 → 0.74 eV로 **여러 스냅샷에 걸쳐 서서히** 회복된다. 이게 두 번째 래치가 완만하게 꺼지는 모습이다.
+
+### 두 번째 래치를 급격히 끄기 위한 시도
+
+내려올 때 왼쪽 STL이 약 0.26 V에 걸쳐 서서히 꺼진다 (기준 OFF 폭). 원인 가설: drain이 이상적인 전압원이라 켜진 가지를 끝까지 따라 내려오고, 접힘(fold)에서 튀어 내려올 계기가 없다. 그래서 (1) **drain 직렬 저항**(부하선을 기울여 접힘에서 점프하게), (2) **Si 수명 감소**(body 정공을 빨리 빼서 유지 전류↑)를 시험한다.
+
+| 덱 | 바꾼 것 | 1번째 ON (V) | 점프 (dec) | 2번째 ON (V) | 점프 (dec) | 2번째 OFF (V) | 1번째 OFF (V) | OFF 폭 (V) | 판정 |
+|---|---|---|---|---|---|---|---|---|---|
+| `DDS_BASE` | base (same as the double-latch deck, 0-6-0 V sweep) | 2.251 | 3.5 | 3.300 | 2.5 | 2.24 | 1.20 | 0.264 | 래치 2번 |
+
+
+
+<!-- DDSPLIT-AUTO-END -->
 
 ---
 
@@ -625,7 +745,7 @@ SOI body를 n+ 섬으로 나누고(Step 3), 섬을 1e7 Ω으로 접지하고(Ste
 
 ## 현재 상태와 다음 단계
 
-- **실행 중**: DD split 43개 (`1007_ddsplit/queue_ddsplit.sh`, `queue_ddsplit2.sh`, CPU 2개). 10/08 오전 완료 예상.
+- **실행 중**: DD split 50개 (`1007_ddsplit/queue_ddsplit*.sh`, CPU 2개). 모두 끝나면 `1007_ddsplit/finalize_ddsplit.sh`가 분석 → 그림 → README Step 12 결과 블록 갱신 → commit/push까지 자동으로 한다.
 - **다음**:
   1. split 결과를 변수별 표·그림으로 정리 (Step 12)
   2. 2변수 조합으로 두 번째 래치 전압 설계 지도

@@ -54,3 +54,8 @@
 !1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e8_UD75S_MF_HC_VGm0p2.log_tr.log
 !1001/tap/TAPT_ISL_W30LK_L6_R7_R1e6_UD75S_VGm0p2.log
 !1001/tap/TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_VGm0p2.log
+!1007_ddsplit/analyze_ddsplit.py
+!1007_ddsplit/plot_ddsplit.py
+!1007_ddsplit/mech_ddsplit.py
+!1007_ddsplit/update_readme_ddsplit.py
+!1007_ddsplit/DDS_*.log_tr.log
