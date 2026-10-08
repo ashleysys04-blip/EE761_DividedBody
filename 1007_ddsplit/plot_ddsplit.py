@@ -7,7 +7,7 @@ here = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, here); sys
 from analyze_ddsplit import analyse, load_cols
 from plog import load
 OUT = os.path.join(here, 'fig'); os.makedirs(OUT, exist_ok=True)
-BASE = dict(R=1e7, NL=6e17, NR=7e17, VG=-0.2, TAU=1e-12, WISL=30, XS=50, TSI=50, RATE=0.7, RD=1e3, TE=1e-7)
+BASE = dict(R=1e7, NL=6e17, NR=7e17, VG=-0.2, TAU=1e-12, WISL=30, XS=50, TSI=50, RATE=0.7, RD=1e3, TE=1e-7, TE8_NL=6e17, TE8_NR=7e17, TE8_R=1e7, TE8_VG=-0.2)
 GROUPS = {
  'R':   ('Rtap (Ohm)', True,  [('R3e5', 3e5), ('R1e6', 1e6), ('R3e6', 3e6), ('BASE', 1e7), ('R3e7', 3e7), ('R1e8', 1e8), ('R3e8', 3e8)]),
  'NL':  ('left body doping (cm$^{-3}$)', False, [('NL4e17', 4e17), ('NL5e17', 5e17), ('NL5p5e17', 5.5e17), ('BASE', 6e17), ('NL6p5e17', 6.5e17), ('NL7e17', 7e17), ('NL8e17', 8e17)]),
@@ -19,7 +19,11 @@ GROUPS = {
  'TSI': ('Si film thickness (nm)', False, [('TSI30', 30), ('BASE', 50), ('TSI70', 70)]),
  'RATE': ('ramp rate (V/ms)', True, [('RATE0p07', 0.07), ('BASE', 0.7), ('RATE7', 7.0)]),
  'RD':  ('drain series R (Ohm, base = 0 shown at 1e3)', True, [('BASE', 1e3), ('RD1e4', 1e4), ('RD3e4', 3e4), ('RD1e5', 1e5)]),
- 'TE':  ('Si carrier lifetime (s)', True, [('TE1em9', 1e-9), ('TE1em8', 1e-8), ('BASE', 1e-7)]),
+ 'TE':  ('Si carrier lifetime (s)', True, [('TE1em9', 1e-9), ('TE5em9', 5e-9), ('TE1em8', 1e-8), ('TE2em8', 2e-8), ('TE5em8', 5e-8), ('BASE', 1e-7)]),
+ 'TE8_NL': ('left body doping, Si lifetime 1e-8 s', False, [('TE8_NL5e17', 5e17), ('TE8_NL5p5e17', 5.5e17), ('TE1em8', 6e17), ('TE8_NL6p5e17', 6.5e17)]),
+ 'TE8_NR': ('right body doping, Si lifetime 1e-8 s', False, [('TE8_NR5e17', 5e17), ('TE8_NR6e17', 6e17), ('TE1em8', 7e17)]),
+ 'TE8_R': ('Rtap (Ohm), Si lifetime 1e-8 s', True, [('TE8_R3e6', 3e6), ('TE1em8', 1e7), ('TE8_R3e7', 3e7)]),
+ 'TE8_VG': ('Vg (V), Si lifetime 1e-8 s', False, [('TE8_VG0', 0.0), ('TE8_VGm0p1', -0.1), ('TE1em8', -0.2)]),
 }
 res = {}
 def get(tag):
@@ -34,7 +38,7 @@ def get(tag):
                     d2=l[0][2] if l else np.nan, off_l=vl, off_r=vr, merged=bool(r and l and abs(r[0][0] - l[0][0]) < 0.01))
     return res[tag]
 
-fig, axs = plt.subplots(3, 4, figsize=(22, 13))
+fig, axs = plt.subplots(4, 4, figsize=(22, 17))
 for ax in axs.flat: ax.axis('off')
 for ax, (g, (xl, logx, items)) in zip(axs.flat, GROUPS.items()):
     ax.axis('on')

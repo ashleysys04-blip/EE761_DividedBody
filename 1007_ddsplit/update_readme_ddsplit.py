@@ -44,7 +44,8 @@ def fig(path, cap):
     return f'![]({REL}/{path})\n*{cap}*\n' if os.path.exists(os.path.join(here, path)) else ''
 
 main = [r['name'] for r in rows if not re.match(r'DDS_(RD|TE|BASE_SNAP)', r['name'])]
-off = [r['name'] for r in rows if re.match(r'DDS_(BASE$|RD|TE)', r['name'])]
+off = [r['name'] for r in rows if re.match(r'DDS_(BASE$|RD|TE1em8$|TE1em9$)', r['name'])]
+te8 = [r['name'] for r in rows if re.match(r'DDS_(TE1em8$|TE5em9|TE2em8|TE5em8|TE8_)', r['name'])]
 L = [A, '', f'### 결과 (자동 생성: {datetime.datetime.now():%Y-%m-%d %H:%M}, 완료 {ndone}/{len(decks)})', '',
      '> 이 블록은 `1007_ddsplit/update_readme_ddsplit.py`가 다시 쓴다. 래치 검출 기준(`analyze_ddsplit.py`): 같은 Vd(2 mV 이내)에서 경로 전류가 1자리 넘게 뛰고 실제 수준(왼쪽 |Is| > 1e-7 A, 오른쪽 |Itap| > 1e-9 A)에 닿으면 래치. '
      'ON = 올라갈 때 켜지는 Vd, OFF = 내려올 때 꺼지는 Vd(왼쪽 |Is| < 1e-8 A, 오른쪽 |Itap| < 1e-9 A), OFF 폭 = 내려올 때 왼쪽 |Is|가 1e-6 → 1e-8 A로 떨어지는 데 걸린 Vd 폭 (0이면 급격).', '',
@@ -58,7 +59,7 @@ for g, cap in (('R', '탭 저항'), ('NL', '왼쪽 body 도핑'), ('NR', '오른
 L += ['', '### 래치 메커니즘 (.str 스냅샷)', '',
       '각 split은 고정 Vd마다 `.str` 스냅샷(`DDS_*_T_tr_N`)을 저장한다. 채널(y = 25 nm)을 따라 전위와 정공 밀도를 읽고, STL마다 '
       '**source → body 전자 장벽**과 **body 평균 정공 밀도**를 계산했다 (`mech_ddsplit.py`).', '']
-for name in ('DDS_BASE', 'DDS_BASE_SNAP'):
+for name in ('DDS_BASE', 'DDS_BASE_SNAP', 'DDS_TE8_SNAP'):
     dat = os.path.join(here, f'mech_{name}.dat')
     if not os.path.exists(dat): continue
     L.append(fig(f'fig/mech_{name}.png', f'데이터: `1007_ddsplit/{name}_T_tr_N` · 코드: `1007_ddsplit/mech_ddsplit.py`'))
@@ -75,6 +76,14 @@ L += ['### 두 번째 래치를 급격히 끄기 위한 시도', '',
       table(off), '',
       fig('fig/ddsplit_idvd_RD.png', 'Id-Vd (drain 직렬 저항). 데이터: `1007_ddsplit/DDS_RD*.log_tr.log` · 코드: `plot_ddsplit.py`'),
       fig('fig/ddsplit_idvd_TE.png', 'Id-Vd (Si 수명). 데이터: `1007_ddsplit/DDS_TE*.log_tr.log` · 코드: `plot_ddsplit.py`'),
+      '### Si 수명 1e-8 s 기반 split (급격한 꺼짐 조건 위에서 다시 조절)', '',
+      'Si 수명 1e-8 s에서 두 번째 래치가 점프로 꺼졌다 (OFF 폭 0.26 → 0.04 V). 대신 두 래치가 모두 약 0.7 V 올라갔다. 이 조건을 유지한 채 도핑·R·Vg·섬 위치로 래치 전압을 다시 내리고, 꺼짐이 계속 급격한지 본다. '
+      '`DDS_TE8_SNAP`은 꺼지는 구간의 촘촘한 스냅샷으로 메커니즘을 본다.', '',
+      table(te8), '',
+      fig('fig/ddsplit_idvd_TE8_NL.png', 'Id-Vd (수명 1e-8 s + 왼쪽 도핑). 데이터: `1007_ddsplit/DDS_TE8_NL*.log_tr.log` · 코드: `plot_ddsplit.py`'),
+      fig('fig/ddsplit_idvd_TE8_NR.png', 'Id-Vd (수명 1e-8 s + 오른쪽 도핑). 데이터: `1007_ddsplit/DDS_TE8_NR*.log_tr.log` · 코드: `plot_ddsplit.py`'),
+      fig('fig/ddsplit_idvd_TE8_R.png', 'Id-Vd (수명 1e-8 s + 탭 저항). 데이터: `1007_ddsplit/DDS_TE8_R*.log_tr.log` · 코드: `plot_ddsplit.py`'),
+      fig('fig/ddsplit_idvd_TE8_VG.png', 'Id-Vd (수명 1e-8 s + Vg). 데이터: `1007_ddsplit/DDS_TE8_VG*.log_tr.log` · 코드: `plot_ddsplit.py`'),
       B]
 s = open(README).read()
 block = '\n'.join(x for x in L if x is not None)

@@ -119,7 +119,7 @@ Vd, Id, Is, Itap = d[:, o+11], d[:, o+12], d[:, o+7], d[:, o+17]
 | 9 | **왼쪽 STL 단독 소자**, 도핑 탐색 | 3e17은 래치 불가, **6e17 래치** | 본 소자에 적용 |
 | 10 | 왼쪽 6e17 + **R 1e7 Ω**, MixedMode | **DD에서 래치 2번** | hcte로 확인 필요 |
 | 11 | 같은 소자를 hcte로 (12가지 수렴 대책) | 모두 3.6–5.3 V에서 중단 | hcte 접고 DD로 |
-| 12 | DD split 50개 (R, 도핑, Vg, lifetime, 섬 폭·위치, Tsi, ramp, 꺼짐 급격화) | 진행 중 | 설계 지도 |
+| 12 | DD split 69개 (R, 도핑, Vg, lifetime, 섬 폭·위치, Tsi, ramp, 꺼짐 급격화 + 그 위의 재조절) | 50개 완료, 19개 진행 중 | 설계 지도 |
 
 ---
 
@@ -560,7 +560,7 @@ Adev 1=drain 0=source 2=gate 3=tap 0=substrate infile=MM_TAPT_ISL_W30LK_L6_R7_R1
 ![](1001/tap/fig/MM_DD_W05_vs_W1.png)
 *데이터: `1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_DD_VGm0p2.log_tr.log` (1 µm), `…_DD_W05_VGm0p2.log_tr.log` (0.5 µm) · 일회성 스크립트*
 
-### 계획된 덱 (50개)
+### 계획된 덱 (69개)
 
 기준: 왼쪽 6e17 · 오른쪽 7e17 · R 1e7 Ω · Vg −0.2 V · 섬 30 nm, 중앙(Lg 50 %), lifetime 1e-12 s · Tsi 50 nm · 0.7 V/ms
 
@@ -580,6 +580,11 @@ Adev 1=drain 0=source 2=gate 3=tap 0=substrate infile=MM_TAPT_ISL_W30LK_L6_R7_R1
 | **(3차) 메커니즘** | `DDS_BASE_SNAP` | 기준 + 래치 전후 촘촘한 스냅샷 28개 | 래치 원인 (장벽, body 정공) | |
 | **(3차) 꺼짐 급격화** | `DDS_RD1e4`, `DDS_RD3e4`, `DDS_RD1e5` | drain 직렬 저항 1e4 – 1e5 Ω (회로) | 부하선으로 두 번째 래치가 급격히 꺼지나 | |
 | **(3차) 꺼짐 급격화** | `DDS_TE1em8`, `DDS_TE1em9`, `DDS_RD3e4_TE1em8` | Si 수명 1e-8, 1e-9 s (+ 조합) | body 정공을 빨리 빼면 급격히 꺼지나 | |
+| **(4차) 수명 미세 조정** | `DDS_TE5em9`, `DDS_TE2em8`, `DDS_TE5em8` | Si 수명 5e-9, 2e-8, 5e-8 s | 급격한 꺼짐과 래치 전압 상승 사이의 최적점 | |
+| **(4차) 수명 1e-8 s 위에서 재조절** | `DDS_TE8_NL5e17`, `DDS_TE8_NL5p5e17`, `DDS_TE8_NL6p5e17`, `DDS_TE8_NR5e17`, `DDS_TE8_NR6e17`, `DDS_TE8_R3e6`, `DDS_TE8_R3e7`, `DDS_TE8_VG0`, `DDS_TE8_VGm0p1`, `DDS_TE8_TAU1em11` | 도핑, R, Vg, 섬 lifetime | 올라간 래치 전압을 다시 내려도 급격한 꺼짐이 유지되나 | |
+| **(4차) 수명 1e-8 s + 구조** | `DDS_TE8_XS60`, `DDS_TE8_WISL50` | 섬 위치 60 %, 섬 폭 50 nm | 래치 간격이 큰 구조에서도 급격히 꺼지나 | ✔ |
+| **(4차) 수명 1e-8 s + 조합** | `DDS_TE8_NR6e17_NL5p5e17`, `DDS_TE8_NR5e17_NL5e17`, `DDS_TE8_VG0_NL5p5e17` | 두 도핑 / Vg + 도핑 | 기준 수준 래치 전압 + 급격한 꺼짐 | |
+| **(4차) 메커니즘** | `DDS_TE8_SNAP` | 수명 1e-8 s + 꺼지는 구간 촘촘한 스냅샷 | 왜 급격히 꺼지나 | |
 
 <!-- DDSPLIT-AUTO-START -->
 
@@ -812,11 +817,9 @@ SOI body를 n+ 섬으로 나누고(Step 3), 섬을 1e7 Ω으로 접지하고(Ste
 
 ## 현재 상태와 다음 단계
 
-- **실행 중**: DD split 50개 (`1007_ddsplit/queue_ddsplit*.sh`, CPU 2개). 모두 끝나면 `1007_ddsplit/finalize_ddsplit.sh`가 분석 → 그림 → README Step 12 결과 블록 갱신 → commit/push까지 자동으로 한다.
-- **다음**:
-  1. split 결과를 변수별 표·그림으로 정리 (Step 12)
-  2. 2변수 조합으로 두 번째 래치 전압 설계 지도
-  3. 래치 창이 좁아지는 원인(lifetime 감소?) 확인 (lifetime split에서)
+- **완료**: DD split 1–3차 50개 (결과는 Step 12 자동 블록). 두 번째 래치를 급격히 끄는 조건 = **Si 수명 1e-8 s** (OFF 폭 0.26 → 0.04 V).
+- **실행 중**: 4차 19개 (수명 1e-8 s 기반 재조절, `1007_ddsplit/queue_ddsplit4.sh`, CPU 2개). 끝나면 `finalize_ddsplit2.sh`가 분석 → README 갱신 → commit/push를 자동으로 한다.
+- **다음**: 급격한 꺼짐을 유지하면서 래치 전압을 기준 수준(약 2.25 / 3.3 V)으로 되돌리는 조합 찾기.
 
 ---
 

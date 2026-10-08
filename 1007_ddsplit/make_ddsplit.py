@@ -71,6 +71,28 @@ SPLITS = [  # tag, description, dict of changes
     ('TE1em8', 'Si carrier lifetime 1e-8 s (base 1e-7)', {'TE': '1e-8'}),
     ('TE1em9', 'Si carrier lifetime 1e-9 s (base 1e-7)', {'TE': '1e-9'}),
     ('RD3e4_TE1em8', 'drain resistor 3e4 Ohm + Si lifetime 1e-8 s', {'RD': '3e4', 'TE': '1e-8'}),
+    # ---- batch 4 (10/09): built on the sharp turn-off condition (Si lifetime 1e-8 s) ----
+    ('TE5em9', 'Si carrier lifetime 5e-9 s', {'TE': '5e-9'}),
+    ('TE2em8', 'Si carrier lifetime 2e-8 s', {'TE': '2e-8'}),
+    ('TE5em8', 'Si carrier lifetime 5e-8 s', {'TE': '5e-8'}),
+    ('TE8_NL5e17', 'Si lifetime 1e-8 s + left body 5e17', {'TE': '1e-8', 'NL': '5.0e17'}),
+    ('TE8_NL5p5e17', 'Si lifetime 1e-8 s + left body 5.5e17', {'TE': '1e-8', 'NL': '5.5e17'}),
+    ('TE8_NL6p5e17', 'Si lifetime 1e-8 s + left body 6.5e17', {'TE': '1e-8', 'NL': '6.5e17'}),
+    ('TE8_NR5e17', 'Si lifetime 1e-8 s + right body 5e17', {'TE': '1e-8', 'NR': '5.0e17'}),
+    ('TE8_NR6e17', 'Si lifetime 1e-8 s + right body 6e17', {'TE': '1e-8', 'NR': '6.0e17'}),
+    ('TE8_R3e6', 'Si lifetime 1e-8 s + Rtap 3e6', {'TE': '1e-8', 'R': '3e6'}),
+    ('TE8_R3e7', 'Si lifetime 1e-8 s + Rtap 3e7', {'TE': '1e-8', 'R': '3e7'}),
+    ('TE8_VG0', 'Si lifetime 1e-8 s + Vg 0 V', {'TE': '1e-8', 'VG': 0.0}),
+    ('TE8_VGm0p1', 'Si lifetime 1e-8 s + Vg -0.1 V', {'TE': '1e-8', 'VG': -0.1}),
+    ('TE8_XS60', 'Si lifetime 1e-8 s + island at 60 % of Lg', {'TE': '1e-8', 'SET': {'Xsplit': '$Lsd+$Lg*0.60'}}),
+    ('TE8_WISL50', 'Si lifetime 1e-8 s + island 50 nm', {'TE': '1e-8', 'SET': {'Wisl': '0.05'}}),
+    ('TE8_TAU1em11', 'Si lifetime 1e-8 s + island lifetime 1e-11 s', {'TE': '1e-8', 'TAU': '1e-11'}),
+    ('TE8_NR6e17_NL5p5e17', 'Si lifetime 1e-8 s + right 6e17 + left 5.5e17 (pull both latches down)', {'TE': '1e-8', 'NR': '6.0e17', 'NL': '5.5e17'}),
+    ('TE8_NR5e17_NL5e17', 'Si lifetime 1e-8 s + right 5e17 + left 5e17', {'TE': '1e-8', 'NR': '5.0e17', 'NL': '5.0e17'}),
+    ('TE8_VG0_NL5p5e17', 'Si lifetime 1e-8 s + Vg 0 V + left 5.5e17', {'TE': '1e-8', 'VG': 0.0, 'NL': '5.5e17'}),
+    ('TE8_SNAP', 'Si lifetime 1e-8 s with dense snapshots around the turn-off (mechanism)',
+     {'TE': '1e-8', 'UP': [2.8, 2.9, 2.94, 2.97, 3.0, 3.5, 3.9, 3.93, 3.96, 4.0, 4.5],
+      'DN': [4.5, 4.0, 3.5, 3.2, 3.0, 2.9, 2.8, 2.78, 2.76, 2.74, 2.72, 2.7, 2.6, 2.0, 1.8, 1.72, 1.6]}),
 ]
 
 for tag, desc, ch in SPLITS:
