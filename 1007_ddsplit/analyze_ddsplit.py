@@ -6,7 +6,7 @@ and reaches a real level (left |Is| > 1e-7 A, right |Itap| > 1e-9 A) -> regenera
 For each event: Vd, which path jumped (right = tap current, left = source current, both = together)
 and the jump size in decades of |Id|.
 Columns are found by name from the log header ('p', 'Q', 'X' lines), so circuits with extra elements
-(e.g. a drain series resistor) work: Vd = V(device drain node), Id/Is/Itap = Adev_drain/source/tap currents.
+(e.g. a drain series resistor) work: Vd = APPLIED drain voltage (node of the Vdrain source), Id/Is/Itap = Adev_drain/source/tap currents.
 """
 import sys, glob, os
 import numpy as np
@@ -66,8 +66,17 @@ def drain_node(fn):
                 if tok.endswith('=drain'): return int(tok.split('=')[0])
     return 1
 
-def load_cols(fn):
-    M = load(fn); m = columns(fn); n = drain_node(fn)
+def source_node(fn):
+    """Circuit node driven by the Vdrain source (= applied voltage)."""
+    for l in open(fn.replace('.log_tr.log', '.in')):
+        if l.startswith('Vdrain'):
+            return int(l.split()[1])
+    return 1
+
+def load_cols(fn, device_v=False):
+    """v = applied drain voltage (source node) by default; with a drain series resistor the device node
+    snaps back during a latch, so events are detected at fixed APPLIED voltage. device_v=True returns the device node."""
+    M = load(fn); m = columns(fn); n = drain_node(fn) if device_v else source_node(fn)
     return M, M[:, m[f'V[{n}]']], M[:, m['Adev_drain']], M[:, m['Adev_source']], M[:, m['Adev_tap']], M[:, m['V[3]']]
 
 def analyse(fn):
