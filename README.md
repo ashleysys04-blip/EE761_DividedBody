@@ -34,6 +34,7 @@ EE762 (KAIST, 2026 가을) 프로젝트 연구 기록 · Silvaco ATLAS 2D (devic
 - [트레이드오프 요약](#트레이드오프-요약)
 - [현재 상태와 다음 단계](#현재-상태와-다음-단계)
 - [부록: 핵심 데이터 파일](#부록-핵심-데이터-파일)
+- [논문용 그림 (Fig. 1, Fig. 2)](#논문용-그림-fig-1-fig-2)
 
 ---
 
@@ -773,3 +774,33 @@ SOI body를 n+ 섬으로 나누고(Step 3), 섬을 1e7 Ω으로 접지하고(Ste
 | 12 | `1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_DD_W05_VGm0p2.log_tr.log` (split 결과는 완료 후 추가) |
 
 `*_extract.dat` 열: `time_s Vd_V Id_A Is_A Itap_A Vtap_internal_V VB_left_V VB_right_V V_island_V` (원본의 20행마다 1행 + |Id| 변화가 큰 행 전부).
+
+---
+
+## 논문용 그림 (Fig. 1, Fig. 2)
+
+논문 첫 그림(요약·원리)과 등가회로. 그림마다 PNG(미리보기), **PDF(벡터, 글자 유지)**, SVG(벡터), HTML(원본)을 같이 올렸다.
+
+### Fig. 1. 소자 개념과 동작 원리
+
+![Fig. 1](docs/fig/paper/fig1_concept.png)
+
+파일: [PDF](docs/fig/paper/fig1_concept.pdf) · [SVG](docs/fig/paper/fig1_concept.svg) · [PNG](docs/fig/paper/fig1_concept.png) · [HTML 원본](docs/fig/paper/fig1_concept.html)
+(c) 데이터: `1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_DD_W05_VGm0p2.log_tr.log` (DD, MixedMode, W = 0.5 µm, 0–4 V 구간) · 구조 치수: 덱 `1001/tap/TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_VGm0p2.in`
+
+> **캡션 초안.** Fig. 1. (a) Schematic of the divided-body SOI STL: an N⁺ island splits the p-body into a left and a right STL in series; the island and its BOX via are lifetime-killed (τ = 1 ps) and tapped to ground through R<sub>tap</sub>. (b) Cross-section with dimensions. (c) Simulated I<sub>D</sub>–V<sub>D</sub> (drift-diffusion, V<sub>G</sub> = −0.2 V, 0.7 V/ms) showing two latch events with hysteresis. (d)–(f) Carrier states I–III marked in (c). (g) Without lifetime killing, holes cross the island and both STLs latch at once.
+
+### Fig. 2. 등가회로
+
+![Fig. 2](docs/fig/paper/fig2_equivalent_circuit.png)
+
+파일: [PDF](docs/fig/paper/fig2_equivalent_circuit.pdf) · [SVG](docs/fig/paper/fig2_equivalent_circuit.svg) · [PNG](docs/fig/paper/fig2_equivalent_circuit.png) · [HTML 원본](docs/fig/paper/fig2_equivalent_circuit.html)
+
+각 STL = MOSFET(M) + 기생 NPN(Q) + floating body(B) + impact ionization 전류원(I<sub>ii</sub>). 점선 다이오드 D<sub>S</sub>는 별도 소자가 아니라 Q의 B–E 접합(body–source)을 표시한 것이다. 두 STL은 섬 노드 V<sub>I</sub>에서 직렬로 이어지고, 섬은 C<sub>I</sub>와 R<sub>tap</sub>으로 접지된다.
+
+### 그림 고치는 법
+- **README 안에서는 그림을 직접 편집할 수 없다** (GitHub README는 정적 이미지만 보여 준다). 고친 뒤 파일을 다시 올려야 한다.
+- **PDF**: Illustrator나 Inkscape에서 열면 도형·글자가 각각 편집된다 (글자가 텍스트로 남아 있음). 논문 투고용 벡터 그림으로 그대로 써도 된다.
+- **SVG**: PowerPoint에 삽입 → 그룹 해제(도형으로 변환)하면 도형 단위로 편집된다. 글자는 윤곽선으로 바뀌어 있어 다시 입력해야 한다.
+- **HTML 원본**: 원래 편집 캔버스에서 내보낸 것. HTML을 고친 뒤 `python3 docs/fig/paper/render.py`를 돌리면 PNG·PDF·SVG가 다시 만들어진다 (playwright + chromium 필요, SVG는 poppler `pdftocairo`).
+- 글꼴은 Times 계열(Tinos / Liberation Serif)이다.
