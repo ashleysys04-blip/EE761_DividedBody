@@ -560,7 +560,7 @@ Adev 1=drain 0=source 2=gate 3=tap 0=substrate infile=MM_TAPT_ISL_W30LK_L6_R7_R1
 ![](1001/tap/fig/MM_DD_W05_vs_W1.png)
 *데이터: `1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_DD_VGm0p2.log_tr.log` (1 µm), `…_DD_W05_VGm0p2.log_tr.log` (0.5 µm) · 일회성 스크립트*
 
-### 계획된 덱 (69개)
+### 계획된 덱 (85개)
 
 기준: 왼쪽 6e17 · 오른쪽 7e17 · R 1e7 Ω · Vg −0.2 V · 섬 30 nm, 중앙(Lg 50 %), lifetime 1e-12 s · Tsi 50 nm · 0.7 V/ms
 
@@ -585,10 +585,14 @@ Adev 1=drain 0=source 2=gate 3=tap 0=substrate infile=MM_TAPT_ISL_W30LK_L6_R7_R1
 | **(4차) 수명 1e-8 s + 구조** | `DDS_TE8_XS60`, `DDS_TE8_WISL50` | 섬 위치 60 %, 섬 폭 50 nm | 래치 간격이 큰 구조에서도 급격히 꺼지나 | ✔ |
 | **(4차) 수명 1e-8 s + 조합** | `DDS_TE8_NR6e17_NL5p5e17`, `DDS_TE8_NR5e17_NL5e17`, `DDS_TE8_VG0_NL5p5e17` | 두 도핑 / Vg + 도핑 | 기준 수준 래치 전압 + 급격한 꺼짐 | |
 | **(4차) 메커니즘** | `DDS_TE8_SNAP` | 수명 1e-8 s + 꺼지는 구간 촘촘한 스냅샷 | 왜 급격히 꺼지나 | |
+| **(5차) 분리된 사각형: 섬 위치** | `DDS_TE8_XS55`, `DDS_TE8_XS65`, `DDS_TE8_XS70` | 수명 1e-8 s + 섬 위치 55/65/70 % | 두 루프 간격과 폭 | ✔ |
+| **(5차) 분리된 사각형: 재조절** | `DDS_TE8_XS60_NL5e17`, `…_NL5p5e17`, `…_VG0`, `…_VGm0p1`, `…_NR8e17`, `…_NR1e18` | 섬 60 % 위에서 도핑·Vg | 루프 2를 낮추고 루프 1을 넓히기 | |
+| **(5차) 분리된 사각형: 평평한 윗변** | `DDS_TE8_XS60_RD1e5`, `…_RD3e5`, `…_RD1e6` | drain 직렬 저항 | 켜진 상태 전류를 평평하게 (사각형 윗변) | |
+| **(5차) 분리된 사각형: 수명·조합** | `DDS_TE5em9_XS60`, `DDS_TE2em8_XS60`, `DDS_TE8_XS60_NL5p5e17_RD3e5`, `DDS_TE8_XS65_NL5e17_RD3e5` | 수명, 조합 | 가장 깔끔한 두 사각형 | ✔ |
 
 <!-- DDSPLIT-AUTO-START -->
 
-### 결과 (자동 생성: 2026-10-09 11:58, 완료 69/69)
+### 결과 (자동 생성: 2026-10-09 12:58, 완료 69/85)
 
 > 이 블록은 `1007_ddsplit/update_readme_ddsplit.py`가 다시 쓴다. 래치 검출 기준(`analyze_ddsplit.py`): 같은 Vd(2 mV 이내)에서 경로 전류가 1자리 넘게 뛰고 실제 수준(왼쪽 |Is| > 1e-7 A, 오른쪽 |Itap| > 1e-9 A)에 닿으면 래치. ON = 올라갈 때 켜지는 Vd, OFF = 내려올 때 꺼지는 Vd(왼쪽 |Is| < 1e-8 A, 오른쪽 |Itap| < 1e-9 A), OFF 폭 = 내려올 때 왼쪽 |Is|가 1e-6 → 1e-8 A로 떨어지는 데 걸린 Vd 폭 (0이면 급격).
 
@@ -842,6 +846,21 @@ Si 수명 1e-8 s에서 두 번째 래치가 점프로 꺼졌다 (OFF 폭 0.26 �
 ![](1007_ddsplit/fig/ddsplit_idvd_TE8_VG.png)
 *Id-Vd (수명 1e-8 s + Vg). 데이터: `1007_ddsplit/DDS_TE8_VG*.log_tr.log` · 코드: `plot_ddsplit.py`*
 
+### 두 개의 분리된 급격한 사각형 루프 (`TE8_XS60` 기반)
+
+목표: 래치 두 개가 **각각 급격히 켜지고 꺼지며**, 두 히스테리시스 루프가 **겹치지 않고**(간격 > 0), 각 상태의 전류가 **평평한** 사각형. 기준은 Si 수명 1e-8 s + 섬 위치 Lg 60 % (`DDS_TE8_XS60`). 섬 위치, 왼쪽/오른쪽 도핑, Vg, Si 수명, drain 직렬 저항(윗변 평탄화)을 바꿨다.
+
+| 덱 | 바꾼 것 | 루프 1 폭 (V) | 루프 2 폭 (V) | 루프 간격 (V) | 2번째 OFF 폭 (V) | 1번째 OFF 폭 (V) | 상태 II 기울기 (dec) | 상태 III 기울기 (dec) |
+|---|---|---|---|---|---|---|---|---|
+| `DDS_TE1em8` | Si carrier lifetime 1e-8 s (base 1e-7) | 1.233 | 1.189 | -0.201 | 0.044 | 0.010 | 0.24 | 2.18 |
+| `DDS_TE8_XS60` | Si lifetime 1e-8 s + island at 60 % of Lg | 0.221 | 2.214 | 1.117 | 0.056 | 0.032 | 1.06 | 3.08 |
+| `DDS_XS60` | island centre at 60 % of Lg (left body longer) | 0.274 | 1.693 | 0.943 | 0.291 | 0.228 | 1.19 | 3.03 |
+
+루프 간격 > 0이면 두 루프가 겹치지 않음. OFF 폭이 0에 가까울수록 급격히 꺼짐. 기울기(dec)는 그 상태에서 |Id|가 변하는 자릿수 (작을수록 평평한 윗변).
+
+![](1007_ddsplit/fig/ddsplit_rect_loops.png)
+*분리된 사각형 루프 비교 (실선 올라감, 점선 내려옴). 데이터: `1007_ddsplit/DDS_TE8_XS*.log_tr.log` 등 · 코드: `1007_ddsplit/plot_ddsplit.py`*
+
 <!-- DDSPLIT-AUTO-END -->
 
 ---
@@ -890,9 +909,8 @@ SOI body를 n+ 섬으로 나누고(Step 3), 섬을 1e7 Ω으로 접지하고(Ste
 
 ## 현재 상태와 다음 단계
 
-- **완료**: DD split 1–3차 50개 (결과는 Step 12 자동 블록). 두 번째 래치를 급격히 끄는 조건 = **Si 수명 1e-8 s** (OFF 폭 0.26 → 0.04 V).
-- **실행 중**: 4차 19개 (수명 1e-8 s 기반 재조절, `1007_ddsplit/queue_ddsplit4.sh`, CPU 2개). 끝나면 `finalize_ddsplit2.sh`가 분석 → README 갱신 → commit/push를 자동으로 한다.
-- **다음**: 급격한 꺼짐을 유지하면서 래치 전압을 기준 수준(약 2.25 / 3.3 V)으로 되돌리는 조합 찾기.
+- **완료**: DD split 1–4차 69개 (Step 12 자동 블록). 급격한 꺼짐 = Si 수명 1e-8 s. 두 루프가 분리되고 둘 다 급격한 소자 = `DDS_TE8_XS60` (루프 1: 1.23–1.45 V, 루프 2: 2.56–4.78 V, 간격 1.12 V).
+- **실행 중**: 5차 16개, **"두 개의 분리된 급격한 사각형"**을 목표로 `TE8_XS60`을 다듬는다 (섬 위치, 도핑, Vg, 수명, 평평한 윗변용 drain 저항). `1007_ddsplit/queue_ddsplit5.sh`, CPU 2개. 끝나면 `finalize_ddsplit3.sh`가 분석 → README → commit/push.
 
 ---
 

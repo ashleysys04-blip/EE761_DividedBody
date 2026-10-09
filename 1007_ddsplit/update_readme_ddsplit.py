@@ -40,6 +40,20 @@ def table(names):
                    f"{f(r['offl'], '%.2f')} | {f(r['offr'], '%.2f')} | {f(r['w'])} | {verdict} |")
     return '\n'.join(out)
 
+def rect_table():
+    fn = os.path.join(here, 'ddsplit_rect.dat')
+    if not os.path.exists(fn): return ''
+    rr = {l.split()[0]: l.split()[1:] for l in open(fn) if not l.startswith('#') and l.strip()}
+    names = [n for n in rr if re.match(r'DDS_(TE8_XS|TE5em9_XS|TE2em8_XS|XS60$|TE1em8$)', n)]
+    out = ['| 덱 | 바꾼 것 | 루프 1 폭 (V) | 루프 2 폭 (V) | 루프 간격 (V) | 2번째 OFF 폭 (V) | 1번째 OFF 폭 (V) | 상태 II 기울기 (dec) | 상태 III 기울기 (dec) |',
+           '|---|---|---|---|---|---|---|---|---|']
+    for n in names:
+        p = rr[n]
+        out.append(f"| `{n}` | {desc(n) or 'base'} | " + ' | '.join(p[:5]) + ' | ' + ' | '.join(p[5:7]) + ' |')
+    out.append('')
+    out.append('루프 간격 > 0이면 두 루프가 겹치지 않음. OFF 폭이 0에 가까울수록 급격히 꺼짐. 기울기(dec)는 그 상태에서 |Id|가 변하는 자릿수 (작을수록 평평한 윗변).')
+    return '\n'.join(out)
+
 def fig(path, cap):
     return f'![]({REL}/{path})\n*{cap}*\n' if os.path.exists(os.path.join(here, path)) else ''
 
@@ -84,6 +98,11 @@ L += ['### 두 번째 래치를 급격히 끄기 위한 시도', '',
       fig('fig/ddsplit_idvd_TE8_NR.png', 'Id-Vd (수명 1e-8 s + 오른쪽 도핑). 데이터: `1007_ddsplit/DDS_TE8_NR*.log_tr.log` · 코드: `plot_ddsplit.py`'),
       fig('fig/ddsplit_idvd_TE8_R.png', 'Id-Vd (수명 1e-8 s + 탭 저항). 데이터: `1007_ddsplit/DDS_TE8_R*.log_tr.log` · 코드: `plot_ddsplit.py`'),
       fig('fig/ddsplit_idvd_TE8_VG.png', 'Id-Vd (수명 1e-8 s + Vg). 데이터: `1007_ddsplit/DDS_TE8_VG*.log_tr.log` · 코드: `plot_ddsplit.py`'),
+      '### 두 개의 분리된 급격한 사각형 루프 (`TE8_XS60` 기반)', '',
+      '목표: 래치 두 개가 **각각 급격히 켜지고 꺼지며**, 두 히스테리시스 루프가 **겹치지 않고**(간격 > 0), 각 상태의 전류가 **평평한** 사각형. '
+      '기준은 Si 수명 1e-8 s + 섬 위치 Lg 60 % (`DDS_TE8_XS60`). 섬 위치, 왼쪽/오른쪽 도핑, Vg, Si 수명, drain 직렬 저항(윗변 평탄화)을 바꿨다.', '',
+      rect_table(), '',
+      fig('fig/ddsplit_rect_loops.png', '분리된 사각형 루프 비교 (실선 올라감, 점선 내려옴). 데이터: `1007_ddsplit/DDS_TE8_XS*.log_tr.log` 등 · 코드: `1007_ddsplit/plot_ddsplit.py`'),
       B]
 s = open(README).read()
 block = '\n'.join(x for x in L if x is not None)

@@ -93,6 +93,23 @@ SPLITS = [  # tag, description, dict of changes
     ('TE8_SNAP', 'Si lifetime 1e-8 s with dense snapshots around the turn-off (mechanism)',
      {'TE': '1e-8', 'UP': [2.8, 2.9, 2.94, 2.97, 3.0, 3.5, 3.9, 3.93, 3.96, 4.0, 4.5],
       'DN': [4.5, 4.0, 3.5, 3.2, 3.0, 2.9, 2.8, 2.78, 2.76, 2.74, 2.72, 2.7, 2.6, 2.0, 1.8, 1.72, 1.6]}),
+    # ---- batch 5 (10/09): two separated, abrupt rectangles (built on TE8_XS60) ----
+    ('TE8_XS55', 'Si lifetime 1e-8 s + island at 55 % of Lg', {'TE': '1e-8', 'SET': {'Xsplit': '$Lsd+$Lg*0.55'}}),
+    ('TE8_XS65', 'Si lifetime 1e-8 s + island at 65 % of Lg', {'TE': '1e-8', 'SET': {'Xsplit': '$Lsd+$Lg*0.65'}}),
+    ('TE8_XS70', 'Si lifetime 1e-8 s + island at 70 % of Lg', {'TE': '1e-8', 'SET': {'Xsplit': '$Lsd+$Lg*0.70'}}),
+    ('TE8_XS60_NL5e17', 'lifetime 1e-8 s + island 60 % + left body 5e17', {'TE': '1e-8', 'NL': '5.0e17', 'SET': {'Xsplit': '$Lsd+$Lg*0.60'}}),
+    ('TE8_XS60_NL5p5e17', 'lifetime 1e-8 s + island 60 % + left body 5.5e17', {'TE': '1e-8', 'NL': '5.5e17', 'SET': {'Xsplit': '$Lsd+$Lg*0.60'}}),
+    ('TE8_XS60_VG0', 'lifetime 1e-8 s + island 60 % + Vg 0 V', {'TE': '1e-8', 'VG': 0.0, 'SET': {'Xsplit': '$Lsd+$Lg*0.60'}}),
+    ('TE8_XS60_VGm0p1', 'lifetime 1e-8 s + island 60 % + Vg -0.1 V', {'TE': '1e-8', 'VG': -0.1, 'SET': {'Xsplit': '$Lsd+$Lg*0.60'}}),
+    ('TE8_XS60_NR8e17', 'lifetime 1e-8 s + island 60 % + right body 8e17', {'TE': '1e-8', 'NR': '8.0e17', 'SET': {'Xsplit': '$Lsd+$Lg*0.60'}}),
+    ('TE8_XS60_NR1e18', 'lifetime 1e-8 s + island 60 % + right body 1e18', {'TE': '1e-8', 'NR': '1.0e18', 'SET': {'Xsplit': '$Lsd+$Lg*0.60'}}),
+    ('TE8_XS60_RD1e5', 'lifetime 1e-8 s + island 60 % + drain series R 1e5 (flat top)', {'TE': '1e-8', 'RD': '1e5', 'SET': {'Xsplit': '$Lsd+$Lg*0.60'}}),
+    ('TE8_XS60_RD3e5', 'lifetime 1e-8 s + island 60 % + drain series R 3e5 (flat top)', {'TE': '1e-8', 'RD': '3e5', 'SET': {'Xsplit': '$Lsd+$Lg*0.60'}}),
+    ('TE8_XS60_RD1e6', 'lifetime 1e-8 s + island 60 % + drain series R 1e6 (flat top)', {'TE': '1e-8', 'RD': '1e6', 'SET': {'Xsplit': '$Lsd+$Lg*0.60'}}),
+    ('TE5em9_XS60', 'Si lifetime 5e-9 s + island 60 %', {'TE': '5e-9', 'SET': {'Xsplit': '$Lsd+$Lg*0.60'}}),
+    ('TE2em8_XS60', 'Si lifetime 2e-8 s + island 60 %', {'TE': '2e-8', 'SET': {'Xsplit': '$Lsd+$Lg*0.60'}}),
+    ('TE8_XS60_NL5p5e17_RD3e5', 'lifetime 1e-8 s + island 60 % + left 5.5e17 + drain R 3e5', {'TE': '1e-8', 'NL': '5.5e17', 'RD': '3e5', 'SET': {'Xsplit': '$Lsd+$Lg*0.60'}}),
+    ('TE8_XS65_NL5e17_RD3e5', 'lifetime 1e-8 s + island 65 % + left 5e17 + drain R 3e5', {'TE': '1e-8', 'NL': '5.0e17', 'RD': '3e5', 'SET': {'Xsplit': '$Lsd+$Lg*0.65'}}),
 ]
 
 for tag, desc, ch in SPLITS:

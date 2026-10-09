@@ -77,6 +77,21 @@ for g, (xl, logx, items) in GROUPS.items():
     ax.set_xlabel('Vd (V)'); ax.set_ylabel('|Id| (A)   solid up / dashed down')
     ax.set_title(f'DD split: {g}   [data: novel/1007_ddsplit/DDS_*.log_tr.log · code: plot_ddsplit.py]', fontsize=9)
     fig.tight_layout(); fig.savefig(os.path.join(OUT, f'ddsplit_idvd_{g}.png'), dpi=120); plt.close(fig)
+# two separated rectangles: overlay of the TE8_XS60 family
+cand = ['TE1em8', 'XS60', 'TE8_XS55', 'TE8_XS60', 'TE8_XS65', 'TE8_XS70', 'TE8_XS60_NL5p5e17', 'TE8_XS60_VG0', 'TE8_XS60_NR1e18',
+        'TE8_XS60_RD3e5', 'TE8_XS60_RD1e6', 'TE5em9_XS60', 'TE8_XS60_NL5p5e17_RD3e5', 'TE8_XS65_NL5e17_RD3e5']
+done = [t for t in cand if get(t)]
+if len(done) >= 2:
+    n = len(done); cols = 4; rows_ = (n + cols - 1) // cols
+    fig, axs = plt.subplots(rows_, cols, figsize=(5 * cols, 3.6 * rows_), squeeze=False)
+    for ax in axs.flat: ax.axis('off')
+    for ax, t in zip(axs.flat, done):
+        ax.axis('on'); M, v, Id_, Is_, It_, Vt_ = load_cols(os.path.join(here, f'DDS_{t}.log_tr.log')); k = np.argmax(v)
+        ax.semilogy(v[:k + 1], np.abs(Id_[:k + 1]), color='#c0392b', lw=1.8); ax.semilogy(v[k:], np.abs(Id_[k:]), color='#2c7fb8', lw=1.4, ls='--')
+        ax.set_xlim(0, 6); ax.set_ylim(1e-14, 1e-2); ax.grid(alpha=.3); ax.set_title(t, fontsize=9)
+    fig.suptitle('Two separated rectangles? |Id| vs applied Vd (red up, blue down)  [data: novel/1007_ddsplit/DDS_*.log_tr.log · code: plot_ddsplit.py]', fontsize=10)
+    fig.tight_layout(); fig.savefig(os.path.join(OUT, 'ddsplit_rect_loops.png'), dpi=100); plt.close(fig)
+
 from strstruct import draw
 for g, items in (('WISL', [('WISL20', 'island 20 nm'), ('BASE', 'island 30 nm (base)'), ('WISL50', 'island 50 nm'), ('WISL100', 'island 100 nm')]),
                  ('XS', [('XS40', 'island at 40 % of Lg'), ('BASE', '50 % (base)'), ('XS60', '60 %')]),
