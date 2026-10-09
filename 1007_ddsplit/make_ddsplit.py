@@ -110,6 +110,10 @@ SPLITS = [  # tag, description, dict of changes
     ('TE2em8_XS60', 'Si lifetime 2e-8 s + island 60 %', {'TE': '2e-8', 'SET': {'Xsplit': '$Lsd+$Lg*0.60'}}),
     ('TE8_XS60_NL5p5e17_RD3e5', 'lifetime 1e-8 s + island 60 % + left 5.5e17 + drain R 3e5', {'TE': '1e-8', 'NL': '5.5e17', 'RD': '3e5', 'SET': {'Xsplit': '$Lsd+$Lg*0.60'}}),
     ('TE8_XS65_NL5e17_RD3e5', 'lifetime 1e-8 s + island 65 % + left 5e17 + drain R 3e5', {'TE': '1e-8', 'NL': '5.0e17', 'RD': '3e5', 'SET': {'Xsplit': '$Lsd+$Lg*0.65'}}),
+    ('TE8_XS60_SNAP', 'Si lifetime 1e-8 s + island 60 % with dense snapshots around both loops (mechanism of the two-rectangle device)',
+     {'TE': '1e-8', 'SET': {'Xsplit': '$Lsd+$Lg*0.60'},
+      'UP': [1.3, 1.4, 1.44, 1.46, 1.5, 2.0, 3.0, 4.0, 4.6, 4.75, 4.8, 5.0],
+      'DN': [5.0, 4.0, 3.0, 2.7, 2.6, 2.58, 2.56, 2.54, 2.5, 2.0, 1.5, 1.3, 1.25, 1.22, 1.2, 1.0]}),
 ]
 
 for tag, desc, ch in SPLITS:

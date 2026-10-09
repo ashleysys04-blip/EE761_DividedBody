@@ -30,6 +30,7 @@ EE762 (KAIST, 2026 가을) 프로젝트 연구 기록 · Silvaco ATLAS 2D (devic
 - [Step 10. 본 소자: 래치 두 번 (10/07)](#step-10-본-소자-래치-두-번-1007)
 - [Step 11. hcte로 확인 → 실패 기록 (10/05 – 10/07)](#step-11-hcte로-확인--실패-기록-1005--1007)
 - [Step 12. DD split: 설계 변수별 데이터 (10/07 –, 진행 중)](#step-12-dd-split-설계-변수별-데이터-1007---진행-중)
+- [Step 13. 왜 래치가 일어나나: .str로 원인 규명 (10/09)](#step-13-왜-래치가-일어나나-str로-원인-규명-1009)
 - [최종 결과](#최종-결과)
 - [트레이드오프 요약](#트레이드오프-요약)
 - [현재 상태와 다음 단계](#현재-상태와-다음-단계)
@@ -120,6 +121,7 @@ Vd, Id, Is, Itap = d[:, o+11], d[:, o+12], d[:, o+7], d[:, o+17]
 | 10 | 왼쪽 6e17 + **R 1e7 Ω**, MixedMode | **DD에서 래치 2번** | hcte로 확인 필요 |
 | 11 | 같은 소자를 hcte로 (12가지 수렴 대책) | 모두 3.6–5.3 V에서 중단 | hcte 접고 DD로 |
 | 12 | DD split 69개 (R, 도핑, Vg, lifetime, 섬 폭·위치, Tsi, ramp, 꺼짐 급격화 + 그 위의 재조절) | 50개 완료, 19개 진행 중 | 설계 지도 |
+| 13 | 래치 원인 규명 (.str 정공 수지) | 되먹임 = impact 정공 vs 재결합 | 분리된 두 사각형 다듬기 |
 
 ---
 
@@ -592,7 +594,7 @@ Adev 1=drain 0=source 2=gate 3=tap 0=substrate infile=MM_TAPT_ISL_W30LK_L6_R7_R1
 
 <!-- DDSPLIT-AUTO-START -->
 
-### 결과 (자동 생성: 2026-10-09 12:58, 완료 69/85)
+### 결과 (자동 생성: 2026-10-10 08:11, 완료 86/86)
 
 > 이 블록은 `1007_ddsplit/update_readme_ddsplit.py`가 다시 쓴다. 래치 검출 기준(`analyze_ddsplit.py`): 같은 Vd(2 mV 이내)에서 경로 전류가 1자리 넘게 뛰고 실제 수준(왼쪽 |Is| > 1e-7 A, 오른쪽 |Itap| > 1e-9 A)에 닿으면 래치. ON = 올라갈 때 켜지는 Vd, OFF = 내려올 때 꺼지는 Vd(왼쪽 |Is| < 1e-8 A, 오른쪽 |Itap| < 1e-9 A), OFF 폭 = 내려올 때 왼쪽 |Is|가 1e-6 → 1e-8 A로 떨어지는 데 걸린 Vd 폭 (0이면 급격).
 
@@ -815,8 +817,10 @@ Si 수명 1e-8 s에서 두 번째 래치가 점프로 꺼졌다 (OFF 폭 0.26 �
 |---|---|---|---|---|---|---|---|---|---|
 | `DDS_TE1em8` | Si carrier lifetime 1e-8 s (base 1e-7) | 2.953 | 3.2 | 3.940 | 2.9 | 2.75 | 1.72 | 0.044 | 래치 2번 |
 | `DDS_TE2em8` | Si carrier lifetime 2e-8 s | 2.658 | 3.6 | 3.715 | 2.8 | 2.54 | 1.50 | 0.203 | 래치 2번 |
+| `DDS_TE2em8_XS60` | Si lifetime 2e-8 s + island 60 % | 1.309 | 2.3 | 4.438 | 3.4 | 2.34 | 1.05 | 0.158 | 래치 2번 |
 | `DDS_TE5em8` | Si carrier lifetime 5e-8 s | 2.396 | 3.8 | 3.478 | 2.6 | 2.34 | 1.30 | 0.300 | 래치 2번 |
 | `DDS_TE5em9` | Si carrier lifetime 5e-9 s | 3.392 | 3.2 | 4.234 | 3.0 | 3.03 | 2.05 | 0.000 | 래치 2번 |
+| `DDS_TE5em9_XS60` | Si lifetime 5e-9 s + island 60 % | 1.610 | 1.7 | 5.224 | 4.0 | 2.86 | 1.47 | 0.001 | 래치 2번 |
 | `DDS_TE8_NL5e17` | Si lifetime 1e-8 s + left body 5e17 | 2.953 | 3.2 | 3.317 | 2.4 | 2.68 | 1.72 | 0.105 | 래치 2번 |
 | `DDS_TE8_NL5p5e17` | Si lifetime 1e-8 s + left body 5.5e17 | 2.953 | 3.2 | 3.624 | 2.6 | 2.72 | 1.72 | 0.097 | 래치 2번 |
 | `DDS_TE8_NL6p5e17` | Si lifetime 1e-8 s + left body 6.5e17 | 2.953 | 3.2 | 4.244 | 3.1 | 2.78 | 1.72 | 0.030 | 래치 2번 |
@@ -832,7 +836,22 @@ Si 수명 1e-8 s에서 두 번째 래치가 점프로 꺼졌다 (OFF 폭 0.26 �
 | `DDS_TE8_VG0_NL5p5e17` | Si lifetime 1e-8 s + Vg 0 V + left 5.5e17 | 2.536 | 3.2 | 3.218 | 2.3 | 2.60 | 1.59 | 0.062 | 래치 2번 |
 | `DDS_TE8_VGm0p1` | Si lifetime 1e-8 s + Vg -0.1 V | 2.774 | 2.9 | 3.776 | 2.8 | 2.71 | 1.66 | 0.048 | 래치 2번 |
 | `DDS_TE8_WISL50` | Si lifetime 1e-8 s + island 50 nm | 2.482 | 3.4 | 3.341 | 2.6 | 2.52 | 1.57 | 0.080 | 래치 2번 |
+| `DDS_TE8_XS55` | Si lifetime 1e-8 s + island at 55 % of Lg | 2.216 | 3.2 | 4.440 | 3.3 | 2.68 | 1.49 | 0.075 | 래치 2번 |
 | `DDS_TE8_XS60` | Si lifetime 1e-8 s + island at 60 % of Lg | 1.448 | 1.8 | 4.779 | 3.7 | 2.56 | 1.23 | 0.056 | 래치 2번 |
+| `DDS_TE8_XS60_NL5e17` | lifetime 1e-8 s + island 60 % + left body 5e17 | 1.448 | 1.8 | 4.080 | 3.0 | 2.50 | 1.23 | 0.093 | 래치 2번 |
+| `DDS_TE8_XS60_NL5p5e17` | lifetime 1e-8 s + island 60 % + left body 5.5e17 | 1.448 | 1.9 | 4.471 | 3.3 | 2.53 | 1.23 | 0.201 | 래치 2번 |
+| `DDS_TE8_XS60_NL5p5e17_RD3e5` | lifetime 1e-8 s + island 60 % + left 5.5e17 + drain R 3e5 | 1.448 | 1.4 | 4.564 | 1.3 | 2.61 | 1.23 | 0.308 | 래치 2번 |
+| `DDS_TE8_XS60_NR1e18` | lifetime 1e-8 s + island 60 % + right body 1e18 | 2.740 | 1.4 | 5.088 | 3.9 | 2.84 | 1.71 | 0.019 | 래치 2번 |
+| `DDS_TE8_XS60_NR8e17` | lifetime 1e-8 s + island 60 % + right body 8e17 | 1.880 | 2.7 | 4.884 | 3.7 | 2.66 | 1.39 | 0.080 | 래치 2번 |
+| `DDS_TE8_XS60_RD1e5` | lifetime 1e-8 s + island 60 % + drain series R 1e5 (flat top) | 1.448 | 1.7 | 4.812 | 1.7 | 2.60 | 1.23 | 0.115 | 래치 2번 |
+| `DDS_TE8_XS60_RD1e6` | lifetime 1e-8 s + island 60 % + drain series R 1e6 (flat top) | 1.450 | 1.8 | 5.122 | 0.9 | 2.81 | 1.23 | 0.945 | 래치 2번 |
+| `DDS_TE8_XS60_RD3e5` | lifetime 1e-8 s + island 60 % + drain series R 3e5 (flat top) | 1.448 | 1.4 | 4.883 | 1.3 | 2.66 | 1.23 | 0.344 | 래치 2번 |
+| `DDS_TE8_XS60_SNAP` | Si lifetime 1e-8 s + island 60 % with dense snapshots around both loops (mechanism of the two-rectangle device) | 1.448 | 2.2 | 4.780 | 3.7 | 2.56 | 1.23 | 0.035 | 래치 2번 |
+| `DDS_TE8_XS60_VG0` | lifetime 1e-8 s + island 60 % + Vg 0 V | 1.164 | 1.5 | 4.370 | 3.2 | 2.47 | 1.09 | 0.085 | 래치 2번 |
+| `DDS_TE8_XS60_VGm0p1` | lifetime 1e-8 s + island 60 % + Vg -0.1 V | 1.316 | 1.9 | 4.621 | 3.5 | 2.52 | 1.17 | 0.067 | 래치 2번 |
+| `DDS_TE8_XS65` | Si lifetime 1e-8 s + island at 65 % of Lg | – | – | 4.929 | 3.8 | 2.43 | 0.88 | 0.067 | 확인 필요 |
+| `DDS_TE8_XS65_NL5e17_RD3e5` | lifetime 1e-8 s + island 65 % + left 5e17 + drain R 3e5 | – | – | 4.463 | 1.3 | 2.44 | 0.88 | 0.328 | 확인 필요 |
+| `DDS_TE8_XS70` | Si lifetime 1e-8 s + island at 70 % of Lg | – | – | 4.920 | 3.8 | 2.26 | 0.40 | 0.054 | 확인 필요 |
 
 ![](1007_ddsplit/fig/ddsplit_idvd_TE8_NL.png)
 *Id-Vd (수명 1e-8 s + 왼쪽 도핑). 데이터: `1007_ddsplit/DDS_TE8_NL*.log_tr.log` · 코드: `plot_ddsplit.py`*
@@ -853,7 +872,24 @@ Si 수명 1e-8 s에서 두 번째 래치가 점프로 꺼졌다 (OFF 폭 0.26 �
 | 덱 | 바꾼 것 | 루프 1 폭 (V) | 루프 2 폭 (V) | 루프 간격 (V) | 2번째 OFF 폭 (V) | 1번째 OFF 폭 (V) | 상태 II 기울기 (dec) | 상태 III 기울기 (dec) |
 |---|---|---|---|---|---|---|---|---|
 | `DDS_TE1em8` | Si carrier lifetime 1e-8 s (base 1e-7) | 1.233 | 1.189 | -0.201 | 0.044 | 0.010 | 0.24 | 2.18 |
+| `DDS_TE2em8_XS60` | Si lifetime 2e-8 s + island 60 % | 0.260 | 2.096 | 1.033 | 0.158 | 0.078 | 1.08 | 3.10 |
+| `DDS_TE5em9_XS60` | Si lifetime 5e-9 s + island 60 % | 0.142 | 2.369 | 1.246 | 0.001 | 0.008 | 1.11 | 3.02 |
+| `DDS_TE8_XS55` | Si lifetime 1e-8 s + island at 55 % of Lg | 0.725 | 1.763 | 0.462 | 0.075 | 0.018 | 0.57 | 2.66 |
 | `DDS_TE8_XS60` | Si lifetime 1e-8 s + island at 60 % of Lg | 0.221 | 2.214 | 1.117 | 0.056 | 0.032 | 1.06 | 3.08 |
+| `DDS_TE8_XS60_NL5e17` | lifetime 1e-8 s + island 60 % + left body 5e17 | 0.221 | 1.585 | 1.047 | 0.093 | 0.032 | 0.97 | 2.55 |
+| `DDS_TE8_XS60_NL5p5e17` | lifetime 1e-8 s + island 60 % + left body 5.5e17 | 0.221 | 1.940 | 1.083 | 0.201 | 0.033 | 1.02 | 2.81 |
+| `DDS_TE8_XS60_NL5p5e17_RD3e5` | lifetime 1e-8 s + island 60 % + left 5.5e17 + drain R 3e5 | 0.219 | 1.949 | 1.167 | 0.308 | 0.035 | 1.03 | 1.19 |
+| `DDS_TE8_XS60_NR1e18` | lifetime 1e-8 s + island 60 % + right body 1e18 | 1.029 | 2.251 | 0.097 | 0.019 | 0.001 | 0.46 | 3.03 |
+| `DDS_TE8_XS60_NR8e17` | lifetime 1e-8 s + island 60 % + right body 8e17 | 0.489 | 2.226 | 0.778 | 0.080 | 0.018 | 0.77 | 2.80 |
+| `DDS_TE8_XS60_RD1e5` | lifetime 1e-8 s + island 60 % + drain series R 1e5 (flat top) | 0.220 | 2.212 | 1.153 | 0.115 | 0.035 | 1.07 | 1.52 |
+| `DDS_TE8_XS60_RD1e6` | lifetime 1e-8 s + island 60 % + drain series R 1e6 (flat top) | 0.218 | 2.310 | 1.362 | 0.945 | 0.036 | 1.09 | 0.93 |
+| `DDS_TE8_XS60_RD3e5` | lifetime 1e-8 s + island 60 % + drain series R 3e5 (flat top) | 0.219 | 2.226 | 1.209 | 0.344 | 0.034 | 1.08 | 1.16 |
+| `DDS_TE8_XS60_SNAP` | Si lifetime 1e-8 s + island 60 % with dense snapshots around both loops (mechanism of the two-rectangle device) | 0.221 | 2.216 | 1.117 | 0.035 | 0.034 | 1.06 | 3.04 |
+| `DDS_TE8_XS60_VG0` | lifetime 1e-8 s + island 60 % + Vg 0 V | 0.073 | 1.900 | 1.307 | 0.085 | 0.068 | 1.38 | 2.71 |
+| `DDS_TE8_XS60_VGm0p1` | lifetime 1e-8 s + island 60 % + Vg -0.1 V | 0.147 | 2.098 | 1.207 | 0.067 | 0.044 | 1.19 | 2.91 |
+| `DDS_TE8_XS65` | Si lifetime 1e-8 s + island at 65 % of Lg | nan | 2.496 | nan | 0.067 | 0.184 | nan | 3.10 |
+| `DDS_TE8_XS65_NL5e17_RD3e5` | lifetime 1e-8 s + island 65 % + left 5e17 + drain R 3e5 | nan | 2.025 | nan | 0.328 | 0.186 | nan | 1.16 |
+| `DDS_TE8_XS70` | Si lifetime 1e-8 s + island at 70 % of Lg | nan | 2.664 | nan | 0.054 | 0.405 | nan | 3.48 |
 | `DDS_XS60` | island centre at 60 % of Lg (left body longer) | 0.274 | 1.693 | 0.943 | 0.291 | 0.228 | 1.19 | 3.03 |
 
 루프 간격 > 0이면 두 루프가 겹치지 않음. OFF 폭이 0에 가까울수록 급격히 꺼짐. 기울기(dec)는 그 상태에서 |Id|가 변하는 자릿수 (작을수록 평평한 윗변).
@@ -862,6 +898,123 @@ Si 수명 1e-8 s에서 두 번째 래치가 점프로 꺼졌다 (OFF 폭 0.26 �
 *분리된 사각형 루프 비교 (실선 올라감, 점선 내려옴). 데이터: `1007_ddsplit/DDS_TE8_XS*.log_tr.log` 등 · 코드: `1007_ddsplit/plot_ddsplit.py`*
 
 <!-- DDSPLIT-AUTO-END -->
+
+---
+
+## Step 13. 왜 래치가 일어나나: .str로 원인 규명 (10/09)
+
+🎯 **왜** Step 12에서 래치 두 번, 급격한 꺼짐, 분리된 두 루프를 얻었다. 각 래치가 **무엇 때문에 켜지고 꺼지는지** `.str` 물리량으로 설명하려고 한다.
+
+🛠 **어떻게**
+- 래치 전후에 스냅샷을 촘촘히 저장한 run 3개를 분석했다: `DDS_BASE_SNAP`(기준), `DDS_TE8_SNAP`(Si 수명 1e-8 s), `DDS_TE8_XS60_SNAP`(분리된 두 사각형 소자).
+- 스냅샷마다, STL마다 다음을 계산했다 (Si 삼각형 면적 적분, 폭 0.5 µm):
+
+| 양 | `.str` 필드 | 의미 |
+|---|---|---|
+| 장벽 | 전위 `100` | source → body 전자 장벽 (`mech_ddsplit.py`) |
+| body 정공 | `107` | 기생 BJT의 base 전하 |
+| 최대 전계 | `103` | drain 쪽 접합 전계 |
+| I_ii | impact 생성률 `105` | impact ionization으로 생기는 정공 전류 (body로 들어감) |
+| 재결합 | 재결합률 `118` | body 안 / 그 STL의 n+ source(왼쪽 = n+ source, 오른쪽 = n+ 섬) 안에서 사라지는 정공 |
+| M-1 | I_ii / I_e | 전자 1개당 생기는 정공 수 (I_e는 log의 전류) |
+
+### 해석 (기준 소자 `DDS_BASE_SNAP` 숫자)
+
+**1번째 래치 = 오른쪽 STL의 기생 BJT 되먹임.**
+2.24 V에서 오른쪽 drain 접합 전계가 1.16e6 V/cm, M-1 ≈ 0.25다. impact 정공이 오른쪽 body에 쌓여 body–섬(오른쪽 STL의 source) 접합이 순방향이 된다. 그러면 섬에서 전자가 더 들어오고, impact 정공이 더 생기는 양의 되먹임이 걸린다. **2.24 → 2.26 V 사이(20 mV)**에 I_ii가 5e-13 → 9e-9 A로 4자리 뛰고, 장벽은 0.60 → 0.28 eV로 무너진다.
+켜진 뒤에는 정공 수지가 맞는다. 예를 들어 3.0 V에서 I_ii 1.96e-8 A ≈ body 재결합 1.06e-8 A + 섬 재결합 1.00e-8 A다. 생긴 정공의 절반은 body에서, 절반은 lifetime을 줄인 섬에서 사라진다.
+
+**2번째 래치 = 섬 전위가 왼쪽 STL의 drain 전압이 되어 같은 되먹임이 왼쪽에서 일어남.**
+오른쪽이 켜진 뒤 섬 전위가 오르면서 왼쪽 STL의 drain 쪽(섬 왼쪽 가장자리) 전계가 3.6e5 → 7.1e5 V/cm(2.2 → 3.28 V)로 커진다. 그에 따라 왼쪽 I_ii가 1e-20 → 4e-13 A로 늘어난다. **3.28 → 3.32 V**에서 왼쪽 장벽이 0.61 → 0.10 eV로 무너지고 I_ii가 4e-13 → 3.4e-6 A로 뛴다.
+오른쪽에서 생긴 정공은 섬(수명 1e-12 s)에서 재결합하므로 왼쪽 body로 넘어가지 않는다. 그래서 왼쪽은 **자기 전계로만** 켜진다. 이것이 두 래치가 분리되는 이유다 (Step 6).
+
+**꺼짐 = 재결합이 impact 정공을 이기는 순간.**
+내려오면 전계와 M-1이 줄어든다. 켜진 상태는 impact 정공이 재결합을 이기고 남은 정공으로 body를 순방향으로 유지하는 동안만 버틴다.
+- Si 수명 1e-7 s: 왼쪽은 2.3 V까지 켜져 있다 (유지 전류 약 1e-7 A). 그 시점에도 생긴 정공의 29 %만 재결합으로 잃어서 여유가 많다. 그래서 켜진 전류가 3.0 → 2.3 V에서 2.3e-5 → 1e-7 A로 **천천히 줄어들다가** 꺼진다 = 완만해 보이는 꺼짐.
+- Si 수명 1e-8 s: 2.76 V에서 이미 생긴 정공의 78 %를 재결합으로 잃는다. 여유가 없어서 **큰 전류(유지 전류 약 5.5e-7 A)에서 한 번에 붕괴**한다 (2.76 → 2.74 V에서 6자리).
+- 즉 **Si 수명은 유지 전류를 올리는 손잡이**다. 대가로 켜는 데도 더 많은 정공이 필요해 두 래치 전압이 함께 오른다 (Step 12).
+
+### 측정값 (자동 생성)
+
+<!-- STEP13-AUTO-START -->
+
+*(자동 생성: 2026-10-10 08:11 · 코드 `1007_ddsplit/mech_ddsplit.py`, `mech2_ddsplit.py`, `update_readme_step13.py`)*
+
+### 기준 (Si 수명 1e-7 s, 섬 50 %): `DDS_BASE_SNAP`
+
+![](1007_ddsplit/fig/mech_DDS_BASE_SNAP.png)
+*채널(y = 25 nm)의 전위·정공 분포와 STL별 장벽, body 정공. 데이터: `1007_ddsplit/DDS_BASE_SNAP_T_tr_N` (.str), `DDS_BASE_SNAP.log_tr.log` · 코드: `1007_ddsplit/mech_ddsplit.py`*
+
+![](1007_ddsplit/fig/mech2_DDS_BASE_SNAP.png)
+*STL별 정공 수지: impact ionization 생성 vs 재결합 (body, 각 STL의 n+ source), 증배 M-1, 최대 전계. 데이터: `1007_ddsplit/DDS_BASE_SNAP_T_tr_N` (.str), `DDS_BASE_SNAP.log_tr.log` · 코드: `1007_ddsplit/mech2_ddsplit.py`*
+
+![](1007_ddsplit/fig/mech2_maps_DDS_BASE_SNAP.png)
+*정공이 생기는 곳(impact ionization)과 사라지는 곳(재결합)의 2D 지도. 데이터: `1007_ddsplit/DDS_BASE_SNAP_T_tr_N` (.str), `DDS_BASE_SNAP.log_tr.log` · 코드: `1007_ddsplit/mech2_ddsplit.py`*
+
+| 래치 | 스냅샷 (Vd) | 장벽 (eV) | body 정공 (cm⁻³) | 최대 전계 (V/cm) | impact 정공 전류 I_ii (A) | body 재결합 (A) | n+ source 재결합 (A) | 전자 전류 I_e (A) | M-1 |
+|---|---|---|---|---|---|---|---|---|---|
+| 오른쪽 ON | up 2.24 V | 0.603 | 8.49e+16 | 1.16e+06 | 5.25e-13 | -1.29e-12 | 1.30e-14 | 2.06e-12 | 0.254 |
+| 오른쪽 ON | up 2.26 V | 0.277 | 2.56e+17 | 1.04e+06 | 9.39e-09 | 5.11e-09 | 4.81e-09 | 7.51e-08 | 0.125 |
+| 오른쪽 OFF | down 1.2 V | 0.401 | 2.16e+17 | 7.54e+05 | 9.29e-11 | 5.82e-11 | 3.88e-11 | 9.99e-10 | 0.093 |
+| 오른쪽 OFF | down 1.1 V | 0.683 | 1.37e+17 | 7.51e+05 | 6.54e-15 | 7.46e-14 | 6.90e-16 | 8.68e-14 | 0.075 |
+| 왼쪽 ON | up 3.28 V | 0.605 | 4.75e+16 | 7.10e+05 | 4.19e-13 | 2.13e-13 | 2.72e-16 | 2.89e-12 | 0.145 |
+| 왼쪽 ON | up 3.32 V | 0.103 | 5.95e+17 | 5.52e+05 | 3.38e-06 | 3.38e-07 | 2.83e-07 | 6.01e-05 | 0.056 |
+| 왼쪽 OFF | down 2.3 V | 0.273 | 2.62e+17 | 4.10e+05 | 2.35e-09 | 5.06e-10 | 1.84e-10 | 1.01e-07 | 0.023 |
+| 왼쪽 OFF | down 2.2 V | 0.595 | 1.48e+17 | 4.34e+05 | 3.20e-14 | 3.61e-13 | 6.77e-16 | 1.49e-12 | 0.022 |
+
+왼쪽 STL이 켜져 있는 마지막 스냅샷(2.3 V): 전자 전류 1.01e-07 A (= 유지 전류), impact 정공 2.35e-09 A 중 **29 %가 재결합**으로 사라짐 → 나머지만 body를 순방향으로 유지하는 base 전류가 된다.
+
+### Si 수명 1e-8 s (급격한 꺼짐): `DDS_TE8_SNAP`
+
+![](1007_ddsplit/fig/mech_DDS_TE8_SNAP.png)
+*채널(y = 25 nm)의 전위·정공 분포와 STL별 장벽, body 정공. 데이터: `1007_ddsplit/DDS_TE8_SNAP_T_tr_N` (.str), `DDS_TE8_SNAP.log_tr.log` · 코드: `1007_ddsplit/mech_ddsplit.py`*
+
+![](1007_ddsplit/fig/mech2_DDS_TE8_SNAP.png)
+*STL별 정공 수지: impact ionization 생성 vs 재결합 (body, 각 STL의 n+ source), 증배 M-1, 최대 전계. 데이터: `1007_ddsplit/DDS_TE8_SNAP_T_tr_N` (.str), `DDS_TE8_SNAP.log_tr.log` · 코드: `1007_ddsplit/mech2_ddsplit.py`*
+
+![](1007_ddsplit/fig/mech2_maps_DDS_TE8_SNAP.png)
+*정공이 생기는 곳(impact ionization)과 사라지는 곳(재결합)의 2D 지도. 데이터: `1007_ddsplit/DDS_TE8_SNAP_T_tr_N` (.str), `DDS_TE8_SNAP.log_tr.log` · 코드: `1007_ddsplit/mech2_ddsplit.py`*
+
+| 래치 | 스냅샷 (Vd) | 장벽 (eV) | body 정공 (cm⁻³) | 최대 전계 (V/cm) | impact 정공 전류 I_ii (A) | body 재결합 (A) | n+ source 재결합 (A) | 전자 전류 I_e (A) | M-1 |
+|---|---|---|---|---|---|---|---|---|---|
+| 오른쪽 ON | up 2.94 V | 0.554 | 5.97e+16 | 1.40e+06 | 6.73e-12 | -3.79e-11 | 7.02e-14 | 2.03e-11 | 0.332 |
+| 오른쪽 ON | up 2.97 V | 0.264 | 2.56e+17 | 1.24e+06 | 1.94e-08 | 1.22e-08 | 8.20e-09 | 1.26e-07 | 0.154 |
+| 오른쪽 OFF | down 1.72 V | 0.354 | 2.00e+17 | 9.35e+05 | 9.44e-10 | 7.52e-10 | 2.41e-10 | 6.48e-09 | 0.146 |
+| 오른쪽 OFF | down 1.6 V | 0.773 | 7.28e+16 | 9.40e+05 | 2.03e-14 | -1.90e-16 | 1.65e-17 | 1.20e-13 | 0.170 |
+| 왼쪽 ON | up 3.93 V | 0.556 | 2.25e+16 | 8.42e+05 | 3.96e-12 | 3.79e-12 | 6.27e-15 | 2.74e-11 | 0.145 |
+| 왼쪽 ON | up 3.96 V | 0.080 | 9.96e+17 | 6.95e+05 | 1.95e-05 | 3.76e-06 | 7.37e-06 | 1.72e-04 | 0.113 |
+| 왼쪽 OFF | down 2.76 V | 0.230 | 2.48e+17 | 4.96e+05 | 2.13e-08 | 1.04e-08 | 6.15e-09 | 5.52e-07 | 0.039 |
+| 왼쪽 OFF | down 2.74 V | 0.692 | 7.56e+16 | 5.38e+05 | 2.38e-14 | 4.16e-13 | 7.71e-17 | 3.44e-13 | 0.069 |
+
+왼쪽 STL이 켜져 있는 마지막 스냅샷(2.76 V): 전자 전류 5.52e-07 A (= 유지 전류), impact 정공 2.13e-08 A 중 **78 %가 재결합**으로 사라짐 → 나머지만 body를 순방향으로 유지하는 base 전류가 된다.
+
+### Si 수명 1e-8 s + 섬 60 % (분리된 두 사각형): `DDS_TE8_XS60_SNAP`
+
+![](1007_ddsplit/fig/mech_DDS_TE8_XS60_SNAP.png)
+*채널(y = 25 nm)의 전위·정공 분포와 STL별 장벽, body 정공. 데이터: `1007_ddsplit/DDS_TE8_XS60_SNAP_T_tr_N` (.str), `DDS_TE8_XS60_SNAP.log_tr.log` · 코드: `1007_ddsplit/mech_ddsplit.py`*
+
+![](1007_ddsplit/fig/mech2_DDS_TE8_XS60_SNAP.png)
+*STL별 정공 수지: impact ionization 생성 vs 재결합 (body, 각 STL의 n+ source), 증배 M-1, 최대 전계. 데이터: `1007_ddsplit/DDS_TE8_XS60_SNAP_T_tr_N` (.str), `DDS_TE8_XS60_SNAP.log_tr.log` · 코드: `1007_ddsplit/mech2_ddsplit.py`*
+
+![](1007_ddsplit/fig/mech2_maps_DDS_TE8_XS60_SNAP.png)
+*정공이 생기는 곳(impact ionization)과 사라지는 곳(재결합)의 2D 지도. 데이터: `1007_ddsplit/DDS_TE8_XS60_SNAP_T_tr_N` (.str), `DDS_TE8_XS60_SNAP.log_tr.log` · 코드: `1007_ddsplit/mech2_ddsplit.py`*
+
+| 래치 | 스냅샷 (Vd) | 장벽 (eV) | body 정공 (cm⁻³) | 최대 전계 (V/cm) | impact 정공 전류 I_ii (A) | body 재결합 (A) | n+ source 재결합 (A) | 전자 전류 I_e (A) | M-1 |
+|---|---|---|---|---|---|---|---|---|---|
+| 오른쪽 ON | up 1.44 V | 0.527 | 2.58e+16 | 8.58e+05 | 8.93e-12 | 9.11e-12 | 8.90e-14 | 6.82e-11 | 0.131 |
+| 오른쪽 ON | up 1.46 V | 0.320 | 1.57e+17 | 8.04e+05 | 2.46e-09 | 1.78e-09 | 8.29e-10 | 2.86e-08 | 0.086 |
+| 오른쪽 ON | up 4.75 V | 0.245 | 2.11e+17 | 1.54e+06 | 4.02e-08 | 2.33e-08 | 1.71e-08 | 3.39e-07 | 0.118 |
+| 오른쪽 ON | up 4.8 V | 0.039 | 3.16e+18 | 1.94e+06 | 5.52e-04 | 2.81e-04 | 3.07e-04 | 1.63e-03 | 0.339 |
+| 오른쪽 OFF | down 1.25 V | 0.357 | 1.35e+17 | 7.56e+05 | 7.89e-10 | 6.37e-10 | 1.94e-10 | 9.15e-09 | 0.086 |
+| 오른쪽 OFF | down 1.22 V | 0.619 | 5.32e+15 | 7.87e+05 | 4.53e-13 | 7.05e-13 | 5.88e-16 | 4.23e-12 | 0.107 |
+| 왼쪽 ON | up 4.75 V | 0.574 | 6.09e+16 | 1.19e+06 | 6.33e-12 | -1.98e-11 | 7.64e-15 | 1.04e-11 | 0.607 |
+| 왼쪽 ON | up 4.8 V | 0.026 | 5.49e+18 | 1.19e+06 | 4.76e-04 | 5.14e-05 | 1.49e-04 | 1.63e-03 | 0.292 |
+| 왼쪽 OFF | down 2.58 V | 0.215 | 2.96e+17 | 5.70e+05 | 3.48e-08 | 1.63e-08 | 1.10e-08 | 6.73e-07 | 0.052 |
+| 왼쪽 OFF | down 2.56 V | 0.645 | 1.62e+17 | 6.13e+05 | 6.10e-14 | 1.40e-12 | 6.80e-16 | 1.06e-12 | 0.058 |
+
+왼쪽 STL이 켜져 있는 마지막 스냅샷(2.58 V): 전자 전류 6.73e-07 A (= 유지 전류), impact 정공 3.48e-08 A 중 **78 %가 재결합**으로 사라짐 → 나머지만 body를 순방향으로 유지하는 base 전류가 된다.
+
+<!-- STEP13-AUTO-END -->
 
 ---
 
