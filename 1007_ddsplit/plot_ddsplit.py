@@ -92,6 +92,36 @@ if len(done) >= 2:
     fig.suptitle('Two separated rectangles? |Id| vs applied Vd (red up, blue down)  [data: novel/1007_ddsplit/DDS_*.log_tr.log · code: plot_ddsplit.py]', fontsize=10)
     fig.tight_layout(); fig.savefig(os.path.join(OUT, 'ddsplit_rect_loops.png'), dpi=100); plt.close(fig)
 
+# ---- two-rectangle study grouped by variable: overlaid Id-Vd, one panel per variable ----
+RECT_GROUPS = [
+ ('XS',  'island position (% of Lg)',     [('TE8_XS55', '55 %'), ('TE8_XS60', '60 % (ref)'), ('TE8_XS65', '65 %'), ('TE8_XS70', '70 %')]),
+ ('NL',  'left body doping',              [('TE8_XS60_NL5e17', '5e17'), ('TE8_XS60_NL5p5e17', '5.5e17'), ('TE8_XS60', '6e17 (ref)')]),
+ ('VG',  'gate voltage',                  [('TE8_XS60_VG0', '0 V'), ('TE8_XS60_VGm0p1', '-0.1 V'), ('TE8_XS60', '-0.2 V (ref)')]),
+ ('NR',  'right body doping',             [('TE8_XS60', '7e17 (ref)'), ('TE8_XS60_NR8e17', '8e17'), ('TE8_XS60_NR1e18', '1e18')]),
+ ('TE',  'Si carrier lifetime',           [('TE5em9_XS60', '5e-9 s'), ('TE8_XS60', '1e-8 s (ref)'), ('TE2em8_XS60', '2e-8 s'), ('XS60', '1e-7 s')]),
+ ('RD',  'drain series resistor',         [('TE8_XS60', '0 (ref)'), ('TE8_XS60_RD1e5', '1e5 Ohm'), ('TE8_XS60_RD3e5', '3e5 Ohm'), ('TE8_XS60_RD1e6', '1e6 Ohm')]),
+]
+def rect_panel(ax, items, title):
+    cm = plt.cm.plasma(np.linspace(0.05, 0.85, len(items)))
+    for c, (t, lab) in zip(cm, items):
+        if not get(t): continue
+        M, v, Id_, Is_, It_, Vt_ = load_cols(os.path.join(here, f'DDS_{t}.log_tr.log')); k = np.argmax(v)
+        lw = 2.6 if 'ref' in lab else 1.6
+        ax.semilogy(v[:k + 1], np.abs(Id_[:k + 1]), color=c, lw=lw, label=lab)
+        ax.semilogy(v[k:], np.abs(Id_[k:]), color=c, lw=lw * 0.7, ls='--')
+    ax.set_xlim(0, 6); ax.set_ylim(1e-14, 1e-2); ax.grid(alpha=.3); ax.legend(fontsize=8, loc='lower right')
+    ax.set_xlabel('applied drain voltage (V)'); ax.set_ylabel('|Id| (A)  solid up / dashed down'); ax.set_title(title, fontsize=10)
+if all(get(t) for t, _ in RECT_GROUPS[0][2][:2]):
+    fig, axs = plt.subplots(2, 3, figsize=(19, 10))
+    for ax, (g, title, items) in zip(axs.flat, RECT_GROUPS):
+        rect_panel(ax, items, f'{title}')
+    fig.suptitle('Two separated abrupt rectangles: one variable changed from DDS_TE8_XS60 (Si lifetime 1e-8 s, island at 60 %)\n'
+                 'data: novel/1007_ddsplit/DDS_*.log_tr.log · code: 1007_ddsplit/plot_ddsplit.py', fontsize=11)
+    fig.tight_layout(); fig.savefig(os.path.join(OUT, 'ddsplit_rect_groups.png'), dpi=110); plt.close(fig)
+    for g, title, items in RECT_GROUPS:
+        fig, ax = plt.subplots(figsize=(9, 5.2)); rect_panel(ax, items, f'{title}  [data: novel/1007_ddsplit/DDS_*.log_tr.log]')
+        fig.tight_layout(); fig.savefig(os.path.join(OUT, f'ddsplit_rect_{g}.png'), dpi=110); plt.close(fig)
+
 from strstruct import draw
 for g, items in (('WISL', [('WISL20', 'island 20 nm'), ('BASE', 'island 30 nm (base)'), ('WISL50', 'island 50 nm'), ('WISL100', 'island 100 nm')]),
                  ('XS', [('XS40', 'island at 40 % of Lg'), ('BASE', '50 % (base)'), ('XS60', '60 %')]),

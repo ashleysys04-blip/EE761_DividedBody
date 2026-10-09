@@ -54,6 +54,55 @@ def rect_table():
     out.append('루프 간격 > 0이면 두 루프가 겹치지 않음. OFF 폭이 0에 가까울수록 급격히 꺼짐. 기울기(dec)는 그 상태에서 |Id|가 변하는 자릿수 (작을수록 평평한 윗변).')
     return '\n'.join(out)
 
+RECT_GROUPS = [   # (key, title, [(deck, value label)], conclusion)
+ ('XS', '① 섬 위치 (Lg 대비 %)', [('DDS_TE8_XS55', '55 %'), ('DDS_TE8_XS60', '60 % (기준)'), ('DDS_TE8_XS65', '65 %'), ('DDS_TE8_XS70', '70 %')],
+  '섬을 drain 쪽으로 옮길수록 오른쪽 body가 짧아져 **루프 1이 낮아지고 좁아진다** (55 %: 1.49–2.22 V → 60 %: 1.23–1.45 V). '
+  '65 %, 70 %에서는 오른쪽 body(75, 60 nm)가 너무 짧아 **오른쪽 래치가 사라지고** 연속적으로 켜진다. 루프 2는 조금씩 올라간다. → 두 래치를 유지하는 범위에서 간격이 가장 큰 것은 60 %.'),
+ ('NL', '② 왼쪽 body 도핑', [('DDS_TE8_XS60_NL5e17', '5e17'), ('DDS_TE8_XS60_NL5p5e17', '5.5e17'), ('DDS_TE8_XS60', '6e17 (기준)')],
+  '**루프 2만 움직인다.** 켜짐 4.08 → 4.47 → 4.78 V, 꺼짐은 2.50–2.56 V로 거의 그대로라 루프 2의 폭이 도핑으로 정해진다. 루프 1은 변하지 않는다.'),
+ ('VG', '③ Vg', [('DDS_TE8_XS60_VG0', '0 V'), ('DDS_TE8_XS60_VGm0p1', '-0.1 V'), ('DDS_TE8_XS60', '-0.2 V (기준)')],
+  'Vg를 올리면 **두 루프가 함께 내려간다** (루프 2 켜짐 4.78 → 4.37 V). 대신 **루프 1이 좁아진다** (폭 0.22 → 0.07 V). Vg는 두 루프를 같이 미는 손잡이.'),
+ ('NR', '④ 오른쪽 body 도핑', [('DDS_TE8_XS60', '7e17 (기준)'), ('DDS_TE8_XS60_NR8e17', '8e17'), ('DDS_TE8_XS60_NR1e18', '1e18')],
+  '**루프 1이 올라가고 넓어진다** (폭 0.22 → 0.49 → 1.03 V). 루프 2는 조금 올라가 **두 루프 간격이 1.12 → 0.78 → 0.10 V로 줄어든다**. 1e18이면 거의 맞닿는다. → 8e17이 루프 1을 넓히면서 분리를 유지하는 절충점.'),
+ ('TE', '⑤ Si 수명', [('DDS_TE5em9_XS60', '5e-9 s'), ('DDS_TE8_XS60', '1e-8 s (기준)'), ('DDS_TE2em8_XS60', '2e-8 s'), ('DDS_XS60', '1e-7 s')],
+  '수명이 짧을수록 **두 루프 모두 더 급격히 꺼진다** (2번째 꺼짐 폭 0.29 → 0.16 → 0.06 → 0.001 V). 대신 두 루프 모두 올라간다 (루프 2 켜짐 3.72 → 5.22 V).'),
+ ('RD', '⑥ drain 직렬 저항', [('DDS_TE8_XS60', '0 (기준)'), ('DDS_TE8_XS60_RD1e5', '1e5 Ω'), ('DDS_TE8_XS60_RD3e5', '3e5 Ω'), ('DDS_TE8_XS60_RD1e6', '1e6 Ω')],
+  '켜진 상태(state III)의 **윗변이 평평해진다** (전류 기울기 3.1 → 1.5 → 1.2 → 0.9자리). 대신 **2번째 래치의 꺼짐이 완만해지고** (꺼짐 폭 0.06 → 0.12 → 0.34 → 0.95 V, 1e6 Ω에서는 점프가 사라짐) 2번째 점프도 작아진다. → 평평한 윗변과 급격한 모서리는 서로 맞바뀐다. 1e5 Ω가 균형점.'),
+]
+
+def rect_section():
+    fn = os.path.join(here, 'ddsplit_rect.dat')
+    if not os.path.exists(fn): return []
+    rr = {l.split()[0]: l.split()[1:] for l in open(fn) if not l.startswith('#') and l.strip()}
+    sm = {r['name']: r for r in rows}
+    out = ['### 두 개의 분리된 급격한 사각형 루프: 변인별 정리 (`DDS_TE8_XS60` 기준)', '',
+           '**목표**: 두 래치가 각각 **급격히 켜지고 꺼지며**, 두 히스테리시스 루프가 **겹치지 않고**, 각 상태의 전류가 **평평한** 두 개의 사각형.', '',
+           '**기준 소자** `DDS_TE8_XS60`: Si 수명 1e-8 s + 섬 위치 Lg의 60 %. 루프 1(오른쪽 STL) 1.23–1.45 V, 루프 2(왼쪽 STL) 2.56–4.78 V, 간격 1.12 V, 두 꺼짐 모두 점프. '
+           '아래에서는 이 소자에서 **변수 하나씩만** 바꿨다.', '',
+           fig('fig/ddsplit_rect_groups.png', '변인별 겹친 Id-Vd (실선 올라감, 점선 내려옴, 굵은 선 = 기준). 데이터: `1007_ddsplit/DDS_*.log_tr.log` · 코드: `1007_ddsplit/plot_ddsplit.py`'),
+           '표 읽는 법: 루프 1 = 오른쪽 STL (꺼짐–켜짐), 루프 2 = 왼쪽 STL. 간격 = 루프 2 꺼짐 − 루프 1 켜짐 (> 0이면 두 루프가 안 겹침). 꺼짐 폭 = 꺼질 때 전류가 2자리 떨어지는 데 걸린 Vd (0에 가까울수록 급격). 윗변 기울기 = 켜진 상태에서 |Id|가 변하는 자릿수 (작을수록 평평).', '']
+    f = lambda x, d=2: '–' if x != x else ('%.' + str(d) + 'f') % x
+    for key, title, items, concl in RECT_GROUPS:
+        out += [f'#### {title}', '', fig(f'fig/ddsplit_rect_{key}.png', f'데이터: ' + ', '.join(f'`1007_ddsplit/{d}.log_tr.log`' for d, _ in items) + ' · 코드: `plot_ddsplit.py`'),
+                '| 값 | 덱 | 루프 1 (V) | 루프 2 (V) | 간격 (V) | 꺼짐 폭 1 / 2 (V) | 윗변 기울기 (dec) |', '|---|---|---|---|---|---|---|']
+        for d, lab in items:
+            if d not in sm or d not in rr: continue
+            s, q = sm[d], [float(z) for z in rr[d]]
+            l1 = '–' if s['v1'] != s['v1'] else f"{f(s['offr'])}–{f(s['v1'])}"
+            l2 = '–' if s['v2'] != s['v2'] else f"{f(s['offl'])}–{f(s['v2'])}"
+            out.append(f"| {lab} | `{d}` | {l1} | {l2} | {f(q[2])} | {f(q[4],3)} / {f(q[3],3)} | {f(q[6],1)} |")
+        out += ['', f'→ {concl}', '']
+    out += ['#### 조합', '', '| 덱 | 바꾼 것 | 루프 1 (V) | 루프 2 (V) | 간격 (V) | 꺼짐 폭 1 / 2 (V) | 윗변 기울기 (dec) |', '|---|---|---|---|---|---|---|']
+    for d in ('DDS_TE8_XS60_NL5p5e17_RD3e5', 'DDS_TE8_XS65_NL5e17_RD3e5'):
+        if d not in sm or d not in rr: continue
+        s, q = sm[d], [float(z) for z in rr[d]]
+        l1 = '–' if s['v1'] != s['v1'] else f"{f(s['offr'])}–{f(s['v1'])}"; l2 = '–' if s['v2'] != s['v2'] else f"{f(s['offl'])}–{f(s['v2'])}"
+        out.append(f"| `{d}` | {desc(d)} | {l1} | {l2} | {f(q[2])} | {f(q[4],3)} / {f(q[3],3)} | {f(q[6],1)} |")
+    out += ['', '→ 섬 65 % 조합은 오른쪽 래치가 없어 한 루프만 남는다. 섬 60 % + 왼쪽 5.5e17 + 1e5–3e5 Ω가 "분리 + 평평한 윗변" 쪽에 가장 가깝지만 2번째 꺼짐이 완만해진다.', '',
+            '**정리**: 루프 1은 오른쪽 도핑·섬 위치·Vg, 루프 2는 왼쪽 도핑·Vg, 모서리의 급격함은 Si 수명, 윗변의 평평함은 drain 직렬 저항이 정한다. 평평한 윗변과 급격한 꺼짐은 서로 맞바뀌는 관계다.', '',
+            '<details><summary>전체 사각형 지표 표 (모든 관련 덱)</summary>', '', rect_table(), '', '</details>', '']
+    return out
+
 def fig(path, cap):
     return f'![]({REL}/{path})\n*{cap}*\n' if os.path.exists(os.path.join(here, path)) else ''
 
@@ -98,11 +147,7 @@ L += ['### 두 번째 래치를 급격히 끄기 위한 시도', '',
       fig('fig/ddsplit_idvd_TE8_NR.png', 'Id-Vd (수명 1e-8 s + 오른쪽 도핑). 데이터: `1007_ddsplit/DDS_TE8_NR*.log_tr.log` · 코드: `plot_ddsplit.py`'),
       fig('fig/ddsplit_idvd_TE8_R.png', 'Id-Vd (수명 1e-8 s + 탭 저항). 데이터: `1007_ddsplit/DDS_TE8_R*.log_tr.log` · 코드: `plot_ddsplit.py`'),
       fig('fig/ddsplit_idvd_TE8_VG.png', 'Id-Vd (수명 1e-8 s + Vg). 데이터: `1007_ddsplit/DDS_TE8_VG*.log_tr.log` · 코드: `plot_ddsplit.py`'),
-      '### 두 개의 분리된 급격한 사각형 루프 (`TE8_XS60` 기반)', '',
-      '목표: 래치 두 개가 **각각 급격히 켜지고 꺼지며**, 두 히스테리시스 루프가 **겹치지 않고**(간격 > 0), 각 상태의 전류가 **평평한** 사각형. '
-      '기준은 Si 수명 1e-8 s + 섬 위치 Lg 60 % (`DDS_TE8_XS60`). 섬 위치, 왼쪽/오른쪽 도핑, Vg, Si 수명, drain 직렬 저항(윗변 평탄화)을 바꿨다.', '',
-      rect_table(), '',
-      fig('fig/ddsplit_rect_loops.png', '분리된 사각형 루프 비교 (실선 올라감, 점선 내려옴). 데이터: `1007_ddsplit/DDS_TE8_XS*.log_tr.log` 등 · 코드: `1007_ddsplit/plot_ddsplit.py`'),
+      *rect_section(),
       B]
 s = open(README).read()
 block = '\n'.join(x for x in L if x is not None)
