@@ -588,7 +588,7 @@ Adev 1=drain 0=source 2=gate 3=tap 0=substrate infile=MM_TAPT_ISL_W30LK_L6_R7_R1
 
 <!-- DDSPLIT-AUTO-START -->
 
-### 결과 (자동 생성: 2026-10-08 17:58, 완료 50/50)
+### 결과 (자동 생성: 2026-10-09 11:58, 완료 69/69)
 
 > 이 블록은 `1007_ddsplit/update_readme_ddsplit.py`가 다시 쓴다. 래치 검출 기준(`analyze_ddsplit.py`): 같은 Vd(2 mV 이내)에서 경로 전류가 1자리 넘게 뛰고 실제 수준(왼쪽 |Is| > 1e-7 A, 오른쪽 |Itap| > 1e-9 A)에 닿으면 래치. ON = 올라갈 때 켜지는 Vd, OFF = 내려올 때 꺼지는 Vd(왼쪽 |Is| < 1e-8 A, 오른쪽 |Itap| < 1e-9 A), OFF 폭 = 내려올 때 왼쪽 |Is|가 1e-6 → 1e-8 A로 떨어지는 데 걸린 Vd 폭 (0이면 급격).
 
@@ -747,6 +747,40 @@ Adev 1=drain 0=source 2=gate 3=tap 0=substrate infile=MM_TAPT_ISL_W30LK_L6_R7_R1
 | down | 1.10 | 0.894 | 1.229e+17 | 0.683 | 1.371e+17 |
 | down | 1.00 | 0.895 | 1.223e+17 | 0.740 | 1.274e+17 |
 
+![](1007_ddsplit/fig/mech_DDS_TE8_SNAP.png)
+*데이터: `1007_ddsplit/DDS_TE8_SNAP_T_tr_N` · 코드: `1007_ddsplit/mech_ddsplit.py`*
+
+| 스냅샷 | Vd (V) | 왼쪽 장벽 (eV) | 왼쪽 body 정공 (cm⁻³) | 오른쪽 장벽 (eV) | 오른쪽 body 정공 (cm⁻³) |
+|---|---|---|---|---|---|
+| up | 2.80 | 0.979 | 8.620e+16 | 0.596 | 5.402e+16 |
+| up | 2.90 | 0.979 | 8.620e+16 | 0.572 | 5.599e+16 |
+| up | 2.94 | 0.979 | 8.620e+16 | 0.554 | 5.971e+16 |
+| up | 2.97 | 0.708 | 4.753e+16 | 0.264 | 2.555e+17 |
+| up | 3.00 | 0.738 | 3.200e+16 | 0.263 | 2.560e+17 |
+| up | 3.50 | 0.686 | 4.109e+15 | 0.254 | 2.636e+17 |
+| up | 3.90 | 0.579 | 1.503e+16 | 0.248 | 2.684e+17 |
+| up | 3.93 | 0.556 | 2.254e+16 | 0.247 | 2.687e+17 |
+| up | 3.96 | 0.080 | 9.955e+17 | 0.085 | 8.602e+17 |
+| up | 4.00 | 0.078 | 1.055e+18 | 0.083 | 9.016e+17 |
+| up | 4.50 | 0.050 | 2.437e+18 | 0.061 | 1.818e+18 |
+| down | 4.50 | 0.050 | 2.437e+18 | 0.061 | 1.818e+18 |
+| down | 4.00 | 0.078 | 1.055e+18 | 0.083 | 9.016e+17 |
+| down | 3.50 | 0.105 | 5.396e+17 | 0.107 | 5.261e+17 |
+| down | 3.20 | 0.129 | 3.835e+17 | 0.128 | 3.954e+17 |
+| down | 3.00 | 0.153 | 3.151e+17 | 0.151 | 3.320e+17 |
+| down | 2.90 | 0.172 | 2.882e+17 | 0.168 | 3.061e+17 |
+| down | 2.80 | 0.204 | 2.628e+17 | 0.197 | 2.824e+17 |
+| down | 2.78 | 0.214 | 2.567e+17 | 0.206 | 2.773e+17 |
+| down | 2.76 | 0.230 | 2.484e+17 | 0.219 | 2.709e+17 |
+| down | 2.74 | 0.692 | 7.561e+16 | 0.269 | 2.512e+17 |
+| down | 2.72 | 0.739 | 5.943e+16 | 0.270 | 2.508e+17 |
+| down | 2.70 | 0.761 | 5.288e+16 | 0.270 | 2.504e+17 |
+| down | 2.60 | 0.804 | 4.533e+16 | 0.273 | 2.482e+17 |
+| down | 2.00 | 0.895 | 7.196e+16 | 0.300 | 2.305e+17 |
+| down | 1.80 | 0.934 | 7.944e+16 | 0.321 | 2.189e+17 |
+| down | 1.72 | 0.970 | 8.073e+16 | 0.354 | 2.005e+17 |
+| down | 1.60 | 0.992 | 8.075e+16 | 0.773 | 7.280e+16 |
+
 읽는 법: 오른쪽 STL은 첫 번째 래치에서 장벽이 약 0.7 → 0.27 eV로 떨어지고 body 정공이 늘어난다. 이때 섬 전위가 올라가 왼쪽 장벽도 일부 낮아진다 (0.98 → 0.70 eV). 두 번째 래치에서 왼쪽 장벽이 0.68 → 0.09 eV로 무너지며 왼쪽 body가 정공으로 찬다. 내려올 때 왼쪽 장벽은 0.13 → 0.20 → 0.74 eV로 **여러 스냅샷에 걸쳐 서서히** 회복된다. 이게 두 번째 래치가 완만하게 꺼지는 모습이다.
 
 ### 두 번째 래치를 급격히 끄기 위한 시도
@@ -768,6 +802,45 @@ Adev 1=drain 0=source 2=gate 3=tap 0=substrate infile=MM_TAPT_ISL_W30LK_L6_R7_R1
 
 ![](1007_ddsplit/fig/ddsplit_idvd_TE.png)
 *Id-Vd (Si 수명). 데이터: `1007_ddsplit/DDS_TE*.log_tr.log` · 코드: `plot_ddsplit.py`*
+
+### Si 수명 1e-8 s 기반 split (급격한 꺼짐 조건 위에서 다시 조절)
+
+Si 수명 1e-8 s에서 두 번째 래치가 점프로 꺼졌다 (OFF 폭 0.26 → 0.04 V). 대신 두 래치가 모두 약 0.7 V 올라갔다. 이 조건을 유지한 채 도핑·R·Vg·섬 위치로 래치 전압을 다시 내리고, 꺼짐이 계속 급격한지 본다. `DDS_TE8_SNAP`은 꺼지는 구간의 촘촘한 스냅샷으로 메커니즘을 본다.
+
+| 덱 | 바꾼 것 | 1번째 ON (V) | 점프 (dec) | 2번째 ON (V) | 점프 (dec) | 2번째 OFF (V) | 1번째 OFF (V) | OFF 폭 (V) | 판정 |
+|---|---|---|---|---|---|---|---|---|---|
+| `DDS_TE1em8` | Si carrier lifetime 1e-8 s (base 1e-7) | 2.953 | 3.2 | 3.940 | 2.9 | 2.75 | 1.72 | 0.044 | 래치 2번 |
+| `DDS_TE2em8` | Si carrier lifetime 2e-8 s | 2.658 | 3.6 | 3.715 | 2.8 | 2.54 | 1.50 | 0.203 | 래치 2번 |
+| `DDS_TE5em8` | Si carrier lifetime 5e-8 s | 2.396 | 3.8 | 3.478 | 2.6 | 2.34 | 1.30 | 0.300 | 래치 2번 |
+| `DDS_TE5em9` | Si carrier lifetime 5e-9 s | 3.392 | 3.2 | 4.234 | 3.0 | 3.03 | 2.05 | 0.000 | 래치 2번 |
+| `DDS_TE8_NL5e17` | Si lifetime 1e-8 s + left body 5e17 | 2.953 | 3.2 | 3.317 | 2.4 | 2.68 | 1.72 | 0.105 | 래치 2번 |
+| `DDS_TE8_NL5p5e17` | Si lifetime 1e-8 s + left body 5.5e17 | 2.953 | 3.2 | 3.624 | 2.6 | 2.72 | 1.72 | 0.097 | 래치 2번 |
+| `DDS_TE8_NL6p5e17` | Si lifetime 1e-8 s + left body 6.5e17 | 2.953 | 3.2 | 4.244 | 3.1 | 2.78 | 1.72 | 0.030 | 래치 2번 |
+| `DDS_TE8_NR5e17` | Si lifetime 1e-8 s + right body 5e17 | 1.672 | 2.4 | 3.691 | 2.8 | 2.53 | 1.33 | 0.056 | 래치 2번 |
+| `DDS_TE8_NR5e17_NL5e17` | Si lifetime 1e-8 s + right 5e17 + left 5e17 | 1.672 | 2.4 | 3.069 | 2.2 | 2.45 | 1.33 | 0.081 | 래치 2번 |
+| `DDS_TE8_NR6e17` | Si lifetime 1e-8 s + right body 6e17 | 2.383 | 2.7 | 3.816 | 2.8 | 2.64 | 1.54 | 0.203 | 래치 2번 |
+| `DDS_TE8_NR6e17_NL5p5e17` | Si lifetime 1e-8 s + right 6e17 + left 5.5e17 (pull both latches down) | 2.383 | 2.7 | 3.500 | 2.6 | 2.61 | 1.54 | 0.094 | 래치 2번 |
+| `DDS_TE8_R3e6` | Si lifetime 1e-8 s + Rtap 3e6 | 2.952 | 3.8 | 3.952 | 2.4 | 2.77 | 1.61 | 0.047 | 래치 2번 |
+| `DDS_TE8_R3e7` | Si lifetime 1e-8 s + Rtap 3e7 | 2.953 | 2.9 | 3.958 | 3.4 | 2.75 | 1.87 | 0.033 | 래치 2번 |
+| `DDS_TE8_SNAP` | Si lifetime 1e-8 s with dense snapshots around the turn-off (mechanism) | 2.953 | 3.3 | 3.939 | 2.9 | 2.75 | 1.72 | 0.048 | 래치 2번 |
+| `DDS_TE8_TAU1em11` | Si lifetime 1e-8 s + island lifetime 1e-11 s | 2.953 | 3.1 | 3.934 | 2.9 | 2.75 | 1.72 | 0.047 | 래치 2번 |
+| `DDS_TE8_VG0` | Si lifetime 1e-8 s + Vg 0 V | 2.536 | 3.2 | 3.548 | 2.6 | 2.65 | 1.59 | 0.043 | 래치 2번 |
+| `DDS_TE8_VG0_NL5p5e17` | Si lifetime 1e-8 s + Vg 0 V + left 5.5e17 | 2.536 | 3.2 | 3.218 | 2.3 | 2.60 | 1.59 | 0.062 | 래치 2번 |
+| `DDS_TE8_VGm0p1` | Si lifetime 1e-8 s + Vg -0.1 V | 2.774 | 2.9 | 3.776 | 2.8 | 2.71 | 1.66 | 0.048 | 래치 2번 |
+| `DDS_TE8_WISL50` | Si lifetime 1e-8 s + island 50 nm | 2.482 | 3.4 | 3.341 | 2.6 | 2.52 | 1.57 | 0.080 | 래치 2번 |
+| `DDS_TE8_XS60` | Si lifetime 1e-8 s + island at 60 % of Lg | 1.448 | 1.8 | 4.779 | 3.7 | 2.56 | 1.23 | 0.056 | 래치 2번 |
+
+![](1007_ddsplit/fig/ddsplit_idvd_TE8_NL.png)
+*Id-Vd (수명 1e-8 s + 왼쪽 도핑). 데이터: `1007_ddsplit/DDS_TE8_NL*.log_tr.log` · 코드: `plot_ddsplit.py`*
+
+![](1007_ddsplit/fig/ddsplit_idvd_TE8_NR.png)
+*Id-Vd (수명 1e-8 s + 오른쪽 도핑). 데이터: `1007_ddsplit/DDS_TE8_NR*.log_tr.log` · 코드: `plot_ddsplit.py`*
+
+![](1007_ddsplit/fig/ddsplit_idvd_TE8_R.png)
+*Id-Vd (수명 1e-8 s + 탭 저항). 데이터: `1007_ddsplit/DDS_TE8_R*.log_tr.log` · 코드: `plot_ddsplit.py`*
+
+![](1007_ddsplit/fig/ddsplit_idvd_TE8_VG.png)
+*Id-Vd (수명 1e-8 s + Vg). 데이터: `1007_ddsplit/DDS_TE8_VG*.log_tr.log` · 코드: `plot_ddsplit.py`*
 
 <!-- DDSPLIT-AUTO-END -->
 
