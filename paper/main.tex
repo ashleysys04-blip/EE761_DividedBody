@@ -39,9 +39,29 @@ Single-transistor latch (STL), silicon-on-insulator (SOI), floating body, impact
 \end{IEEEkeywords}
 
 \section{서론 (Introduction)}
-\IEEEPARstart{F}{loating}-body SOI MOSFET은 drain 쪽 \textit{impact ionization}으로 생긴 정공이 body에 쌓여 body--source 접합을 순방향으로 만들고, 기생 \textit{lateral NPN BJT}가 켜지면서 전자 주입이 다시 \textit{impact ionization}을 늘리는 양의 되먹임을 가진다. 이 되먹임이 1을 넘는 drain 전압에서 전류가 수 자리 급격히 뛰는 \textit{latch-up}이 일어나고, 내려올 때는 더 낮은 전압에서 꺼지는 \textit{hysteresis}가 생긴다. 이 동작을 이용하는 \textit{single-transistor latch} (STL)는 \textit{capacitorless memory}, \textit{bistable resistor}~\cite{han_biristor}, \textit{integrate-and-fire neuron}~\cite{han_lif} 등으로 연구되어 왔다. 이 응용들은 대부분 \textbf{두 상태}(off/on)만 사용한다. 한 소자 안에서 상태를 \textbf{세 개 이상}으로 늘릴 수 있다면 \textit{multi-level memory}나 다단 문턱 \textit{neuron}에 쓸 수 있다.
+\IEEEPARstart{F}{loating}-body SOI MOSFET에서는 drain 쪽 \textit{impact ionization} (II)으로 생긴 정공이 body에 쌓여 body--source 접합을 순방향으로 만들고, 기생 \textit{lateral NPN BJT}의 전자 주입이 다시 II를 늘리는 양의 되먹임이 생긴다. 이 되먹임이 1을 넘으면 drain 전류가 수 자리 급격히 뛰는 \textit{single-transistor latch} (STL)가 일어나고, 내려올 때 더 낮은 전압에서 꺼지는 \textit{hysteresis}가 생긴다~\cite{chen_stl}. STL은 \textit{bistable resistor} (biristor)~\cite{han_biristor}, \textit{capacitorless} 1T-DRAM~\cite{kim_1tdram,moon_fin}, \textit{leaky integrate-and-fire} 뉴런~\cite{han_lif,han_mimic,han_sciadv}, 발진기~\cite{kim_osc} 등으로 활용되어 왔고, 동작 전압을 낮추려는 연구도 이어지고 있다~\cite{lee_1v}. 이 응용들은 대부분 STL의 \textbf{두 상태}(HRS/LRS)만 사용한다.
 
-본 연구의 목표는 두 STL을 직렬로 연결한 회로(Fig.~\ref{fig:circuit})를 \textbf{소자 하나}로 만드는 것이다. 즉 Id-Vd에 래치가 \textbf{두 번} 나타나 세 상태(I, II, III)를 갖는 SOI 소자이다. 처음 시도한 \textit{body doping split}, Si 두께 \textit{split}, \textit{split gate}는 모두 래치가 한 번이었다. 본 논문은 그 원인을 하나씩 확인하며 구조를 바꾼 과정(Section~III, 7단계), 최종 소자의 두 단계 래치(Section~IV), \texttt{.str} 기반 메커니즘(Section~V), 86개 DD \textit{split}의 변수별 Id-Vd와 설계 손잡이(Section~VI), hcte 수렴 실패를 포함한 모델 한계(Section~VII)를 차례로 기술한다. 부록에 모든 \textit{split}의 수치를 실었다.
+한편 \textit{multi-valued logic} (MVL), 특히 ternary logic은 radix의 최적값($e\approx2.718$)에 가장 가까운 정수 radix로서 트랜지스터 수와 배선을 줄여 밀도와 에너지 효율을 높일 수 있어 주목받고 있다~\cite{han_ptmos,han_bts}. CMOS 호환 ternary 소자로는 터널링 기반 T-CMOS~\cite{jeong_tcmos}, 문턱 스위치(TS)와 MOSFET의 직렬 연결~\cite{heo_nbo2,han_bts,han_ptmos}, feedback FET~\cite{son_fbfet}, gate--body diode MOSFET~\cite{kim_spti}, ternary decoder~\cite{han_tld} 등이 보고되었다. 특히 STL 기반 biristor를 문턱 스위치로 쓰는 방식~\cite{han_bts,han_ptmos}은 낮은 누설과 CMOS 동일 공정이 장점이지만, \textbf{두 개의 소자}를 직렬로 연결해야 세 상태를 얻는다.
+
+최근 Noh 등은 bulk Si MOSFET 하나에서 STL이 두 번 일어나는 \textit{triristor}를 측정으로 보였다~\cite{noh_triristor}. 이 소자에서 두 래치는 같은 p-well(정공 저장소 하나)을 공유하며, bulk punchthrough 전류(1차)와 표면 subthreshold 전류(2차)라는 \textbf{두 전류 경로}로 구분된다. 그 결과 두 래치는 body 전압과 $V_G$에 따라 하나로 합쳐질 수 있고, 두 래치를 따로 설계하는 공정 변수는 제시되지 않았다. 또 $L_G=3~\mu$m에서 동작 전압은 7--12~V였다. 조사한 범위에서 SOI 소자의 이중 래치는 보고되지 않았다.
+
+본 연구는 SOI 소자 하나 안에 \textbf{물리적으로 분리된 두 floating body}를 두어, 두 STL을 직렬로 연결한 회로(Fig.~\ref{fig:circuit})를 소자 수준에서 구현한다. 두 body 사이의 n$^+$ island를 재결합 sink이자 tap 노드로 사용하면 각 body가 \textbf{독립된 STL}로 동작하여 Id-Vd에 래치가 두 번 나타나고, 세 상태(I, II, III)를 얻는다. Table~\ref{tab:prior}에 선행 연구와의 차이를 정리하였다. 본 논문의 기여는 다음과 같다. (1) SOI divided-body 구조에서 이중 래치를 TCAD로 제안하고, 래치가 한 번이던 원인(정공 준페르미 준위 연속, 직렬 제약, 가로 PNP 결합)을 단계적으로 규명하였다. (2) \texttt{.str} 기반 \textit{hole balance}로 각 래치가 해당 body의 II 정공이 재결합을 이기는 순간임을 정량적으로 보였다. (3) 1차 래치는 오른쪽 body 도핑, 2차 래치는 왼쪽 body 도핑으로 \textbf{독립적으로} 설계되며, 두 \textit{hysteresis loop}를 1.1~V 간격으로 완전히 분리할 수 있음을 86개 \textit{split}으로 보였다.
+
+\begin{table}[!t]
+\caption{세 상태(ternary) 동작을 위한 선행 연구와 본 연구 비교}
+\label{tab:prior}
+\centering\scriptsize
+\begin{tabular}{@{}p{0.2\columnwidth}@{\,}c@{\,}c@{\,}p{0.25\columnwidth}@{\,}p{0.22\columnwidth}@{}}
+\toprule
+방식 & 소자 수 & 기판 & 세 상태의 원인 & 비고 \\ \midrule
+T-CMOS~\cite{jeong_tcmos} & 1 & bulk & BTBT 누설 경로 & 모든 상태에 정적 전류 \\
+NbO$_2$ TS + MOS~\cite{heo_nbo2} & 2 & -- & IMT 문턱 스위치 & 이종 공정, TS 누설 \\
+BTS + MOS~\cite{han_bts,han_ptmos} & 2 & SOI\cite{han_bts} & STL(biristor) + MOSFET & 측정, 직렬 2소자 \\
+triristor~\cite{noh_triristor} & 1 & bulk & 한 p-well, 두 전류 경로의 II & 측정, 7--12~V, 두 래치 결합 \\
+\textbf{본 연구} & \textbf{1} & \textbf{SOI} & \textbf{분리된 두 body의 독립 STL} & TCAD, 1.2--4.8~V, 독립 조절 \\ \bottomrule
+\end{tabular}
+\end{table}
+
 
 \begin{figure*}[!t]
 \centering
@@ -81,7 +101,7 @@ width & 소자 폭 & 0.5 $\mu$m \\ \bottomrule
 \end{figure}
 
 \subsection{물리 모델과 수치 방법}
-모델은 \texttt{bgn}, \texttt{consrh}, \texttt{conmob}, \texttt{fldmob}, \texttt{fermi}, \texttt{trap.tunnel}, \texttt{bbt.std}와 Selberherr \textit{impact ionization} (\texttt{impact selb})~\cite{selberherr}이다. \texttt{consrh}는 SRH \textit{lifetime}을 $\tau_{eff}=\tau_0/(1+N/N_{SRH})$, $N_{SRH}=5\times10^{16}$~cm$^{-3}$로 도핑에 따라 줄인다. 따라서 본문의 $\tau_{isl}$, $\tau_{Si}$는 모두 기준값 $\tau_0$이며, 실효값은 $10^{20}$~cm$^{-3}$ island에서 $\tau_0/2001$, $6$--$7\times10^{17}$ body에서 $\tau_0/13$--$\tau_0/15$이다. 기준 소자 \texttt{.str}에서 소수 캐리어 밀도와 재결합률로 구한 body 실효 \textit{lifetime}(켜진 오른쪽 body 6.2~ns)은 이 식과 일치하였다. Auger 재결합은 꺼져 있다. $10^{20}$~cm$^{-3}$에서 Auger \textit{lifetime}($\approx1/C_nN^2\approx0.4$~ns)은 island SRH 실효값보다 6자리 길고, body에서는 $\sim10^{-5}$~s이므로 결과에 미치는 영향은 작을 것으로 추정하며, Auger를 켠 확인 계산을 진행 중이다. 두 가지 \textit{transport}를 사용하였다: \textbf{에너지 균형(hcte)}과 \textbf{drift-diffusion (DD)}~\cite{atlas}. 래치는 S자 I--V(\textit{negative differential resistance})를 만들어 정상상태 전압 sweep이 접힘점에서 수렴하지 않는다. 그래서 drain을 0.7~V/ms로 올렸다 내리는 \textbf{transient ramp}를 사용하였다. 실제 시간 동역학이 불안정 가지를 건너가므로 래치와 \textit{hysteresis}가 바로 나온다. 10배 빠른 ramp(7~V/ms)에서는 래치 전압이 0.1~V 밀려 준정적이 아니므로 0.7~V/ms를 유지하였다. 최종 계산은 \textbf{MixedMode}로 하였다. 소자 구조와 $V_G$ 상태를 \texttt{.str}로 저장한 뒤 회로의 전압원, $R_{tap}$, (필요하면) drain 직렬 저항에 연결한다. MixedMode는 소자 단독 계산과 전류가 4자리까지 일치하면서 약 20배 빨랐다. 오른쪽 drain 접합은 1~nm 격자를 사용하였다.
+모델은 \texttt{bgn}, \texttt{consrh}, \texttt{conmob}, \texttt{fldmob}, \texttt{fermi}, \texttt{trap.tunnel}, \texttt{bbt.std}와 Selberherr \textit{impact ionization} (\texttt{impact selb})~\cite{selberherr,maes}이다. \texttt{consrh}는 SRH \textit{lifetime}을 $\tau_{eff}=\tau_0/(1+N/N_{SRH})$, $N_{SRH}=5\times10^{16}$~cm$^{-3}$로 도핑에 따라 줄인다. 따라서 본문의 $\tau_{isl}$, $\tau_{Si}$는 모두 기준값 $\tau_0$이며, 실효값은 $10^{20}$~cm$^{-3}$ island에서 $\tau_0/2001$, $6$--$7\times10^{17}$ body에서 $\tau_0/13$--$\tau_0/15$이다. 기준 소자 \texttt{.str}에서 소수 캐리어 밀도와 재결합률로 구한 body 실효 \textit{lifetime}(켜진 오른쪽 body 6.2~ns)은 이 식과 일치하였다. Auger 재결합은 꺼져 있다. $10^{20}$~cm$^{-3}$에서 Auger \textit{lifetime}($\approx1/C_nN^2\approx0.4$~ns)은 island SRH 실효값보다 6자리 길고, body에서는 $\sim10^{-5}$~s이므로 결과에 미치는 영향은 작을 것으로 추정하며, Auger를 켠 확인 계산을 진행 중이다. 두 가지 \textit{transport}를 사용하였다: \textbf{에너지 균형(hcte)}과 \textbf{drift-diffusion (DD)}~\cite{atlas}. 래치는 S자 I--V(\textit{negative differential resistance})를 만들어 정상상태 전압 sweep이 접힘점에서 수렴하지 않는다. 그래서 drain을 0.7~V/ms로 올렸다 내리는 \textbf{transient ramp}를 사용하였다. 실제 시간 동역학이 불안정 가지를 건너가므로 래치와 \textit{hysteresis}가 바로 나온다. 10배 빠른 ramp(7~V/ms)에서는 래치 전압이 0.1~V 밀려 준정적이 아니므로 0.7~V/ms를 유지하였다. 최종 계산은 \textbf{MixedMode}로 하였다. 소자 구조와 $V_G$ 상태를 \texttt{.str}로 저장한 뒤 회로의 전압원, $R_{tap}$, (필요하면) drain 직렬 저항에 연결한다. MixedMode는 소자 단독 계산과 전류가 4자리까지 일치하면서 약 20배 빨랐다. 오른쪽 drain 접합은 1~nm 격자를 사용하였다.
 
 \textbf{래치 판정.} 같은 인가 전압(2~mV 이내)에서 경로 전류가 1자리 넘게 변하고 실제 전류 수준(왼쪽 $|I_S|>10^{-7}$~A, 오른쪽 $|I_{tap}|>10^{-9}$~A)에 닿으면 래치로 정의하였다. 수치 오류와는 time step 붕괴, KCL 잔차, 내부 상태 변화, gate 변위전류로 구별하였다 (Section~VII).
 
@@ -385,7 +405,7 @@ hcte 실패를 완화하려는 12가지 시도를 Table~\ref{tab:hcte}에 정리
 
 \textbf{수치 오류 판정.} 초기 hcte run(1~M$\Omega$)에서는 5.28~V에서 $I_D$, $I_S$가 음수로 튀어 두 번째 래치처럼 보였다. 그러나 이 점프 동안 time step은 $10^{-25}$~s로 붕괴하고, 내부 전위는 소수점 셋째 자리까지 고정되어 있었다. 또 gate 변위전류가 $10^{-2}$~A, KCL 잔차가 $10^{-2}$~A였다. 본 연구는 이 네 가지 기준으로 모든 래치를 검증하였다.
 
-\textbf{공정 구현.} 분리 조건은 island 실효 \textit{lifetime} $\le5\times10^{-14}$~s, 즉 정공 확산 길이가 island 폭보다 훨씬 짧은 것이다. 이온 주입 손상으로 얻을 수 있는 Si \textit{lifetime}은 ps 수준이므로 이 값을 손상만으로 만들기는 어렵다. 같은 역할을 하는 현실적인 구조는 \textbf{정공을 무한히 빨리 소멸시키는 금속성 sink}이다. 예를 들어 Si 두께 전체를 관통하는 silicide island(또는 금속 via)를 섬 자리에 두고 BOX 아래 tap으로 연결하면 된다. 이때 Section~III의 top contact(C)처럼 contact가 얕으면 정공이 그 아래로 지나가므로 \textbf{Si 전체 두께를 관통}해야 한다. 이 구조는 별도 TCAD 확인이 필요하다. Body의 $\tau_{0,Si}=10^{-8}$~s(실효 0.7~ns)는 Au/Pt 확산이나 전자선/양성자 조사 같은 기존 \textit{lifetime control} 기술의 범위이며, $R_{tap}$(1--10~M$\Omega$)은 고저항 poly-Si 저항으로 집적할 수 있다.
+\textbf{공정 구현.} 분리 조건은 island 실효 \textit{lifetime} $\le5\times10^{-14}$~s, 즉 정공 확산 길이가 island 폭보다 훨씬 짧은 것이다. 이온 주입 손상으로 얻을 수 있는 Si \textit{lifetime}은 ps 수준이므로 이 값을 손상만으로 만들기는 어렵다. 같은 역할을 하는 현실적인 구조는 \textbf{정공을 무한히 빨리 소멸시키는 금속성 sink}이다. 예를 들어 Si 두께 전체를 관통하는 silicide island(또는 금속 via)를 섬 자리에 두고 BOX 아래 tap으로 연결하면 된다. 이때 Section~III의 top contact(C)처럼 contact가 얕으면 정공이 그 아래로 지나가므로 \textbf{Si 전체 두께를 관통}해야 한다. 이 구조는 별도 TCAD 확인이 필요하다. Body의 $\tau_{0,Si}=10^{-8}$~s(실효 0.7~ns)는 Au/Pt 확산이나 전자선/양성자 조사 같은 기존 \textit{lifetime control} 기술의 범위이며(floating-body 메모리의 lifetime engineering 예~\cite{kim_lifetime}), $R_{tap}$(1--10~M$\Omega$)은 고저항 poly-Si 저항으로 집적할 수 있다.
 
 \section{결론 (Conclusion)}
 두 개의 직렬 STL을 한 SOI 소자로 구현하여 \textbf{두 번의 래치}를 얻었다. 이를 위해 세 가지가 필요했다: (1) n$^+$ island로 body를 물리적으로 나누기, (2) island를 $R_{tap}$으로 접지하여 직렬 제약을 풀기, (3) island \textit{lifetime}을 줄여 가로 PNP 결합을 끊기. 여기에 왼쪽 body를 래치 가능한 도핑($6\times10^{17}$)으로 정하였다. \texttt{.str} 기반 \textit{hole balance}로 각 래치가 해당 STL의 \textit{impact ionization} 정공이 재결합을 이겨 장벽이 무너지는 순간임을 보였다. 꺼짐의 급격함은 Si \textit{lifetime}이 정하는 \textit{holding current}로 설명하였다. 두 래치는 $N_{A,R}$, $N_{A,L}$, $V_G$, $R_{tap}$으로 독립 조절되며, 섬 위치 60\%와 $\tau_{Si}=10^{-8}$~s에서 두 \textit{hysteresis loop}가 1.1~V 간격으로 분리된다. 남은 과제는 에너지 균형 모델에서의 두 번째 래치 확인과 \textit{lifetime engineering}의 공정 구현이다.
@@ -403,9 +423,26 @@ Table~\ref{tab:all}은 계산한 모든 DD MixedMode split의 래치 지표이�
 \section*{Data Availability}
 모든 덱(\texttt{.in}), 분석 코드, 핵심 log와 그림은 저장소에 있다. Raw \texttt{.str}/\texttt{.out}은 연구 서버의 같은 경로에 있다. 전체 연구 흐름(실패 포함)은 저장소 \texttt{README.md}에 기록하였다.
 
-\begin{thebibliography}{9}
-\bibitem{han_biristor} J.-W. Han and Y.-K. Choi, ``Biristor---Bistable resistor with open-base BJT structure,'' \emph{IEEE Electron Device Lett.}, vol.~31, no.~8, pp.~797--799, Aug. 2010.
+\begin{thebibliography}{99}
+\bibitem{chen_stl} C.-D. Chen, M. Matloubian, R. Sundaresan, B.-Y. Mao, C. C. Wei, and G. P. Pollack, ``Single-transistor latch in SOI MOSFETs,'' \emph{IEEE Electron Device Lett.}, vol.~9, no.~12, pp.~636--638, Dec. 1988.
+\bibitem{han_biristor} J.-W. Han and Y.-K. Choi, ``Biristor---Bistable resistor based on a silicon nanowire,'' \emph{IEEE Electron Device Lett.}, vol.~31, no.~8, pp.~797--799, Aug. 2010.
+\bibitem{kim_1tdram} D.-O. Kim, D.-I. Moon, and Y.-K. Choi, ``Optimization of bias schemes for long-term endurable 1T-DRAM through the use of the biristor mode operation,'' \emph{IEEE Electron Device Lett.}, vol.~35, no.~2, pp.~220--222, Feb. 2014.
+\bibitem{moon_fin} D.-I. Moon, S.-J. Choi, J.-W. Han, S. Kim, and Y.-K. Choi, ``Fin-width dependence of BJT-based 1T-DRAM implemented on FinFET,'' \emph{IEEE Electron Device Lett.}, vol.~31, no.~9, pp.~909--911, Sep. 2010.
 \bibitem{han_lif} J.-W. Han and M. Meyyappan, ``Leaky integrate-and-fire biristor neuron,'' \emph{IEEE Electron Device Lett.}, vol.~39, no.~9, pp.~1457--1460, Sep. 2018.
+\bibitem{han_mimic} J.-K. Han \emph{et al.}, ``Mimicry of excitatory and inhibitory artificial neuron with leaky integrate-and-fire function by a single MOSFET,'' \emph{IEEE Electron Device Lett.}, vol.~41, no.~2, pp.~208--211, Feb. 2020.
+\bibitem{han_sciadv} J.-K. Han \emph{et al.}, ``Cointegration of single-transistor neurons and synapses by nanoscale CMOS fabrication for highly scalable neuromorphic hardware,'' \emph{Sci. Adv.}, vol.~7, no.~32, Art. no. eabg8836, Aug. 2021.
+\bibitem{kim_osc} H.-Y. Kim, S.-I. Kim, J.-K. Han, J.-W. Jung, and Y.-K. Choi, ``A single MOSFET-based oscillator on a bulk-silicon wafer,'' \emph{IEEE Electron Device Lett.}, vol.~45, no.~1, pp.~8--11, Jan. 2024.
+\bibitem{lee_1v} S.-W. Lee \emph{et al.}, ``Single transistor latch near 1~V with asymmetric biasing in a MOSFET,'' \emph{IEEE Trans. Electron Devices}, vol.~71, no.~11, pp.~6539--6543, Nov. 2024.
+\bibitem{han_ptmos} J.-A. Han, J.-W. Lee, J.-K. Han, D.-W. Kim, D.-H. Lee, and Y.-K. Choi, ``P-type ternary logic MOSFET with tunable middle state using bidirectional threshold switching,'' \emph{IEEE Electron Device Lett.}, vol.~46, no.~1, pp.~16--19, Jan. 2025.
+\bibitem{han_bts} J.-K. Han, J.-M. Yu, S.-Y. Nam, and Y.-K. Choi, ``CMOS ternary logic with a biristor threshold switch for low static power consumption,'' \emph{IEEE Electron Device Lett.}, vol.~43, no.~7, pp.~1005--1008, Jul. 2022.
+\bibitem{jeong_tcmos} J. W. Jeong \emph{et al.}, ``Tunnelling-based ternary metal--oxide--semiconductor technology,'' \emph{Nature Electron.}, vol.~2, no.~7, pp.~307--312, Jul. 2019.
+\bibitem{heo_nbo2} S. Heo \emph{et al.}, ``High-speed ternary CMOS inverter by monolithic integration of NbO$_2$ threshold switch with MOSFET,'' in \emph{IEDM Tech. Dig.}, Dec. 2021, pp.~32.2.1--32.2.4.
+\bibitem{son_fbfet} J. Son, K. Cho, and S. Kim, ``New ternary inverter with memory function using silicon feedback field-effect transistors,'' \emph{Sci. Rep.}, vol.~12, Art. no. 12907, Jul. 2022.
+\bibitem{kim_spti} H.-Y. Kim, H.-B. Noh, H.-Y. Maeng, and Y.-K. Choi, ``A selective positive ternary inverter using the mirror symmetry of a MOSFET with a gate--body diode,'' \emph{IEEE Trans. Electron Devices}, vol.~73, no.~8, pp.~5232--5238, Aug. 2026.
+\bibitem{han_tld} S.-J. Han \emph{et al.}, ``Ternary logic decoder using independently controlled double-gate Si-NW MOSFETs,'' \emph{Sci. Rep.}, vol.~11, Art. no. 13018, 2021.
+\bibitem{noh_triristor} H.-B. Noh \emph{et al.}, ``A triristor with tri-stable states using double latches,'' \emph{IEEE Electron Device Lett.}, vol.~46, no.~8, pp.~1269--1272, Aug. 2025.
+\bibitem{kim_lifetime} S. Kim, S.-J. Choi, D.-I. Moon, and Y.-K. Choi, ``Carrier lifetime engineering for floating-body cell memory,'' \emph{IEEE Trans. Electron Devices}, vol.~59, no.~2, pp.~367--373, Feb. 2012.
+\bibitem{maes} W. Maes, K. De Meyer, and R. Van Overstraeten, ``Impact ionization in silicon: A review and update,'' \emph{Solid-State Electron.}, vol.~33, no.~6, pp.~705--718, Jun. 1990.
 \bibitem{selberherr} S. Selberherr, \emph{Analysis and Simulation of Semiconductor Devices}. Vienna, Austria: Springer-Verlag, 1984.
 \bibitem{atlas} Silvaco Inc., \emph{Atlas User's Manual}, version 5.32.1.R, Santa Clara, CA, USA.
 \end{thebibliography}
