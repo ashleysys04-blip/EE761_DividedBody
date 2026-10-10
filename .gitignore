@@ -74,3 +74,5 @@
 paper/.cache/**
 paper/.bin/**
 paper/pg-*.png
+!paper/make_figs_ext.py
+!paper/splittable.tex
