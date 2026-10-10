@@ -596,7 +596,7 @@ Adev 1=drain 0=source 2=gate 3=tap 0=substrate infile=MM_TAPT_ISL_W30LK_L6_R7_R1
 
 <!-- DDSPLIT-AUTO-START -->
 
-### 결과 (자동 생성: 2026-10-10 08:51, 완료 86/86)
+### 결과 (자동 생성: 2026-10-10 10:26, 완료 88/88)
 
 > 이 블록은 `1007_ddsplit/update_readme_ddsplit.py`가 다시 쓴다. 래치 검출 기준(`analyze_ddsplit.py`): 같은 Vd(2 mV 이내)에서 경로 전류가 1자리 넘게 뛰고 실제 수준(왼쪽 |Is| > 1e-7 A, 오른쪽 |Itap| > 1e-9 A)에 닿으면 래치. ON = 올라갈 때 켜지는 Vd, OFF = 내려올 때 꺼지는 Vd(왼쪽 |Is| < 1e-8 A, 오른쪽 |Itap| < 1e-9 A), OFF 폭 = 내려올 때 왼쪽 |Is|가 1e-6 → 1e-8 A로 떨어지는 데 걸린 Vd 폭 (0이면 급격).
 
@@ -823,6 +823,7 @@ Si 수명 1e-8 s에서 두 번째 래치가 점프로 꺼졌다 (OFF 폭 0.26 �
 | `DDS_TE5em8` | Si carrier lifetime 5e-8 s | 2.396 | 3.8 | 3.478 | 2.6 | 2.34 | 1.30 | 0.300 | 래치 2번 |
 | `DDS_TE5em9` | Si carrier lifetime 5e-9 s | 3.392 | 3.2 | 4.234 | 3.0 | 3.03 | 2.05 | 0.000 | 래치 2번 |
 | `DDS_TE5em9_XS60` | Si lifetime 5e-9 s + island 60 % | 1.610 | 1.7 | 5.224 | 4.0 | 2.86 | 1.47 | 0.001 | 래치 2번 |
+| `DDS_TE5em9_XS60_NR8e17_RD1e5` | lifetime 5e-9 s + island 60 % + right body 8e17 + drain series R 1e5 (paper device, sharper edges) | 2.062 | 2.4 | 5.389 | 1.8 | 3.03 | 1.68 | 0.055 | 래치 2번 |
 | `DDS_TE8_NL5e17` | Si lifetime 1e-8 s + left body 5e17 | 2.953 | 3.2 | 3.317 | 2.4 | 2.68 | 1.72 | 0.105 | 래치 2번 |
 | `DDS_TE8_NL5p5e17` | Si lifetime 1e-8 s + left body 5.5e17 | 2.953 | 3.2 | 3.624 | 2.6 | 2.72 | 1.72 | 0.097 | 래치 2번 |
 | `DDS_TE8_NL6p5e17` | Si lifetime 1e-8 s + left body 6.5e17 | 2.953 | 3.2 | 4.244 | 3.1 | 2.78 | 1.72 | 0.030 | 래치 2번 |
@@ -845,6 +846,7 @@ Si 수명 1e-8 s에서 두 번째 래치가 점프로 꺼졌다 (OFF 폭 0.26 �
 | `DDS_TE8_XS60_NL5p5e17_RD3e5` | lifetime 1e-8 s + island 60 % + left 5.5e17 + drain R 3e5 | 1.448 | 1.4 | 4.564 | 1.3 | 2.61 | 1.23 | 0.308 | 래치 2번 |
 | `DDS_TE8_XS60_NR1e18` | lifetime 1e-8 s + island 60 % + right body 1e18 | 2.740 | 1.4 | 5.088 | 3.9 | 2.84 | 1.71 | 0.019 | 래치 2번 |
 | `DDS_TE8_XS60_NR8e17` | lifetime 1e-8 s + island 60 % + right body 8e17 | 1.880 | 2.7 | 4.884 | 3.7 | 2.66 | 1.39 | 0.080 | 래치 2번 |
+| `DDS_TE8_XS60_NR8e17_RD1e5` | lifetime 1e-8 s + island 60 % + right body 8e17 + drain series R 1e5 (paper device) | 1.880 | 2.6 | 4.918 | 1.7 | 2.70 | 1.39 | 0.191 | 래치 2번 |
 | `DDS_TE8_XS60_RD1e5` | lifetime 1e-8 s + island 60 % + drain series R 1e5 (flat top) | 1.448 | 1.7 | 4.812 | 1.7 | 2.60 | 1.23 | 0.115 | 래치 2번 |
 | `DDS_TE8_XS60_RD1e6` | lifetime 1e-8 s + island 60 % + drain series R 1e6 (flat top) | 1.450 | 1.8 | 5.122 | 0.9 | 2.81 | 1.23 | 0.945 | 래치 2번 |
 | `DDS_TE8_XS60_RD3e5` | lifetime 1e-8 s + island 60 % + drain series R 3e5 (flat top) | 1.448 | 1.4 | 4.883 | 1.3 | 2.66 | 1.23 | 0.344 | 래치 2번 |
@@ -977,6 +979,7 @@ Si 수명 1e-8 s에서 두 번째 래치가 점프로 꺼졌다 (OFF 폭 0.26 �
 | `DDS_TE1em8` | Si carrier lifetime 1e-8 s (base 1e-7) | 1.233 | 1.189 | -0.201 | 0.044 | 0.010 | 0.24 | 2.18 |
 | `DDS_TE2em8_XS60` | Si lifetime 2e-8 s + island 60 % | 0.260 | 2.096 | 1.033 | 0.158 | 0.078 | 1.08 | 3.10 |
 | `DDS_TE5em9_XS60` | Si lifetime 5e-9 s + island 60 % | 0.142 | 2.369 | 1.246 | 0.001 | 0.008 | 1.11 | 3.02 |
+| `DDS_TE5em9_XS60_NR8e17_RD1e5` | lifetime 5e-9 s + island 60 % + right body 8e17 + drain series R 1e5 (paper device, sharper edges) | 0.385 | 2.356 | 0.970 | 0.055 | 0.001 | 0.80 | 1.31 |
 | `DDS_TE8_XS55` | Si lifetime 1e-8 s + island at 55 % of Lg | 0.725 | 1.763 | 0.462 | 0.075 | 0.018 | 0.57 | 2.66 |
 | `DDS_TE8_XS60` | Si lifetime 1e-8 s + island at 60 % of Lg | 0.221 | 2.214 | 1.117 | 0.056 | 0.032 | 1.06 | 3.08 |
 | `DDS_TE8_XS60_NL5e17` | lifetime 1e-8 s + island 60 % + left body 5e17 | 0.221 | 1.585 | 1.047 | 0.093 | 0.032 | 0.97 | 2.55 |
@@ -984,6 +987,7 @@ Si 수명 1e-8 s에서 두 번째 래치가 점프로 꺼졌다 (OFF 폭 0.26 �
 | `DDS_TE8_XS60_NL5p5e17_RD3e5` | lifetime 1e-8 s + island 60 % + left 5.5e17 + drain R 3e5 | 0.219 | 1.949 | 1.167 | 0.308 | 0.035 | 1.03 | 1.19 |
 | `DDS_TE8_XS60_NR1e18` | lifetime 1e-8 s + island 60 % + right body 1e18 | 1.029 | 2.251 | 0.097 | 0.019 | 0.001 | 0.46 | 3.03 |
 | `DDS_TE8_XS60_NR8e17` | lifetime 1e-8 s + island 60 % + right body 8e17 | 0.489 | 2.226 | 0.778 | 0.080 | 0.018 | 0.77 | 2.80 |
+| `DDS_TE8_XS60_NR8e17_RD1e5` | lifetime 1e-8 s + island 60 % + right body 8e17 + drain series R 1e5 (paper device) | 0.488 | 2.223 | 0.815 | 0.191 | 0.019 | 0.77 | 1.45 |
 | `DDS_TE8_XS60_RD1e5` | lifetime 1e-8 s + island 60 % + drain series R 1e5 (flat top) | 0.220 | 2.212 | 1.153 | 0.115 | 0.035 | 1.07 | 1.52 |
 | `DDS_TE8_XS60_RD1e6` | lifetime 1e-8 s + island 60 % + drain series R 1e6 (flat top) | 0.218 | 2.310 | 1.362 | 0.945 | 0.036 | 1.09 | 0.93 |
 | `DDS_TE8_XS60_RD3e5` | lifetime 1e-8 s + island 60 % + drain series R 3e5 (flat top) | 0.219 | 2.226 | 1.209 | 0.344 | 0.034 | 1.08 | 1.16 |
