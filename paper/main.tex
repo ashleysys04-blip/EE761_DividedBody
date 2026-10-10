@@ -405,7 +405,22 @@ hcte 실패를 완화하려는 12가지 시도를 Table~\ref{tab:hcte}에 정리
 
 \textbf{수치 오류 판정.} 초기 hcte run(1~M$\Omega$)에서는 5.28~V에서 $I_D$, $I_S$가 음수로 튀어 두 번째 래치처럼 보였다. 그러나 이 점프 동안 time step은 $10^{-25}$~s로 붕괴하고, 내부 전위는 소수점 셋째 자리까지 고정되어 있었다. 또 gate 변위전류가 $10^{-2}$~A, KCL 잔차가 $10^{-2}$~A였다. 본 연구는 이 네 가지 기준으로 모든 래치를 검증하였다.
 
-\textbf{공정 구현.} 분리 조건은 island 실효 \textit{lifetime} $\le5\times10^{-14}$~s, 즉 정공 확산 길이가 island 폭보다 훨씬 짧은 것이다. 이온 주입 손상으로 얻을 수 있는 Si \textit{lifetime}은 ps 수준이므로 이 값을 손상만으로 만들기는 어렵다. 같은 역할을 하는 현실적인 구조는 \textbf{정공을 무한히 빨리 소멸시키는 금속성 sink}이다. 예를 들어 Si 두께 전체를 관통하는 silicide island(또는 금속 via)를 섬 자리에 두고 BOX 아래 tap으로 연결하면 된다. 이때 Section~III의 top contact(C)처럼 contact가 얕으면 정공이 그 아래로 지나가므로 \textbf{Si 전체 두께를 관통}해야 한다. 이 구조는 별도 TCAD 확인이 필요하다. Body의 $\tau_{0,Si}=10^{-8}$~s(실효 0.7~ns)는 Au/Pt 확산이나 전자선/양성자 조사 같은 기존 \textit{lifetime control} 기술의 범위이며(floating-body 메모리의 lifetime engineering 예~\cite{kim_lifetime}), $R_{tap}$(1--10~M$\Omega$)은 고저항 poly-Si 저항으로 집적할 수 있다.
+\textbf{면적: STL 두 개를 직렬로 쓰는 것과의 비교.} 같은 등가 회로(Fig.~\ref{fig:circuit})를 개별 소자로 만드는 경우와 채널 방향 길이를 비교하였다 (Table~\ref{tab:area}). Scalable CMOS 설계 규칙(gate 길이 $2\lambda$, contact $2\lambda$, contact--gate 간격 $2\lambda$, contact의 active 여유 $1.5\lambda$, active 간격 $3\lambda$)을 쓰고, 각 STL의 body를 최소 gate 길이 $2\lambda$로 두었다. 개별 STL 두 개를 금속으로 잇는 경우는 $29\lambda$, 가운데 확산을 공유하되 그 노드에 contact를 다는 적층(stacked) 구조는 $21\lambda$이다. 제안 소자는 gate 하나가 두 body와 island를 덮고, island 노드를 위쪽 contact 대신 BOX 관통 via로 꺼내므로 $15\lambda+W_{IS}$이다 ($W_{IS}=30$~nm는 $\lambda=67.5$~nm에서 $0.44\lambda$). 즉 적층 구조보다 약 27\%, 개별 소자보다 약 47\% 짧다. $R_{tap}$은 세 경우 모두 필요하므로 비교에서 뺐다. 이 이득은 island 노드를 위쪽 contact 없이 아래로 꺼낼 수 있다는 가정에 달려 있으며, 그 대가로 BOX 관통 via와 그 아래 배선(예: ground-plane 또는 후면 배선)이 필요하다. 단자 수는 S, D, G, tap의 4개로, 적층 구조(S, D, G$_1$, G$_2$, 중간 노드)보다 적다.
+
+\begin{table}[!t]
+\caption{채널 방향 길이 비교 (scalable 설계 규칙, 단위 $\lambda$; $R_{tap}$ 제외)}
+\label{tab:area}
+\centering\scriptsize
+\begin{tabular}{@{}p{0.34\columnwidth}p{0.36\columnwidth}c@{}}
+\toprule
+구성 & 길이 내역 & 합계 \\ \midrule
+개별 STL 2개 + 금속 연결 & $2\times(1.5+2+2+2+2+2+1.5)+3$ & $29\lambda$ \\
+적층, 중간 노드 contact & $5.5+2+6+2+5.5$ & $21\lambda$ \\
+\textbf{제안 소자} (gate 1개, island via) & $5.5+(2+W_{IS}+2)+5.5$ & $\mathbf{15\lambda}+W_{IS}$ \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{공정 구현.} 분리 조건은 island 실효 \textit{lifetime} $\le5\times10^{-14}$~s, 즉 정공 확산 길이가 island 폭보다 훨씬 짧은 것이다. 이온 주입 손상으로 얻을 수 있는 Si \textit{lifetime}은 ps 수준이므로 이 값을 손상만으로 만들기는 어렵다. 같은 역할을 하는 현실적인 구조는 \textbf{정공을 무한히 빨리 소멸시키는 금속성 sink}이다. 예를 들어 Si 두께 전체를 관통하는 silicide island(또는 금속 via)를 섬 자리에 두고 BOX 아래 tap으로 연결하면 된다. 이때 Section~III의 top contact(C)처럼 contact가 얕으면 정공이 그 아래로 지나가므로 \textbf{Si 전체 두께를 관통}해야 한다. 이 구조(금속 코어 10~nm + n$^+$ shell, island lifetime은 줄이지 않음)를 TCAD로 확인하는 계산을 진행 중이다 (덱: \dpath{1010\_sink/SINK\_*.in}). Body의 $\tau_{0,Si}=10^{-8}$~s(실효 0.7~ns)는 Au/Pt 확산이나 전자선/양성자 조사 같은 기존 \textit{lifetime control} 기술의 범위이며(floating-body 메모리의 lifetime engineering 예~\cite{kim_lifetime}), $R_{tap}$(1--10~M$\Omega$)은 고저항 poly-Si 저항으로 집적할 수 있다.
 
 \section{결론 (Conclusion)}
 두 개의 직렬 STL을 한 SOI 소자로 구현하여 \textbf{두 번의 래치}를 얻었다. 이를 위해 세 가지가 필요했다: (1) n$^+$ island로 body를 물리적으로 나누기, (2) island를 $R_{tap}$으로 접지하여 직렬 제약을 풀기, (3) island \textit{lifetime}을 줄여 가로 PNP 결합을 끊기. 여기에 왼쪽 body를 래치 가능한 도핑($6\times10^{17}$)으로 정하였다. \texttt{.str} 기반 \textit{hole balance}로 각 래치가 해당 STL의 \textit{impact ionization} 정공이 재결합을 이겨 장벽이 무너지는 순간임을 보였다. 꺼짐의 급격함은 Si \textit{lifetime}이 정하는 \textit{holding current}로 설명하였다. 두 래치는 $N_{A,R}$, $N_{A,L}$, $V_G$, $R_{tap}$으로 독립 조절되며, 섬 위치 60\%와 $\tau_{Si}=10^{-8}$~s에서 두 \textit{hysteresis loop}가 1.1~V 간격으로 분리된다. 남은 과제는 에너지 균형 모델에서의 두 번째 래치 확인과 \textit{lifetime engineering}의 공정 구현이다.

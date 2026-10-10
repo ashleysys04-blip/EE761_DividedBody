@@ -83,8 +83,8 @@
 |---|---|---|---|---|
 | 1 | **Noh, EDL 2025 (triristor)** ✅ | V_LU/V_LD × 2, V_G 0.25–0.4 V, V_B sweep | **공정 조건 전부 + SIMS** | 최우선. 도핑을 알고 있어 impact 계수·lifetime만 맞추면 됨. 이중 래치 자체를 재현 → 모델이 "이중 래치를 과대/과소 예측하지 않음"을 보여줌. 단점: bulk, L_G 3 µm |
 | 2 | Han, Sci. Adv. 2021 ✅ | V_firing vs L_G (3점), Id-Vd 1개 | Tsi 50, BOX 140, ONO 3/6/8 nm, **body 도핑 없음**, trap 전하 미지 | SOI·Tsi 동일. 보조 검증(L_G 추세)용 |
-| 3 | Lee, TED 2024 🔎 | thin-body SOI STL, front/back gate | 미확인 | **PDF 필요** — SOI + 측정 + TCAD라 1순위가 될 수도 있음 |
-| 4 | Moon, EDL 2010 🔎 | SOI FinFET V_latch vs L_G, W_fin | 미확인 | **PDF 필요** |
-| 5 | Chen, EDL 1988 🔎 | 최초 SOI STL | 미확인 | **PDF 필요** |
+| 3 | Lee, TED 71(11) 2024 ✅ | V_LU vs back-gate (1.13 V까지), 0–3 V 왕복 | SOI, **Tsi 50 nm, BOX 140 nm**, EOT 13 nm, L_G 500 nm, W 450 nm, n⁺ poly; **body 도핑 미기재** | 우리 SOI 치수와 거의 같음. back-gate 의존성으로 2차 검증 가능하나 도핑이 미지수 |
+| 4 | Moon, EDL 31(9) 2010 ✅ | V_latch vs L_G, W_fin | SOI FinFET, **undoped fin**, EOT 10 nm, L_G 300 nm, n⁺ poly, Silvaco | 도핑이 "undoped"로 명확. 3D FinFET이라 2D와 직접 비교는 어려움. W_fin 의존성이 nonlocal(에너지 이완) 효과 때문이라고 Silvaco로 보임 → DD 한계 논의 인용 |
+| 5 | Chen, EDL 9(12) 1988 ✅ | 최초 SOI STL, Id-Vg 히스테리시스 | SIMOX, t_ox 26 nm, body **1×10¹⁷**, L 1.8–4 µm; 2×10¹⁶ 소자는 래치 없음 | 정성 근거("도핑이 래치에 가장 큰 영향", "lifetime이 길수록 낮은 V_DS에서 유지") 인용용 |
 
 출처(웹 검색): IEEE Xplore 20420 (Chen 1988), pure.ewha.ac.kr (Moon 2010, Kim 2012), scholarworks.sogang.ac.kr (Lee 2024), pmc.ncbi.nlm.nih.gov/articles/PMC10745293 (Kim & Lim 2023), sites.brown.edu (Cristoloveanu 2015).

@@ -76,3 +76,5 @@ paper/.bin/**
 paper/pg-*.png
 !paper/make_figs_ext.py
 !paper/splittable.tex
+!1010_calib/make_tri.py
+!1010_sink/make_sink.py

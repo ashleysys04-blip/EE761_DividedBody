@@ -1,0 +1,6 @@
+# Measured targets for model calibration (paper item 1).
+# Source: H.-B. Noh et al., "A triristor with tri-stable states using double latches," IEEE EDL 46(8) 1269-1272, 2025, Fig. 2(a) caption (V_G = 0.4 V, body floating).
+# Device: bulk n-MOSFET, L_G 3 um, W 600 um, t_ox 20 nm, n+ poly; p-well B 2e12 cm-2 40 keV; S/D As 5e15 cm-2 80 keV; RTA 1000 C 7 s; SIMS in Fig. 1(e).
+# VG   VLU1   ILU1      VLD1   ILD1      VLU2    ILU2      VLD2   ILD2
+0.40  7.38   4.31e-6   6.46   5.94e-5   11.58   2.27e-3   9.41   4.88e-3
+# Fig. 2(b) (read from the plot, +-0.2 V): VG 0.25 -> single latch near 12.2 V; VG 0.3/0.35 -> VLU1 about 8.2/7.4 V.

@@ -1124,6 +1124,31 @@ Si 수명 1e-8 s에서 두 번째 래치가 점프로 꺼졌다 (OFF 폭 0.26 �
 
 ---
 
+## Step 14. 논문 검증: 모델 세트, 캘리브레이션, 섬 sink, 면적 (10/10 –, 진행 중)
+
+🎯 **왜** TED 투고를 검토하면서 확인한 약점 세 가지를 메우려고. (1) 덱의 lifetime 값이 실효값이 아니었다. (2) 모델을 측정 데이터에 맞춘 적이 없다. (3) 섬 재결합 조건과 면적 이점이 실제 구조로 뒷받침되지 않았다. 선행 연구 정리는 [docs/literature.md](docs/literature.md).
+
+🛠 **어떻게**
+1. **lifetime 실효값**: `consrh`가 켜져 있어서 τ_eff = τ0/(1+N/5e16)이다. 기준 소자 `.str`에서 켜진 오른쪽 body의 실효 lifetime이 6.2 ns로, 이 식(6.7 ns)과 맞았다. Auger가 꺼져 있었으므로 Auger를 켠 확인 run을 돌린다 (`1007_ddsplit/DDS_{BASE,TE8_XS60}_AUGER.in`).
+2. **캘리브레이션 대상**: triristor (Noh et al., EDL 2025)를 골랐다. 공정 조건과 SIMS, 측정 이중 래치 전압이 모두 공개되어 있기 때문이다. 같은 모델 세트로 bulk 소자 덱을 만들었다 (`1010_calib/make_tri.py`, 목표값 `1010_calib/calib_targets.dat`).
+3. **섬 sink**: lifetime을 줄인 섬 대신 Si 두께 전체를 관통하는 금속 코어(tap 전극)와 n⁺ shell을 두고, 섬의 lifetime은 줄이지 않는다 (`1010_sink/make_sink.py`). 대조군으로 lifetime을 줄이지 않은 섬 + 아래쪽 tap 구조도 함께 돌린다 (`NOKILL_TE8_XS60`).
+4. **면적**: scalable 설계 규칙으로 채널 방향 길이를 비교했다 (논문 Table "면적"). 개별 STL 2개는 29λ, 중간 노드에 contact를 단 적층 구조는 21λ, 제안 소자는 15λ+W_IS.
+
+| ![](1010_calib/TRI_doping_vs_SIMS.png) | ![](1010_sink/struct_SINK_TE8_XS60.png) |
+|---|---|
+| 캘리브레이션 덱 도핑 vs 논문 SIMS. 데이터: `1010_calib/TRI_DEF_VG0p40.in` 구조 + Noh 2025 Fig. 1(e)에서 읽은 값 | 섬 sink 구조. 출처: `1010_sink/SINK_TE8_XS60.in` 구조 · 코드: `tools/strstruct.py` |
+
+![](1010_calib/struct_TRI.png)
+*triristor 캘리브레이션 소자 (bulk, L_G 3 µm, floating body). 출처: `1010_calib/TRI_DEF_VG0p40.in` 구조*
+
+⚠️ **문제**
+- **분리 조건이 기존 서술보다 훨씬 엄격하다.** 섬 τ0 = 1e-9 s(실효 5e-13 s)에서 두 래치가 합쳐지므로, 실효 ≤ 5e-14 s가 필요하다. 이전 README와 논문의 "1e-10 s까지 여유"는 τ0 기준이라 틀린 표현이었다.
+- 캘리브레이션 대상 논문 중 body 도핑까지 공개한 SOI 측정 데이터는 찾지 못했다. Han 2021과 Lee 2024는 SOI Tsi 50 nm이지만 도핑이 없다.
+
+✅ **해결 (진행 중)** 논문은 lifetime을 τ0와 실효값으로 함께 표기하도록 고쳤다. 대기열 `1010_calib/queue_1010.sh`(최대 2개 동시 실행)에 다음을 넣었다: triristor Id-Vg, V_G 0.4/0.3 V, 배경 도핑·기판 깊이·lifetime 민감도, 그리고 sink 3종 + 대조군. 결과가 나오면 impact 계수와 lifetime을 조정한다.
+
+---
+
 ## 최종 결과
 
 **1. 소자 하나로 "직렬 두 STL"이 동작한다 (DD).**
