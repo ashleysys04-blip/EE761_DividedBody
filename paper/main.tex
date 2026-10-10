@@ -1,0 +1,210 @@
+\documentclass[journal]{IEEEtran}
+% Build: paper/build.sh  (Tectonic / XeTeX + xeCJK; Korean body text, English key terms)
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setmainfont{texgyretermes}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold, ItalicFont=*-italic, BoldItalicFont=*-bolditalic]
+\setCJKmainfont{NanumGothic}[Path=/usr/share/fonts/nhn-nanum/, Extension=.ttf, UprightFont=*, BoldFont=*Bold]
+\xeCJKsetup{CJKspace=true, CJKecglue={}, xCJKecglue=false}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{cite}
+\usepackage{array}
+\usepackage{url}
+\graphicspath{{fig/}{../docs/fig/paper/}}
+\renewcommand{\topfraction}{0.92}\renewcommand{\bottomfraction}{0.6}\renewcommand{\textfraction}{0.06}
+\renewcommand{\floatpagefraction}{0.8}\renewcommand{\dbltopfraction}{0.92}\renewcommand{\dblfloatpagefraction}{0.85}
+\setcounter{topnumber}{3}\setcounter{dbltopnumber}{2}\setcounter{totalnumber}{5}
+\usepackage{seqsplit}
+\DeclareRobustCommand{\dpath}[1]{{\sffamily\scriptsize\seqsplit{#1}}}
+\newcommand{\PAPERDEVICE}{\IfFileExists{paperdevice.tex}{\input{paperdevice.tex}}{(조합 소자 계산 진행 중.)}}
+\renewcommand{\IEEEkeywordsname}{Index Terms}
+\renewcommand{\abstractname}{Abstract}
+
+\begin{document}
+\title{Lifetime-Engineered Divided-Body SOI \textit{Single-Transistor Latch}에서의 두 단계 래치: 소자 수준 직렬 STL 구현과 \textit{hole balance} 기반 메커니즘 분석}
+
+\author{Yeseul~Seo%
+\thanks{EE762 (KAIST, Fall 2026) project report. Simulation decks, analysis code and raw logs: GitHub \texttt{ashleysys04-blip/EE761\_DividedBody} (paths in captions are relative to the repository root).}}
+
+\markboth{IEEE Transactions on Electron Devices (style), EE762 project report}{Seo: Two-Stage Latch in a Divided-Body SOI STL}
+\maketitle
+
+\begin{abstract}
+SOI \textit{single-transistor latch} (STL)는 \textit{floating body}의 \textit{impact ionization}과 기생 \textit{bipolar junction transistor} (BJT)의 양의 되먹임으로 Id-Vd에 급격한 \textit{latch}와 \textit{hysteresis}를 보인다. 본 연구는 두 개의 STL을 직렬로 연결한 회로를 \textbf{소자 하나}로 구현하여 \textbf{래치가 두 번} 일어나는 소자를 Silvaco ATLAS 2D \textit{TCAD}로 설계하였다. Body 도핑 \textit{split}, Si 두께 \textit{split}, \textit{split gate}만으로는 \textit{hole quasi-Fermi level}이 body 전체에서 이어져 래치가 한 번만 일어났다. n$^+$ \textit{island}로 body를 물리적으로 나누어도 두 STL이 직렬 제약(\textit{series constraint})과 가로 p--n$^+$--p 정공 결합 때문에 동시에 래치하였다. 섬을 저항($R_{tap}$)으로 접지하고 섬의 \textit{carrier lifetime}을 1~ps로 줄여 두 결합을 모두 끊자, \textit{drift-diffusion} (DD) \textit{MixedMode} 계산에서 2.25~V(오른쪽 STL)와 3.30~V(왼쪽 STL)에 \textbf{두 번의 급격한 래치}가 \textit{hysteresis}와 함께 나타났다. \texttt{.str} 스냅샷의 \textit{hole balance} 분석으로, 각 래치가 그 STL의 drain 쪽 \textit{impact ionization} 정공이 재결합을 이겨 \textit{source--body barrier}가 무너지는 순간임을 보였다. Si \textit{lifetime}을 $10^{-8}$~s로 줄이면 \textit{holding current}가 올라가 래치가 0.04~V 안에서 급격히 꺼지며, 섬 위치를 $L_g$의 60\%로 옮기면 두 \textit{hysteresis loop}가 1.1~V 간격으로 완전히 분리된다. 86개 \textit{split}으로 두 래치를 독립적으로 조절하는 설계 손잡이를 정리하였다. 에너지 균형(\textit{hydrodynamic}, hcte) 모델에서는 오른쪽 drain 접합의 전자 온도 폭주로 3.6--5.3~V에서 계산이 멈추어, 두 번째 래치는 DD 결과로 제시한다.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Single-transistor latch (STL), silicon-on-insulator (SOI), floating body, impact ionization, parasitic bipolar transistor, multi-level latch, carrier lifetime engineering, TCAD.
+\end{IEEEkeywords}
+
+\section{서론 (Introduction)}
+\IEEEPARstart{F}{loating}-body SOI MOSFET은 drain 쪽 \textit{impact ionization}으로 생긴 정공이 body에 쌓여 body--source 접합을 순방향으로 만들고, 기생 \textit{lateral NPN BJT}가 켜지면서 전자 주입이 다시 \textit{impact ionization}을 늘리는 양의 되먹임을 가진다. 이 되먹임이 1을 넘는 drain 전압에서 전류가 수 자리 급격히 뛰는 \textit{latch-up}이 일어나고, 내려올 때는 더 낮은 전압에서 꺼지는 \textit{hysteresis}가 생긴다. 이 동작을 이용하는 \textit{single-transistor latch} (STL)는 \textit{capacitorless memory}, \textit{bistable resistor}~\cite{han_biristor}, \textit{integrate-and-fire neuron}~\cite{han_lif} 등으로 연구되어 왔다. 이 응용들은 대부분 \textbf{두 상태}(off/on)만 사용한다. 한 소자 안에서 상태를 \textbf{세 개 이상}으로 늘릴 수 있다면 \textit{multi-level memory}나 다단 문턱 \textit{neuron}에 쓸 수 있다.
+
+본 연구의 목표는 두 STL을 직렬로 연결한 회로(Fig.~\ref{fig:circuit})를 \textbf{소자 하나}로 만드는 것이다. 즉 Id-Vd에 래치가 \textbf{두 번} 나타나 세 상태(I, II, III)를 갖는 SOI 소자이다. 처음 시도한 \textit{body doping split}, Si 두께 \textit{split}, \textit{split gate}는 모두 래치가 한 번이었다. 본 논문은 그 원인을 하나씩 확인하며 구조를 바꾼 과정(Section~III), 최종 소자의 두 단계 래치(Section~IV), \texttt{.str} 기반 메커니즘(Section~V), 설계 손잡이(Section~VI), 모델 한계(Section~VII)를 차례로 기술한다.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{fig1_concept.png}
+\caption{제안 소자와 동작 원리. (a) 왼쪽 STL(p-body $6\times10^{17}$)과 오른쪽 STL(p-body $7\times10^{17}$) 사이의 \textit{lifetime-killed} n$^+$ island를 BOX 관통 via와 $R_{tap}$으로 접지한다. (b) 단면과 치수. (c) Id-Vd의 두 래치(I$\rightarrow$II 2.25~V, II$\rightarrow$III 3.30~V). (d)--(f) 각 상태의 body 정공. (g) 섬 \textit{lifetime}을 줄이지 않으면 정공이 섬을 건너 두 body가 동시에 래치한다. 그림: \dpath{docs/fig/paper/fig1\_concept.png}; (c)의 데이터: \dpath{1007\_ddsplit/DDS\_BASE.log\_tr.log}.}
+\label{fig:concept}
+\end{figure*}
+
+\section{소자 구조와 시뮬레이션 방법 (Device and Methodology)}
+\subsection{기준 소자}
+Table~\ref{tab:param}에 기준 소자 변수를 정리하였다. $L_g=300$~nm, $T_{si}=50$~nm, $t_{ox}=20$~nm, $T_{box}=200$~nm, S/D n$^+$ $10^{20}$~cm$^{-3}$이며, $V_G=-0.2$~V로 채널을 닫은 상태에서 drain 전압을 올린다. 채널 가운데 30~nm 폭 n$^+$ island가 body를 왼쪽 STL(source--island)과 오른쪽 STL(island--drain)로 나눈다. Island는 BOX를 관통하는 n$^+$ via로 바닥의 \textit{tap} 전극에 연결되고, 회로의 $R_{tap}$을 거쳐 접지된다. Island와 via의 \textit{carrier lifetime}은 $\tau_{isl}=1$~ps이다. 소자의 \texttt{.str}에서 직접 그린 구조는 저장소의 \dpath{docs/fig/struct\_14\_main\_L6.png}에 있다.
+
+\begin{table}[!t]
+\caption{기준 소자 변수 (덱: \dpath{1001/tap/MM\_TAPT\_ISL\_W30LK\_L6\_R7\_R1e7\_UD75S\_MF\_DD\_W05\_VGm0p2.in})}
+\label{tab:param}
+\centering\footnotesize
+\begin{tabular}{@{}lll@{}}
+\toprule
+기호 & 의미 & 값 \\ \midrule
+$L_g$, $L_{S/D}$ & gate 길이, S/D 길이 & 300, 500 nm \\
+$T_{si}$, $t_{ox}$, $T_{box}$ & Si, gate oxide, BOX 두께 & 50, 20, 200 nm \\
+$N_{A,L}$, $N_{A,R}$ & 왼쪽/오른쪽 p-body 도핑 & $6\times10^{17}$, $7\times10^{17}$ cm$^{-3}$ \\
+$W_{IS}$, $N_{D,IS}$ & island 폭, 도핑 & 30 nm, $10^{20}$ cm$^{-3}$ \\
+$\tau_{isl}$, $\tau_{Si}$ & island / Si SRH \textit{lifetime} & 1 ps, $10^{-7}$ s \\
+$R_{tap}$ & island--GND 저항 & 10 M$\Omega$ \\
+$V_G$, sweep & gate, drain ramp & $-0.2$ V, 0.7 V/ms \\
+width & 소자 폭 & 0.5 $\mu$m \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig2_equivalent_circuit.png}
+\caption{(a) 등가 회로: 각 STL = MOSFET + floating body 위의 기생 NPN, \textit{impact ionization} 전류원 $I_{ii}$로 body가 충전된다. Island 노드 $V_I$는 $R_{tap}$으로 접지되어 오른쪽 STL의 source이자 왼쪽 STL의 drain이 된다. (b) 설계 변수. 그림: \dpath{docs/fig/paper/fig2\_equivalent\_circuit.png}.}
+\label{fig:circuit}
+\end{figure}
+
+\subsection{물리 모델과 수치 방법}
+모델은 \texttt{bgn}, \texttt{consrh}, \texttt{conmob}, \texttt{fldmob}, \texttt{fermi}, \texttt{trap.tunnel}, \texttt{bbt.std}와 Selberherr \textit{impact ionization} (\texttt{impact selb})~\cite{selberherr}이다. 두 가지 \textit{transport}를 사용하였다: \textbf{에너지 균형(hcte)}과 \textbf{drift-diffusion (DD)}~\cite{atlas}. 래치는 S자 I--V(\textit{negative differential resistance})를 만들어 정상상태 전압 sweep이 접힘점에서 수렴하지 않는다. 그래서 drain을 0.7~V/ms로 올렸다 내리는 \textbf{transient ramp}를 사용하였다. 실제 시간 동역학이 불안정 가지를 건너가므로 래치와 \textit{hysteresis}가 바로 나온다. 10배 빠른 ramp(7~V/ms)에서는 래치 전압이 0.1~V 밀려 준정적이 아니므로 0.7~V/ms를 유지하였다. 최종 계산은 \textbf{MixedMode}로 하였다. 소자 구조와 $V_G$ 상태를 \texttt{.str}로 저장한 뒤 회로의 전압원, $R_{tap}$, (필요하면) drain 직렬 저항에 연결한다. MixedMode는 소자 단독 계산과 전류가 4자리까지 일치하면서 약 20배 빨랐다. 오른쪽 drain 접합은 1~nm 격자를 사용하였다.
+
+\textbf{래치 판정.} 같은 인가 전압(2~mV 이내)에서 경로 전류가 1자리 넘게 변하고 실제 전류 수준(왼쪽 $|I_S|>10^{-7}$~A, 오른쪽 $|I_{tap}|>10^{-9}$~A)에 닿으면 래치로 정의하였다. 수치 오류와는 time step 붕괴, KCL 잔차, 내부 상태 변화, gate 변위전류로 구별하였다 (Section~VII).
+
+\section{구조의 진화: 왜 래치가 한 번이었나}
+\textbf{도핑 split.} 한 body 안에서 도핑만 좌우로 나누면(소농도차 4--12\%, 대농도차 2.3--10배) 모든 경우 래치가 한 번이었다. EBD에서 \textit{hole quasi-Fermi level}이 body 전체에서 하나로 이어져, p/p$^+$ 계단이 다수 캐리어인 정공을 막지 못하였다. 대신 고도핑 위치와 비율로 $V_{LU}$가 3.67--5.76~V, 창이 0.35--1.66~V로 조절되었다. Si 두께 split, 산화막 notch, split gate도 래치가 한 번이었다 (저장소 README Step~1--4).
+
+\textbf{Floating island.} n$^+$ island로 body를 물리적으로 나누면 래치 전 두 body 전위가 서로 달라져(\,$-0.02$ vs 0.36~V\,) 분리 자체는 되었다. 그러나 3.26~V에서 두 STL과 섬이 동시에 점프하였다 [Fig.~\ref{fig:evol}(a)]. 섬이 떠 있으면 오른쪽 STL의 전류가 반드시 왼쪽 STL을 지나야 하는 \textbf{직렬 제약} 때문이다.
+
+\textbf{Tapped island.} 섬을 $R_{tap}$으로 접지하면 오른쪽 전류가 섬을 통해 빠질 수 있다. 하지만 $R_{tap}$을 60배 바꿔도 두 STL이 2.99~V에서 동시에 래치하였다 [Fig.~\ref{fig:evol}(b)]. 점프 순간을 확대하면 오른쪽 body가 먼저 오르고 약 10~ns 뒤 왼쪽이 따라온다. 오른쪽 p body--n$^+$ island(30~nm)--왼쪽 p body가 \textbf{가로 PNP}를 이루어, 오른쪽에서 생긴 정공이 섬을 건너 왼쪽 body를 채우기 때문이다. 섬 폭 100~nm와 섬 윗면 \textit{ohmic contact}로는 결합이 끊기지 않았다.
+
+\textbf{Lifetime-killed island.} 섬과 via의 \textit{lifetime}을 1~ps로 줄이자 정공이 섬 안에서 재결합하여 \textbf{오른쪽 STL만 혼자 래치}하였다 [Fig.~\ref{fig:evol}(c)]. 남은 문제는 왼쪽 STL이 구동되지 않는 것이었다. 섬 전위는 $I_{tap}R_{tap}$인데 $R_{tap}=10$~k$\Omega$에서는 0.4~V 이상 오르지 않았다.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.9\textwidth]{fig3_evolution.png}
+\caption{구조 변경에 따른 래치. (a) Floating n$^+$ island: 두 STL이 3.26~V에서 함께 래치. (b) $R_{tap}=600$~k$\Omega$로 접지한 island: 오른쪽($I_{tap}$)과 왼쪽($I_S$)이 2.99~V에서 동시에 점프(가로 PNP 결합). (c) Island \textit{lifetime} 1~ps: 오른쪽 STL만 래치하고 왼쪽은 꺼진 채 유지. 데이터: (a) \dpath{0928/ISL\_W30\_L3\_R7.log}, (b) \dpath{1001/tap/TAPT\_ISL\_W30\_L3\_R7\_R3e5\_VGm0p2.log}, (c) \dpath{1001/tap/TAPT\_ISL\_W30LK\_L3\_R7\_R1e4\_UD6S\_VGm0p2\_extract.dat}. 코드: \dpath{paper/make\_figs.py}.}
+\label{fig:evol}
+\end{figure*}
+
+\textbf{왼쪽 STL이 래치할 수 있는가.} 섬부터 오른쪽을 모두 n$^+$로 바꾼 \textbf{standalone 왼쪽 STL}(body 135~nm)로 도핑을 탐색하였다 [Fig.~\ref{fig:left}]. 이 소자의 $V_D$는 본 소자에서 왼쪽 래치에 필요한 섬 전위에 해당한다. 원래 왼쪽 도핑 $3\times10^{17}$과 $5\times10^{17}$은 장벽이 낮아 \textbf{연속적으로 켜졌고} 래치가 없었다. $6\times10^{17}$부터 급격한 래치가 생겼다 (hcte: 2.54~V, \textit{hysteresis} 2.48--2.32~V; DD: 1.78~V). B 소자 안의 왼쪽 STL 전류는 standalone 곡선과 2--3배 이내로 일치하여, standalone 소자가 대표성이 있음을 확인하였다. 이로써 왼쪽 body를 $6\times10^{17}$으로 정하였다.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig4_left_stl.png}
+\caption{Standalone 왼쪽 STL의 source 전류. (a) hcte: $3\times10^{17}$, $5\times10^{17}$은 연속적으로 켜지고, $6\times10^{17}$($V_{LU}=2.54$~V, 점선: down sweep)과 $7\times10^{17}$(3.00~V)은 급격히 래치한다. (b) DD: 래치 전압이 0.7--0.8~V 낮고, $V_D<E_g/q$ 영역의 래치(회색)는 DD의 \textit{impact ionization} 과대평가로 본다. 데이터: \dpath{1001/tap/LEFTONLY\_L135\_P\{3,5,6,7\}e17\_UD6S\_VGm0p2.log}, \dpath{1001/tap/LEFTONLY\_L135\_P6e17\_UD3\_VGm0p2.log}, \dpath{1001/tap/LEFTONLY\_L135\_P*\_DD\_UP4\_VGm0p2.log}.}
+\label{fig:left}
+\end{figure}
+
+\section{두 단계 래치 (Two-Stage Latch)}
+최종 소자[$N_{A,L}=6\times10^{17}$, $R_{tap}=10$~M$\Omega$, Table~\ref{tab:param}]의 DD MixedMode 결과가 Fig.~\ref{fig:dl}이다. 올라갈 때 \textbf{2.251~V}에서 오른쪽 STL이 래치하여 $I_{tap}$이 $10^{-12}$에서 $7\times10^{-8}$~A로 뛰고(상태 I$\rightarrow$II), 섬 전압 $V_{tap}$이 0.75~V로 오른다. 이후 $V_{tap}$이 $V_D$를 따라 오르다가 1.67~V에 이르는 \textbf{3.300~V}에서 왼쪽 STL이 래치한다(II$\rightarrow$III). 이 섬 전압은 standalone 왼쪽 STL의 DD $V_{LU}$(1.78~V)와 가깝다. 두 번째 래치에서 $I_S$는 같은 $V_D$에서 약 1~$\mu$s 안에 $3\times10^{-7}$에서 $5\times10^{-5}$~A로 뛰고, 전류가 왼쪽 STL로 직접 흐르면서 $V_{tap}$이 1.24~V로 떨어진다. 내려올 때 왼쪽은 약 2.24~V, 오른쪽은 약 1.20~V에서 꺼져 \textbf{두 래치 모두 \textit{hysteresis}}를 가진다.
+
+이 두 번째 점프는 수치 오류가 아니다. 점프 동안 time step은 $10^{-10}$~s 수준으로 과정을 따라가고, KCL 잔차는 $10^{-15}$~A 이하이다. 점프 후 전류는 일정 값에 안정되며, 점프 직전에는 $I_S$의 기울기가 커지는 양의 되먹임 전조가 있다. 소자 폭을 1~$\mu$m로 계산한 첫 run과 0.5~$\mu$m run의 래치 전압 차이는 6~mV 이내였다.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.9\textwidth]{fig5_double_latch.png}
+\caption{두 단계 래치 (DD, MixedMode, $R_{tap}=10$~M$\Omega$, 폭 0.5~$\mu$m). (a) $|I_D|$--$V_D$ (실선 up, 점선 down): 2.251~V와 3.300~V의 두 래치와 각각의 \textit{hysteresis}. (b) 경로별 전류: 오른쪽 STL($I_{tap}$)이 먼저, 왼쪽 STL($I_S$)이 다음에 래치. (c) 섬(tap) 전압: 왼쪽 STL의 drain 전압으로 작용하여 standalone $V_{LU}$ 부근에서 두 번째 래치를 일으킨다. 데이터: \dpath{1007\_ddsplit/DDS\_BASE.log\_tr.log} (같은 소자의 0--7.5--0~V run: \dpath{1001/tap/MM\_TAPT\_ISL\_W30LK\_L6\_R7\_R1e7\_UD75S\_MF\_DD\_W05\_VGm0p2.log\_tr.log}).}
+\label{fig:dl}
+\end{figure*}
+
+\section{메커니즘: \texttt{.str} 기반 Hole Balance}
+래치 전후에 촘촘히 저장한 \texttt{.str} 스냅샷 28개로 STL별 물리량을 계산하였다. 각 STL에 대해 (i) source--body 전자 장벽, (ii) body 평균 정공 밀도, (iii) drain 쪽 최대 전계, (iv) \textit{impact ionization} 정공 전류 $I_{ii}=qW\!\int G_{ii}\,dA$, (v) body와 그 STL의 n$^+$ source(왼쪽: S, 오른쪽: island)에서의 재결합 전류를 구했다 (Si 삼각형 면적 적분).
+
+\textbf{첫 번째 래치.} 2.24~V에서 오른쪽 drain 접합 전계는 $1.16\times10^6$~V/cm, 증배 $M-1=I_{ii}/I_e\approx0.25$이다. 정공이 오른쪽 body를 순방향으로 만들면 섬에서 전자 주입이 늘고 $I_{ii}$가 다시 늘어난다. 2.24$\rightarrow$2.26~V(20~mV)에서 $I_{ii}$가 $5\times10^{-13}$에서 $9\times10^{-9}$~A로 4자리 뛰고 장벽이 0.60에서 0.28~eV로 무너진다 [Fig.~\ref{fig:mech}(a),(b)]. 래치 후에는 $I_{ii}$가 body 재결합과 island 재결합의 합과 같다. 예를 들어 3.0~V에서 $1.96\times10^{-8}\approx1.06\times10^{-8}+1.00\times10^{-8}$~A이다.
+
+\textbf{두 번째 래치.} 오른쪽이 켜진 뒤 섬 전위가 오르면 왼쪽 STL의 drain 쪽(섬 왼쪽 가장자리) 전계가 $3.6\times10^5$에서 $7.1\times10^5$~V/cm로 커진다(2.2$\rightarrow$3.28~V). 3.28$\rightarrow$3.32~V에서 왼쪽 장벽이 0.61에서 0.10~eV로 무너지고 $I_{ii}$가 $4\times10^{-13}$에서 $3.4\times10^{-6}$~A로 뛴다. Fig.~\ref{fig:mech}(c)의 $G_{ii}$ 지도에서 정공 생성이 두 drain 쪽 접합(섬 왼쪽 가장자리와 drain)에 모여 있다. 오른쪽에서 생긴 정공은 1~ps 섬에서 재결합하므로, 왼쪽은 \textbf{자기 drain 전계로만} 켜진다. 이것이 두 래치가 분리되는 이유이다.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.9\textwidth]{fig6_mechanism.png}
+\caption{\texttt{.str} 스냅샷 기반 메커니즘 (기준 소자, $\tau_{Si}=10^{-7}$~s). (a) STL별 source$\rightarrow$body 전자 장벽 (up 실선, down 점선): 각 래치에서 해당 STL의 장벽만 무너진다. (b) Up sweep의 \textit{impact ionization} 정공 전류(실선)와 재결합(점선). (c) 두 번째 래치 직후(3.32~V)의 $G_{ii}$ 2D 지도 (점선: source 끝, island, drain 끝). 데이터: \dpath{1007\_ddsplit/DDS\_BASE\_SNAP\_T\_tr\_N} (\texttt{.str}), \dpath{1007\_ddsplit/mech\_DDS\_BASE\_SNAP.dat}, \dpath{1007\_ddsplit/mech2\_DDS\_BASE\_SNAP.dat}. 코드: \dpath{1007\_ddsplit/mech\_ddsplit.py}, \dpath{mech2\_ddsplit.py}.}
+\label{fig:mech}
+\end{figure*}
+
+\textbf{꺼짐과 Si lifetime.} 기준 소자는 두 번째 래치가 완만하게 꺼지는 것처럼 보였다. 스냅샷을 보면 실제 꺼짐은 2.3$\rightarrow$2.2~V 사이에서 급격하다(장벽 0.27$\rightarrow$0.60~eV). 그 앞의 3.0$\rightarrow$2.3~V는 \textbf{켜진 채 전류가 줄어드는} 구간이다. 켜진 상태는 $I_{ii}$가 재결합을 이기고 남은 정공으로 body를 순방향으로 유지하는 동안 지속된다. $\tau_{Si}=10^{-7}$~s에서는 마지막 켜진 점(2.3~V, $I_e=10^{-7}$~A)에서도 생성 정공의 29\%만 재결합하여 여유가 크다. 그래서 작은 전류까지 버틴다. $\tau_{Si}=10^{-8}$~s에서는 2.76~V에서 이미 78\%를 잃는다. 그래서 \textbf{큰 holding current}($5.5\times10^{-7}$~A)에서 2.76$\rightarrow$2.74~V 사이에 6자리가 한 번에 떨어진다 [Fig.~\ref{fig:off}]. 즉 Si \textit{lifetime}은 \textit{holding current}를 올려 꺼짐을 급격하게 만드는 손잡이이다. 대가로 켜는 데에도 정공이 더 필요해 두 래치 전압이 함께 오른다 ($10^{-8}$~s: 2.95/3.94~V).
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig7_turnoff.png}
+\caption{Si \textit{lifetime}과 급격한 꺼짐. (a) $\tau_{Si}$에 따른 $|I_D|$--$V_D$: 수명이 짧을수록 두 번째 래치가 점프로 꺼진다 (OFF 폭 0.26$\rightarrow$0.04~V). (b) Down sweep에서 왼쪽 STL의 \textit{impact} 정공 중 재결합으로 잃는 비율. 데이터: \dpath{1007\_ddsplit/DDS\_\{BASE,TE2em8,TE1em8,TE5em9\}.log\_tr.log}, \dpath{1007\_ddsplit/mech2\_DDS\_\{BASE,TE8\}\_SNAP.dat}.}
+\label{fig:off}
+\end{figure}
+
+\section{설계 공간 (Design Space)}
+기준 소자에서 변수 하나씩 바꾼 DD MixedMode \textit{split} 86개를 계산하였다 [Fig.~\ref{fig:knobs}, Table~\ref{tab:knob}]. 48/50개(1--3차)에서 래치가 두 번이었다. 두 래치는 서로 다른 손잡이로 \textbf{독립적으로} 조절된다. $N_{A,R}$은 첫 번째 래치(1.24--2.51~V), $N_{A,L}$은 두 번째 래치(2.28--4.01~V)를 움직인다. $V_G$는 둘을 함께 움직이고, $R_{tap}$은 래치 전압이 아니라 두 점프의 크기를 나눈다(첫 번째 4.3$\rightarrow$1.9자리, 두 번째 0.7$\rightarrow$3.9자리, $R_{tap}=3\times10^5\rightarrow3\times10^8~\Omega$). 섬 \textit{lifetime}은 $10^{-10}$~s까지는 분리가 유지되고 $10^{-9}$~s에서 두 래치가 합쳐진다. 섬 폭 100~nm에서는 왼쪽 래치가 사라진다.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig8_knobs.png}
+\caption{설계 손잡이: 두 래치의 ON(실선)/OFF(점선) 전압. (a) $R_{tap}$, (b) 왼쪽 body 도핑, (c) 오른쪽 body 도핑, (d) $V_G$, (e) 섬 \textit{lifetime}, (f) 섬 위치. 데이터: \dpath{1007\_ddsplit/ddsplit\_summary.dat} (원본: \dpath{1007\_ddsplit/DDS\_*.log\_tr.log}, 덱 생성: \dpath{1007\_ddsplit/make\_ddsplit.py}).}
+\label{fig:knobs}
+\end{figure}
+
+\begin{table}[!t]
+\caption{설계 손잡이 요약 (DD split, 데이터: \dpath{1007\_ddsplit/ddsplit\_summary.dat}, \dpath{ddsplit\_rect.dat})}
+\label{tab:knob}
+\centering\footnotesize
+\begin{tabular}{@{}p{0.23\columnwidth}p{0.33\columnwidth}p{0.34\columnwidth}@{}}
+\toprule
+손잡이 & 올리면 & 대가 \\ \midrule
+$N_{A,R}$ & 1번째 래치 상승, 루프 1 넓어짐 & 두 루프 간격 감소 \\
+$N_{A,L}$ & 2번째 래치 상승 & $5\times10^{17}$ 이하에서 래치 소멸 \\
+$V_G$ ($\uparrow$) & 두 래치 함께 하강 & 루프 1 좁아짐 \\
+$R_{tap}$ & 2번째 점프 커짐 & 1번째 점프 작아짐 \\
+$\tau_{Si}$ ($\downarrow$) & 급격한 꺼짐 & 두 래치 상승 \\
+섬 위치 (drain 쪽) & 루프 분리 & 65\% 이상에서 1번째 래치 소멸 \\
+drain 직렬 R & 평평한 윗변 & 2번째 꺼짐 완만 \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{분리된 두 사각형 \textit{loop}.} 응용에서는 두 \textit{hysteresis loop}가 겹치지 않고, 모서리가 급격하며, 각 상태의 전류가 평평한 것이 좋다. $\tau_{Si}=10^{-8}$~s만 쓰면 두 루프가 겹친다(루프 2 꺼짐 2.75~V < 루프 1 켜짐 2.95~V). 섬을 $L_g$의 60\%로 옮겨 오른쪽 body를 짧게 하면 루프 1이 1.23--1.45~V로 내려가고, 루프 2(2.56--4.78~V)와 \textbf{1.12~V 간격}으로 분리된다. 두 꺼짐 모두 점프이다(OFF 폭 0.03/0.06~V) [Fig.~\ref{fig:rect}(a)]. 오른쪽 도핑을 $8\times10^{17}$으로 올리면 루프 1이 1.39--1.88~V로 넓어지고 간격은 0.78~V가 된다 [Fig.~\ref{fig:rect}(b)]. Drain 직렬 저항은 상태 III의 전류를 평평하게 하지만(기울기 3.1$\rightarrow$1.5자리, 100~k$\Omega$) 두 번째 꺼짐을 완만하게 한다 [Fig.~\ref{fig:rect}(c)]. 이를 조합한 소자는 Fig.~\ref{fig:rect}(d)와 같다. \PAPERDEVICE
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig9_rectangles.png}
+\caption{분리된 두 사각형 \textit{loop} (실선 up, 점선 down). (a) 섬 위치와 $\tau_{Si}$, (b) 오른쪽 body 도핑, (c) drain 직렬 저항, (d) 조합 소자(섬 60\%, $N_{A,R}=8\times10^{17}$, drain 100~k$\Omega$, $\tau_{Si}=10^{-8}$/$5\times10^{-9}$~s). 데이터: \dpath{1007\_ddsplit/DDS\_\{BASE,XS60,TE8\_XS60,TE8\_XS60\_NR8e17,TE8\_XS60\_NR1e18,TE8\_XS60\_RD1e5,TE8\_XS60\_RD1e6\}.log\_tr.log}, \dpath{1007\_ddsplit/DDS\_\{TE8,TE5em9\}\_XS60\_NR8e17\_RD1e5.log\_tr.log}.}
+\label{fig:rect}
+\end{figure}
+
+\section{모델의 한계 (Model Limitations)}
+\textbf{DD vs hcte.} DD는 국소 전계로 \textit{impact ionization}을 계산하므로 짧은 채널에서 과대평가한다. 실제로 standalone 왼쪽 STL에서 DD 래치 전압은 hcte보다 0.7--0.8~V 낮았다. 또 4e17, 5e17에서는 $V_D<E_g/q$ 부근의 래치가 나타났다 [Fig.~\ref{fig:left}(b)]. hcte로는 각 STL 단독의 래치와 본 소자의 첫 번째 래치까지 확인하였다. 그러나 전체 소자를 hcte로 계산하면 \textbf{3.6--5.3~V에서 모두 멈추었다} [Fig.~\ref{fig:hcte}]. 증상은 매번 같았다: 오른쪽 drain 접합 표면($x\approx285$~nm)의 전자 온도가 $10^4$~K를 넘고 time step이 $10^{-25}$~s로 붕괴한다. 연립 Newton, 1~nm 격자, 온도 허용치 완화, MixedMode, graded drain, 전자 온도만 계산(\texttt{hcte.el}), $R_{tap}$ 10--100~M$\Omega$를 모두 시도하였다. 그러나 멈추는 위치를 두 번째 래치(약 5.6--7~V)까지 옮기지 못하였다. 오히려 $R_{tap}$이 클수록 일찍 멈추었다. 따라서 두 번째 래치는 DD 결과이며, 절대 전압은 hcte 대비 낮게 추정된 값이다.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig10_hcte.png}
+\caption{hcte 계산이 멈춘 $V_D$ (각 run의 마지막 수렴점). 보라색: 두 번째 래치에 필요한 영역. 데이터: \dpath{1001/tap/TAPT\_ISL\_W30LK\_*\_R*\_VGm0p2.log}, \dpath{1001/tap/MM\_TAPT\_ISL\_W30LK\_*\_HC*.log\_tr.log}; 수렴 실패 기록: README Step~11.}
+\label{fig:hcte}
+\end{figure}
+
+\textbf{수치 오류 판정.} 초기 hcte run(1~M$\Omega$)에서는 5.28~V에서 $I_D$, $I_S$가 음수로 튀어 두 번째 래치처럼 보였다. 그러나 이 점프 동안 time step은 $10^{-25}$~s로 붕괴하고, 내부 전위는 소수점 셋째 자리까지 고정되어 있었다. 또 gate 변위전류가 $10^{-2}$~A, KCL 잔차가 $10^{-2}$~A였다. 본 연구는 이 네 가지 기준으로 모든 래치를 검증하였다.
+
+\textbf{공정 구현.} 섬 \textit{lifetime} 1~ps와 Si \textit{lifetime} $10^{-8}$~s는 손상 주입이나 \textit{lifetime-killing} 불순물 같은 국소 \textit{lifetime engineering}을 가정한다. 섬 \textit{lifetime}은 $10^{-10}$~s까지 분리가 유지되어 여유가 있다. 실제 구현 가능성은 후속 연구가 필요하다.
+
+\section{결론 (Conclusion)}
+두 개의 직렬 STL을 한 SOI 소자로 구현하여 \textbf{두 번의 래치}를 얻었다. 이를 위해 세 가지가 필요했다: (1) n$^+$ island로 body를 물리적으로 나누기, (2) island를 $R_{tap}$으로 접지하여 직렬 제약을 풀기, (3) island \textit{lifetime}을 줄여 가로 PNP 결합을 끊기. 여기에 왼쪽 body를 래치 가능한 도핑($6\times10^{17}$)으로 정하였다. \texttt{.str} 기반 \textit{hole balance}로 각 래치가 해당 STL의 \textit{impact ionization} 정공이 재결합을 이겨 장벽이 무너지는 순간임을 보였다. 꺼짐의 급격함은 Si \textit{lifetime}이 정하는 \textit{holding current}로 설명하였다. 두 래치는 $N_{A,R}$, $N_{A,L}$, $V_G$, $R_{tap}$으로 독립 조절되며, 섬 위치 60\%와 $\tau_{Si}=10^{-8}$~s에서 두 \textit{hysteresis loop}가 1.1~V 간격으로 분리된다. 남은 과제는 에너지 균형 모델에서의 두 번째 래치 확인과 \textit{lifetime engineering}의 공정 구현이다.
+
+\section*{Data Availability}
+모든 덱(\texttt{.in}), 분석 코드, 핵심 log와 그림은 저장소에 있다. Raw \texttt{.str}/\texttt{.out}은 연구 서버의 같은 경로에 있다. 전체 연구 흐름(실패 포함)은 저장소 \texttt{README.md}에 기록하였다.
+
+\begin{thebibliography}{9}
+\bibitem{han_biristor} J.-W. Han and Y.-K. Choi, ``Biristor---Bistable resistor with open-base BJT structure,'' \emph{IEEE Electron Device Lett.}, vol.~31, no.~8, pp.~797--799, Aug. 2010.
+\bibitem{han_lif} J.-W. Han and M. Meyyappan, ``Leaky integrate-and-fire biristor neuron,'' \emph{IEEE Electron Device Lett.}, vol.~39, no.~9, pp.~1457--1460, Sep. 2018.
+\bibitem{selberherr} S. Selberherr, \emph{Analysis and Simulation of Semiconductor Devices}. Vienna, Austria: Springer-Verlag, 1984.
+\bibitem{atlas} Silvaco Inc., \emph{Atlas User's Manual}, version 5.32.1.R, Santa Clara, CA, USA.
+\end{thebibliography}
+
+\end{document}

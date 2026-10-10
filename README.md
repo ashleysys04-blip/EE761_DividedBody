@@ -7,6 +7,8 @@ EE762 (KAIST, 2026 가을) 프로젝트 연구 기록 · Silvaco ATLAS 2D (devic
 > 그 결과 **drift-diffusion(DD) MixedMode 시뮬레이션에서 Id-Vd에 래치가 두 번(2.254 V, 3.296 V) 히스테리시스와 함께 나왔다.**
 > 같은 소자를 에너지 균형 모델(hcte)로 계산하면 12가지 대책에도 3.6–5.3 V에서 전자 온도 폭주로 멈춰, hcte에서의 두 번째 래치는 확인하지 못했다 (Step 11). 지금은 DD로 설계 변수 split 43개를 돌리는 중이다 (Step 12).
 
+> 📄 **논문 (IEEE TED 형식, PDF)**: [`paper/main.pdf`](paper/main.pdf) · 소스와 그림 코드: [`paper/`](paper/)
+
 ![double latch](1001/tap/fig/DOUBLE_LATCH_DD_MM.png)
 *그림 0. 최종 결과 (DD, MixedMode). 데이터: `1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_DD_VGm0p2.log_tr.log` · 덱: `1001/tap/MM_TAPT_ISL_W30LK_L6_R7_R1e7_UD75S_MF_DD_VGm0p2.in` · 그린 코드: `1001/tap/fig/plot_double_latch.py`*
 

@@ -61,3 +61,16 @@
 !1007_ddsplit/DDS_*.log_tr.log
 !1007_ddsplit/mech2_ddsplit.py
 !1007_ddsplit/update_readme_step13.py
+# paper
+!paper/main.tex
+!paper/main.pdf
+!paper/IEEEtran.cls
+!paper/make_figs.py
+!paper/paperdevice.py
+!paper/paperdevice.tex
+!paper/build.sh
+!paper/finalize_paper.sh
+!1007_ddsplit/finalize_*.sh
+paper/.cache/**
+paper/.bin/**
+paper/pg-*.png
