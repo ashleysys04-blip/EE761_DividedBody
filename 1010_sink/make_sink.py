@@ -29,5 +29,8 @@ for name, src, shell, kill, sink in CASES:
                       'electrode name=tap x.min=$XcL x.max=$XcR y.min=0 y.max=$tsi')
         s = s.replace('x.mesh loc=$XiR spac=0.003\n', f'x.mesh loc=$XiL+{shell} spac=0.001\nx.mesh loc=$XiR-{shell} spac=0.001\nx.mesh loc=$XiR spac=0.003\n')
         s = s.replace('probe name=V_neck   potential x=0.65 y=0.15\n', '')
-        assert 'region num=9' not in s and 'XcL' in s, name
+        # ATLAS needs sequential region numbers: the island moves from 10 to the removed neck's 9
+        s = s.replace('region num=10 x.min=$XiL x.max=$XiR y.min=0 y.max=$tsi silicon\n',
+                      'region num=9 x.min=$XiL x.max=$XiR y.min=0 y.max=$tsi silicon\n')
+        assert 'region num=10' not in s and 'XcL' in s, name
     open(name + '.in', 'w').write(s); print('wrote', name + '.in')

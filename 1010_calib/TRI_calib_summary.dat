@@ -1,0 +1,3 @@
+# name Vmax V_last events(dir:V:I_before->I_after)  | measured VG0.4: VLU1 7.38 VLD1 6.46 VLU2 11.58 VLD2 9.41
+TRI_DEF_VG0p30 13.00 3.92 up:0.000:3.4e-09->1.1e-06
+TRI_DEF_VG0p40 13.00 3.23 up:0.000:3.4e-09->5.4e-06

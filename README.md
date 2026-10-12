@@ -1145,6 +1145,39 @@ Si 수명 1e-8 s에서 두 번째 래치가 점프로 꺼졌다 (OFF 폭 0.26 �
 - **분리 조건이 기존 서술보다 훨씬 엄격하다.** 섬 τ0 = 1e-9 s(실효 5e-13 s)에서 두 래치가 합쳐지므로, 실효 ≤ 5e-14 s가 필요하다. 이전 README와 논문의 "1e-10 s까지 여유"는 τ0 기준이라 틀린 표현이었다.
 - 캘리브레이션 대상 논문 중 body 도핑까지 공개한 SOI 측정 데이터는 찾지 못했다. Han 2021과 Lee 2024는 SOI Tsi 50 nm이지만 도핑이 없다.
 
+### 결과 (10/12)
+
+**Auger**: 영향이 없다. 래치·꺼짐 전압 차이가 2 mV 이내다 (`1007_ddsplit/DDS_{BASE,TE8_XS60}_AUGER.log_tr.log`). → 모델 세트는 그대로 둔다.
+
+**섬 sink**: Si 두께 전체를 관통하는 금속 코어로, 섬 lifetime을 줄이지 않아도 두 루프를 분리할 수 있다 (TE8_XS60 설계).
+
+| 구조 | 1차 ON | 2차 ON | 1차 OFF | 2차 OFF | 분리 간격 |
+|---|---|---|---|---|---|
+| lifetime을 줄인 섬 (기준) | 1.448 | 4.779 | 1.227 | 2.565 | **1.12** |
+| 섬 lifetime을 줄이지 않음 (대조군) | 1.444 | 1.969 | 1.037 | 1.747 | 0.30 (겹침) |
+| 금속 코어 + n⁺ shell 10 nm | 1.499 | 4.616 | 1.090 | 2.081 | **0.58** |
+| 금속 코어 + n⁺ shell 5 nm | 1.502 | 4.712 | 1.137 | 2.203 | **0.70** |
+| 기준 소자(BASE) + 금속 코어 | 2.255 | 2.761 | 0.797 | 1.534 | −0.72 (겹침) |
+
+![](1010_sink/sink_compare.png)
+*데이터: `1010_sink/*.log_tr.log`, `1007_ddsplit/DDS_{TE8_XS60,BASE}{,_AUGER}.log_tr.log` · 코드: `1010_sink/plot_sink.py` · 수치: `1010_sink/sink_summary.dat`*
+
+- 대조군은 2차 래치가 4.78 V에서 1.97 V로 내려온다. 섬을 건너온 정공이 왼쪽 body를 일찍 켜기 때문이다. → 섬에서 정공을 없애는 장치가 꼭 필요하다는 것이 다시 확인됐다.
+- 금속 코어를 넣으면 분리가 돌아오고, shell이 얇을수록 이상적인 섬에 가까워진다.
+- 기준 소자(τ0,Si 1e-7, 섬 50 %)에서는 금속 코어만으로 부족하다. → sink는 Si lifetime을 줄이고 섬을 drain 쪽으로 옮긴 설계와 함께 써야 한다.
+
+**triristor 캘리브레이션 1차 (기본 모델)**: 측정과 많이 다르다.
+
+![](1010_calib/TRI_calib_compare.png)
+*데이터: `1010_calib/devonly_1010/TRI_DEF_VG0p{30,40}.log`, `TRI_IDVG_vd{0p05,1}_up.log`, 측정값 `1010_calib/calib_targets.dat`과 Noh 2025 Fig. 1(d)에서 읽은 점 · 코드: `1010_calib/analyze_tri.py`*
+
+- **V_th가 약 0.28 V 낮다.** V_G 0.3–0.4 V에서 시뮬레이션 소자가 이미 켜져 있어 HRS가 없다. 논문 자체의 TCAD도 측정 V_G 0.25–0.4 V를 0.02–0.1 V로 옮겨 썼다 (약 0.27 V). 같은 크기의 flat-band 보정이 필요하다는 뜻이다.
+- **on 전류가 약 10배 크다.** 측정 R_on은 약 143 Ω (V_G 4 V, V_D 0.05 V)인데 시뮬레이션은 약 13 Ω이다. probe·contact·배선 저항(측당 약 65 Ω)이 빠져 있다.
+- 직렬 저항이 없으니 MixedMode V_G 0.3 V run은 래치 뒤 전류가 수백 A까지 폭주했다 (`1010_calib/TRI_DEF_VG0p30.log_tr.log`). V_G 0.4 V MixedMode run은 시작점에서 "Unable to trap bias"로 멈췄다.
+- 참고: 10/11에 다른 세션이 대기열을 MixedMode, 동시 1개 실행으로 바꿨다 (`queue_1010_mm.sh`). device-only 결과는 `1010_calib/devonly_1010/`로 옮겨 두었다.
+
+→ **캘리브레이션 2단계**: Id-Vg로 gate 일함수 보정(DPHI)과 S/D 직렬 저항(RC)을 맞춘다 (`TRI_IDVG_DP*_RC*`, `queue_idvg_cal.sh`). 그다음 Id-Vd에서 impact 계수와 lifetime을 맞춘다.
+
 ✅ **해결 (진행 중)** 논문은 lifetime을 τ0와 실효값으로 함께 표기하도록 고쳤다. 대기열 `1010_calib/queue_1010.sh`(최대 2개 동시 실행)에 다음을 넣었다: triristor Id-Vg, V_G 0.4/0.3 V, 배경 도핑·기판 깊이·lifetime 민감도, 그리고 sink 3종 + 대조군. 결과가 나오면 impact 계수와 lifetime을 조정한다.
 
 ---

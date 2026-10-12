@@ -1,0 +1,9 @@
+# name V_on_right V_on_left V_off_right V_off_left sep(V_off_left - V_on_right; >0 = two separated loops)
+DDS_TE8_XS60           1.448 4.779 1.227 2.565 1.117
+DDS_TE8_XS60_AUGER     1.448 4.779 1.227 2.565 1.118
+NOKILL_TE8_XS60        1.444 1.969 1.037 1.747 0.302
+SINK_TE8_XS60          1.499 4.616 1.090 2.081 0.582
+SINK5_TE8_XS60         1.502 4.712 1.137 2.203 0.701
+DDS_BASE               2.251 3.300 1.200 2.236 -0.015
+DDS_BASE_AUGER         2.251 3.301 1.201 2.234 -0.016
+SINK_BASE              2.255 2.761 0.797 1.534 -0.721

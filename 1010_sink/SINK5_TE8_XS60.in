@@ -85,7 +85,7 @@ region num=7 x.min=0 x.max=$Lsd y.max=0 material=vacuum
 region num=8 x.min=$Lsd+$Lg x.max=$Lsd+$Lg+$Lsd y.max=0 material=vacuum
 # n+ neck through the BOX under the island (island tap)
 # n+ island as a separate silicon region (for region-specific lifetime)
-region num=10 x.min=$XiL x.max=$XiR y.min=0 y.max=$tsi silicon
+region num=9 x.min=$XiL x.max=$XiR y.min=0 y.max=$tsi silicon
 
 #### electrodes ####
 electrode name=gate x.min=$Lsd x.max=$Lsd+$Lg y.min=-$tox y.max=-$tox
