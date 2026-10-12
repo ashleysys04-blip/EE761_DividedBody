@@ -30,7 +30,7 @@ region num=2 x.min=$Lsd x.max=$Lsd+$Lg y.max=0 y.min=-$tox oxide
 region num=3 y.min=0 y.max=$Dsub silicon
 region num=4 x.max=$Lsd y.max=0 material=vacuum
 region num=5 x.min=$Lsd+$Lg y.max=0 material=vacuum
-electrode name=gate x.min=$Lsd x.max=$Lsd+$Lg y.min=-$tox-$tgate y.max=-$tox-$tgate
+electrode name=gate x.min=$Lsd x.max=$Lsd+$Lg y.min=-$tox-$tgate y.max=-$tox
 electrode name=source x.max=$Lsd-0.1 y.min=0 y.max=0
 electrode name=drain x.min=$Lsd+$Lg+0.1 y.min=0 y.max=0
 doping uniform conc=1e+15 p.type reg=3

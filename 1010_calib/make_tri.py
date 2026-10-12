@@ -24,6 +24,7 @@ CASES = [
     ('TRI_IDVG_DP0p28_RC65', dict(IDVG=2, DPHI=0.28, RC=65.0)),
     ('TRI_IDVG_DP0p35_RC65', dict(IDVG=2, DPHI=0.35, RC=65.0)),
     ('TRI_IDVG_DP0p28_RC0',  dict(IDVG=2, DPHI=0.28, RC=0.0)),
+    ('TRI_IDVG_DP0p00_RC65', dict(IDVG=2, DPHI=0.001, RC=65.0)),   # same electrode form as the DPHI runs, ~no shift (reference)
 ]
 # ATLAS Selberherr defaults (electrons/holes, low-field branch); AN/BN scale them.
 SELB = dict(an1=7.03e5, an2=7.03e5, bn1=1.231e6, bn2=1.231e6, ap1=6.71e5, ap2=1.582e6, bp1=1.693e6, bp2=2.036e6)
@@ -51,7 +52,9 @@ def deck(name, p):
          'region num=3 y.min=0 y.max=$Dsub silicon',
          'region num=4 x.max=$Lsd y.max=0 material=vacuum',
          'region num=5 x.min=$Lsd+$Lg y.max=0 material=vacuum',
-         'electrode name=gate x.min=$Lsd x.max=$Lsd+$Lg y.min=-$tox-$tgate y.max=-$tox-$tgate',
+         ('electrode name=gate x.min=$Lsd x.max=$Lsd+$Lg y.min=-$tox-$tgate y.max=-$tox-$tgate' if p['DPHI'] == 0 else
+          # DPHI != 0: the electrode covers the whole poly region so that its work function (not the n+ poly) sets V_fb
+          'electrode name=gate x.min=$Lsd x.max=$Lsd+$Lg y.min=-$tox-$tgate y.max=-$tox'),
          'electrode name=source x.max=$Lsd-0.1 y.min=0 y.max=0',
          'electrode name=drain x.min=$Lsd+$Lg+0.1 y.min=0 y.max=0',
          f'doping uniform conc={p["NBG"]:.3g} p.type reg=3',

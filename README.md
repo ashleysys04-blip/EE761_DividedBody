@@ -1176,6 +1176,20 @@ Si 수명 1e-8 s에서 두 번째 래치가 점프로 꺼졌다 (OFF 폭 0.26 �
 - 직렬 저항이 없으니 MixedMode V_G 0.3 V run은 래치 뒤 전류가 수백 A까지 폭주했다 (`1010_calib/TRI_DEF_VG0p30.log_tr.log`). V_G 0.4 V MixedMode run은 시작점에서 "Unable to trap bias"로 멈췄다.
 - 참고: 10/11에 다른 세션이 대기열을 MixedMode, 동시 1개 실행으로 바꿨다 (`queue_1010_mm.sh`). device-only 결과는 `1010_calib/devonly_1010/`로 옮겨 두었다.
 
+### ⏸ 일시 정지 (2026-10-12, 2주 휴가) — 재개할 때 여기서부터
+
+- 실행 중인 계산은 없다. Id-Vg 보정 run(`TRI_IDVG_DP0p28_RC65`)은 V_D 0.05 V sweep 도중에 멈췄다.
+- **확인된 것**
+  - S/D 직렬 저항 65 Ω/측으로 on 전류가 측정과 맞는다 (3.5e-4 A). 근거: `1010_calib/oldgate_1012/TRI_IDVG_RC65_oldgate_vd0p05_up.log`.
+  - gate 일함수 보정은 gate 전극이 poly 영역 전체를 덮어야 적용된다 (`make_tri.py`에서 DPHI ≠ 0일 때 그렇게 생성).
+  - 처음 확인한 DPHI 0.28 V는 실제로 약 0.5 V 이동했다. 그래서 기준 run `TRI_IDVG_DP0p00_RC65`와 비교해서 보정량을 다시 정해야 한다.
+- **재개 순서**
+  1. `1010_calib/queue_idvg_cal.sh`를 실행한다 (Id-Vg 5개, CPU 1개, 각 수 분). 이미 끝난 덱은 건너뛴다. 멈춘 `TRI_IDVG_DP0p28_RC65`는 `.queue` 파일을 지워야 다시 돈다.
+  2. 측정 Id-Vg(Noh Fig. 1d)에 맞는 DPHI를 고른다.
+  3. Id-Vd split: impact 계수 스케일 AN/BN 그리드와 lifetime. 목표는 `calib_targets.dat`.
+  4. 캘리브레이션 모델로 대표 소자(BASE, TE8_XS60)를 다시 확인하고, 논문 숫자를 갱신한다.
+- 논문 진행도: lifetime/Auger, 공정(sink), 선행 연구, 면적은 완료. 캘리브레이션은 약 30%. 재확인은 0%.
+
 → **캘리브레이션 2단계**: Id-Vg로 gate 일함수 보정(DPHI)과 S/D 직렬 저항(RC)을 맞춘다 (`TRI_IDVG_DP*_RC*`, `queue_idvg_cal.sh`). 그다음 Id-Vd에서 impact 계수와 lifetime을 맞춘다.
 
 ✅ **해결 (진행 중)** 논문은 lifetime을 τ0와 실효값으로 함께 표기하도록 고쳤다. 대기열 `1010_calib/queue_1010.sh`(최대 2개 동시 실행)에 다음을 넣었다: triristor Id-Vg, V_G 0.4/0.3 V, 배경 도핑·기판 깊이·lifetime 민감도, 그리고 sink 3종 + 대조군. 결과가 나오면 impact 계수와 lifetime을 조정한다.
