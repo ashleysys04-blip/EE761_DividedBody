@@ -83,3 +83,5 @@ paper/pg-*.png
 !1010_sink/*.log_tr.log
 !1010_calib/TRI_DEF_VG0p30.log_tr.log
 !1010_calib/devonly_1010/TRI_IDVG_vd*_up.log
+!1026_sinkrob/make_robust.py
+!paper/make_process_fig.py
