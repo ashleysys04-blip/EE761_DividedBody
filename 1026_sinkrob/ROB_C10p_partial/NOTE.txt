@@ -1,0 +1,3 @@
+ROB_C10p partial data (killed 2026-10-28 by user request, to start the Step 16 oscillation runs).
+Stopped at t = 0.00428082 s on the up-sweep. Tap + 10 pF with Rtap 1e7 Ohm gives repeated latch on/off spikes (relaxation oscillation),
+each needing tiny time steps, so the run was slow (~4.3 ms in 3 h). No down-sweep: V_off / gap undefined.

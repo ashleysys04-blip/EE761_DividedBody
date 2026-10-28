@@ -9,7 +9,7 @@ Body is floating (no substrate contact), as in the measurement. Drain: MixedMode
 at RATE V/ms, A-device width = W (the mesh width is ignored in MixedMode). Id-Vg: MixedMode .dc.
 Targets: calib_targets.dat."""
 import os
-BASE = dict(W=600.0, VG=0.40, NBG=1e15, DSUB=5.0, TAU=1e-7, AUG=0, AN=1.0, BN=1.0, VMAX=13.0, RATE=0.7, IDVG=0, DPHI=0.0, RC=0.0)
+BASE = dict(W=600.0, VG=0.40, NBG=1e15, DSUB=5.0, TAU=1e-7, AUG=0, AN=1.0, BN=1.0, VMAX=13.0, RATE=0.7, IDVG=0, DPHI=0.0, RC=0.0, CIRC_R=0)
 # Calibration stage 1 (2026-10-12): V_th and on-current from Id-Vg (device-only DC, IDVG=2).
 #   DPHI: gate work-function shift vs n+ poly (4.17 eV) = flat-band correction (oxide charge / poly depletion unknown)
 #   RC  : series resistance per S/D contact in Ohm (measured R_on ~143 Ohm at V_G 4 V, V_D 0.05 V; probe + contact + metal)
@@ -26,6 +26,23 @@ CASES = [
     ('TRI_IDVG_DP0p28_RC0',  dict(IDVG=2, DPHI=0.28, RC=0.0)),
     ('TRI_IDVG_DP0p00_RC65', dict(IDVG=2, DPHI=0.001, RC=65.0)),   # same electrode form as the DPHI runs, ~no shift (reference)
 ]
+# Calibration stage 2 (2026-10-28): Id-Vd at V_G 0.4 V with the Id-Vg-calibrated gate and series R.
+#   Stage 1 result (TRI_IDVG_calib.png): DP0p00_RC65 matches the measured Id-Vg at V_D 0.05 and 1 V; every DPHI > 0 shifts
+#   too far. The old 10/12 V_th error came from the electrode form (n.poly contact on top of the poly), not from the WF:
+#   calibrated gate = electrode over the whole poly region, WF 4.17 eV (DPHI 0.001 selects that form), 65 Ohm per S/D.
+#   In MixedMode the 65 Ohm are circuit resistors (CIRC_R=1), so they do not depend on contact statements after .end.
+#   Split: impact Selberherr scale AN / BN (one at a time) and Si lifetime TAU. Targets: calib_targets.dat (VLU1 7.38, VLU2 11.58 V).
+CAL = dict(DPHI=0.001, RC=65.0, CIRC_R=1)
+CASES += [(n, dict(CAL, **c)) for n, c in [
+    ('TRI_IV_CAL',         dict()),
+    ('TRI_IV_CAL_BN0p9',   dict(BN=0.9)),
+    ('TRI_IV_CAL_BN1p1',   dict(BN=1.1)),
+    ('TRI_IV_CAL_BN1p2',   dict(BN=1.2)),
+    ('TRI_IV_CAL_AN0p5',   dict(AN=0.5)),
+    ('TRI_IV_CAL_AN2',     dict(AN=2.0)),
+    ('TRI_IV_CAL_TAU1e-6', dict(TAU=1e-6)),
+    ('TRI_IV_CAL_TAU1e-8', dict(TAU=1e-8)),
+]]
 # ATLAS Selberherr defaults (electrons/holes, low-field branch); AN/BN scale them.
 SELB = dict(an1=7.03e5, an2=7.03e5, bn1=1.231e6, bn2=1.231e6, ap1=6.71e5, ap2=1.582e6, bp1=1.693e6, bp2=2.036e6)
 
@@ -64,7 +81,7 @@ def deck(name, p):
          'doping uniform conc=1e21 n.type reg=1',
          f'save outf={name}_INIT.str',
          ('contact name=gate n.poly' if p['DPHI'] == 0 else 'contact name=gate workfun=%.3f' % (4.17 + p['DPHI'])),
-         *(['contact name=source resistance=%.6g' % (p['RC'] * p['W']), 'contact name=drain resistance=%.6g' % (p['RC'] * p['W'])] if p['RC'] > 0 else []),
+         *(['contact name=source resistance=%.6g' % (p['RC'] * p['W']), 'contact name=drain resistance=%.6g' % (p['RC'] * p['W'])] if p['RC'] > 0 and not p['CIRC_R'] else []),
          'probe name=VB_well potential x=$Lsd+$Lg/2 y=0.12',
          'probe name=VB_deep potential x=$Lsd+$Lg/2 y=1.0',
          'probe name=PH_well P.CONC x=$Lsd+$Lg/2 y=0.12',
@@ -74,7 +91,8 @@ def deck(name, p):
          'method newton climit=100 itlimit=200 trap maxtraps=10',
          'solve init', 'solve prev']
     # models must be repeated after .end for the MixedMode device
-    phys = [f'material material=silicon taun0={p["TAU"]:.3g} taup0={p["TAU"]:.3g}', models, imp,
+    phys = (['contact name=gate workfun=%.3f' % (4.17 + p['DPHI'])] if p['DPHI'] != 0 else []) + [
+            f'material material=silicon taun0={p["TAU"]:.3g} taup0={p["TAU"]:.3g}', models, imp,
             'output band.param con.band val.band recomb u.srh u.bbt impact e.field',
             'method newton climit=100 itlimit=200 trap maxtraps=10']
     adev = f'Adev 1=drain 0=source 2=gate width={p["W"]:g} infile={name}_INIT.str'
@@ -104,8 +122,11 @@ def deck(name, p):
         t += abs(v - v0) / p['RATE'] * 1e-3; tsave.append(t); v0 = v
     adev = adev.replace('_INIT.str', '_VG.str')
     L += ['', 'go atlas simflags="-P 1"', '.begin',
-          f'Vdrain 1 0 pwl 0, 0, {ttop:.6e}, {p["VMAX"]}, {2*ttop:.6e}, 0', f'Vgate  2 0 {p["VG"]}', adev,
-          f'.nodeset v(1)=0 v(2)={p["VG"]}', '.numeric lte=0.3 toltr=1e-5', '.options print relpot',
+          *([f'Vdrain 4 0 pwl 0, 0, {ttop:.6e}, {p["VMAX"]}, {2*ttop:.6e}, 0', f'Rd 4 1 {p["RC"]:g}', f'Rs 5 0 {p["RC"]:g}',
+             f'Vgate  2 0 {p["VG"]}', adev.replace('0=source', '5=source'), f'.nodeset v(1)=0 v(4)=0 v(5)=0 v(2)={p["VG"]}']
+            if p['CIRC_R'] else
+            [f'Vdrain 1 0 pwl 0, 0, {ttop:.6e}, {p["VMAX"]}, {2*ttop:.6e}, 0', f'Vgate  2 0 {p["VG"]}', adev,
+             f'.nodeset v(1)=0 v(2)={p["VG"]}']), '.numeric lte=0.3 toltr=1e-5', '.options print relpot',
           f'.log outfile={name}.log', f'.tran 1e-9 {2*ttop:.6e}',
           f'.save master={name}_T tsave=' + ' '.join(f'{x:.6e}' for x in sorted(tsave)), '.end', ''] + phys
     L += ['', 'go atlas simflags="-P 1"', 'quit']
@@ -114,5 +135,5 @@ def deck(name, p):
 if __name__ == '__main__':
     for name, ch in CASES:
         p = dict(BASE); p.update(ch)
-        if os.path.exists(name + '.in') and open(name + '.in').read() == deck(name, p): continue
+        if os.path.exists(name + '.in'): continue   # never rewrite a deck that already exists (it records what was run)
         open(name + '.in', 'w').write(deck(name, p)); print('wrote', name)
