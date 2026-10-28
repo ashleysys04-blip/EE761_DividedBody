@@ -94,3 +94,5 @@ paper/pg-*.png
 !1028_osc/make_osc.py
 !1028_osc/queue_1028.sh
 !1010_calib/queue_cal2.sh
+!1028_osc/plot_osc.py
+!1028_osc/make_osc_schematic.py
