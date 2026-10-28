@@ -96,3 +96,6 @@ paper/pg-*.png
 # job queues (queue_*.sh) stay on the server only: run order / parallelism is recorded in README.md
 !1028_osc/OSC_R_1n.log_tr.log
 !1028_osc/OSC_L_600n.log_tr.log
+!1028_osc/period_model.py
+!1028_osc/OSC_L_450n.log_tr.log
+!1028_osc/OSC_R_3n.log_tr.log

@@ -6,7 +6,7 @@ import os, sys, glob, numpy as np, matplotlib
 matplotlib.use('Agg'); import matplotlib.pyplot as plt, matplotlib.tri as mtri
 H = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.join(H, '..', '1007_ddsplit'))
 import analyze_ddsplit as A
-RUNS = ['OSC_R_1n', 'OSC_L_600n', 'OSC_R_3n', 'OSC_L_800n']
+RUNS = ['OSC_R_1n', 'OSC_L_600n', 'OSC_R_3n', 'OSC_L_450n', 'OSC_R_30n']
 LV = [(1.50, 'right on'), (1.09, 'right off'), (4.62, 'left on'), (2.09, 'left off')]
 have = [r for r in RUNS if os.path.exists(os.path.join(H, r + '.log_tr.log'))]
 fig, ax = plt.subplots(2, len(have), figsize=(6 * len(have), 6.5), squeeze=False)
