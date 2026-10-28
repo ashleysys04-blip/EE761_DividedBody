@@ -94,3 +94,5 @@ paper/pg-*.png
 !1028_osc/plot_osc.py
 !1028_osc/make_osc_schematic.py
 # job queues (queue_*.sh) stay on the server only: run order / parallelism is recorded in README.md
+!1028_osc/OSC_R_1n.log_tr.log
+!1028_osc/OSC_L_600n.log_tr.log
