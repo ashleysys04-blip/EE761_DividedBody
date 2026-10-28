@@ -1,0 +1,17 @@
+# name V_on_right V_on_left V_off_right V_off_left sep(V_off_left-V_on_right, >0 separated) status
+DDS_TE8_XS60           1.448 4.779 1.227 2.565 1.117 done
+SINK_TE8_XS60          1.499 4.616 1.090 2.081 0.582 done
+ROB_SR1e6              1.499 4.542 1.047 1.971 0.471 done
+ROB_SR1e4              1.499 4.468 0.995 1.840 0.342 done
+ROB_SR1e2              1.499 4.634 4.635 4.635 3.136 partial(killed)
+ROB_SG_W60             0.897 3.925 0.862 1.822 0.925 done
+ROB_SG_W100            nan nan 0.123 0.862 nan done
+ROB_W60                nan 3.956 0.862 1.829 nan done
+ROB_W100               nan 2.730 0.259 1.442 nan done
+ROB_OFFP5              1.502 4.711 1.137 2.192 0.690 done
+ROB_OFFM5              1.499 4.578 1.067 2.032 0.533 done
+ROB_RES5               1.505 4.421 4.422 4.422 2.917 partial(killed)
+ROB_RES15              1.504 2.383 1.080 2.046 0.542 done
+ROB_C10p               2.010 nan 2.996 nan nan running
+ROB_C100p              1.499 nan 2.081 2.081 0.582 done
+WF417_BASE             2.363 3.727 1.398 2.395 0.032 done

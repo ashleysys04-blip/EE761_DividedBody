@@ -85,3 +85,8 @@ paper/pg-*.png
 !1010_calib/devonly_1010/TRI_IDVG_vd*_up.log
 !1026_sinkrob/make_robust.py
 !paper/make_process_fig.py
+!1026_sinkrob/plot_robust.py
+!1026_sinkrob/plot_robust_maps.py
+!1026_sinkrob/queue_1026*.sh
+!1026_sinkrob/*.log_tr.log
+!1026_sinkrob/*_partial/NOTE.txt

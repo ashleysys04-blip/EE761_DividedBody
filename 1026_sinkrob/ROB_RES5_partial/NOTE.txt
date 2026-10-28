@@ -1,0 +1,4 @@
+ROB_RES5 partial data (killed 2026-10-27 17:50 by user request).
+Stopped at t = 6.317 ms (VD 4.42 V) during the left-latch jump, dt ~1e-12 s.
+Valid: up-sweep 0 -> 4.42 V only (V_on_right 1.505 V, V_on_left 4.421 V). No down-sweep, so V_off / separation are undefined.
+Snapshots: T_tr_1..6 (t = 2.14 .. 5.71 ms). Full .out is kept in the parent folder; only its tail is copied here.
