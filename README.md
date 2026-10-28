@@ -1398,7 +1398,7 @@ C는 I/C가 1–2 V/ms가 되도록 골라서 DC sweep(0.7 V/ms)과 래치 전�
 drain으로 넣은 전류 $I_{in}$은 오른쪽 STL을 지나 섬에 도착한 뒤 두 갈래로 나뉜다.
 
 $$
-\boxed{\,I_{in} \;=\; I_L \;+\; \frac{V_{isl}}{R_{tap}}\,}
+\boxed{ I_{in} = I_L + \frac{V_{isl}}{R_{tap}} }
 $$
 
 | 기호 | 뜻 | 이 소자에서 |
@@ -1417,13 +1417,13 @@ $$
 **켜는 데 필요한 전류**
 
 $$
-I_{fire} \;=\; \frac{V_{on,L}}{R_{tap}} + I_{off,L} \;\approx\; \frac{3.5\ \text{V}}{10^{7}\ \Omega} \;=\; 3.5\times10^{-7}\ \text{A}
+I_{fire} = \frac{V_{on,L}}{R_{tap}} + I_{off,L} \approx \frac{3.5\text{ V}}{10^{7} \Omega} = 3.5\times10^{-7}\text{ A}
 $$
 
 **켜진 채 유지하는 최소 전류**
 
 $$
-I_{keep} \;=\; \frac{V_{hold,L}}{R_{tap}} + I_{h,L} \;\approx\; \frac{1.15\ \text{V}}{10^{7}\ \Omega} \;=\; 1.15\times10^{-7}\ \text{A}
+I_{keep} = \frac{V_{hold,L}}{R_{tap}} + I_{h,L} \approx \frac{1.15\text{ V}}{10^{7} \Omega} = 1.15\times10^{-7}\text{ A}
 $$
 
 ($I_{off,L}$ ≈ 1e-11 A, $I_{h,L}$ ≲ 1e-9 A로 둘 다 Rtap 항보다 훨씬 작다.)
@@ -1433,7 +1433,7 @@ $$
 oscillation하려면 "켜질 만큼은 크고, 켜진 것을 유지하지는 못할 만큼 작은" 전류가 있어야 한다.
 
 $$
-\boxed{\,I_{fire} \;<\; I_{in} \;<\; I_{keep}\,}
+\boxed{ I_{fire} < I_{in} < I_{keep} }
 $$
 
 범위가 존재하려면 $I_{keep} > I_{fire}$여야 한다.
@@ -1449,9 +1449,9 @@ $$
 **(A) 왼쪽 루프에 범위가 있을 조건**
 
 $$
-\frac{V_{hold,L}}{R_{tap}} + I_{h,L} \;>\; \frac{V_{on,L}}{R_{tap}}
-\;\;\Longleftrightarrow\;\;
-\boxed{\,R_{tap} \;>\; \frac{V_{on,L}-V_{hold,L}}{I_{h,L}} \;=\; \frac{2.35\ \text{V}}{\lesssim 10^{-9}\ \text{A}} \;\gtrsim\; 2.4\times10^{9}\ \Omega\,}
+\frac{V_{hold,L}}{R_{tap}} + I_{h,L} > \frac{V_{on,L}}{R_{tap}}
+ \Longleftrightarrow 
+\boxed{ R_{tap} > \frac{V_{on,L}-V_{hold,L}}{I_{h,L}} = \frac{2.35\text{ V}}{\lesssim 10^{-9}\text{ A}} \gtrsim 2.4\times10^{9} \Omega }
 $$
 
 **뜻**: Rtap 항은 켜는 쪽(3.5 V)에서 유지하는 쪽(1.15 V)보다 항상 크다. 그 차이 $(V_{on,L}-V_{hold,L})/R_{tap}$를 왼쪽 STL 자체의 holding 전류 $I_{h,L}$가 메워야 한다. $I_{h,L}$이 아주 작으니 Rtap이 아주 커야 한다.
@@ -1459,11 +1459,11 @@ $$
 **(B) 두 루프가 따로 동작할 조건**
 
 $$
-I_{keep,R} \;<\; I_{fire}
-\;\;\Longleftrightarrow\;\;
-1.2\times10^{-8}\ \text{A} \;<\; \frac{3.5\ \text{V}}{R_{tap}}
-\;\;\Longleftrightarrow\;\;
-\boxed{\,R_{tap} \;<\; 2.9\times10^{8}\ \Omega\,}
+I_{keep,R} < I_{fire}
+ \Longleftrightarrow 
+1.2\times10^{-8}\text{ A} < \frac{3.5\text{ V}}{R_{tap}}
+ \Longleftrightarrow 
+\boxed{ R_{tap} < 2.9\times10^{8} \Omega }
 $$
 
 **뜻**: 오른쪽이 켜진 채 머무는 전류에서 왼쪽이 바로 켜지면 안 된다. 그러려면 왼쪽을 켜는 전류가 오른쪽 유지 전류보다 커야 하고, 그러려면 Rtap이 너무 크면 안 된다. Rtap이 너무 크면 Step 3의 떠 있는 섬처럼 두 루프가 합쳐진다.
