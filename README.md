@@ -69,7 +69,7 @@ novel/
 ```
 
 **올린 것**: 모든 덱(`.in`), 표(`.dat`), 그림(`.png`), 필수 코드(`.py` 6개), 핵심 log (부록 참고)
-**안 올린 것**: `.str`(구조/해 스냅샷), `.out`(solver 출력), 나머지 `.log`, MixedMode 스냅샷(`*_tr_N`). 합계 약 5.4 GB로, 연구 서버 `/home/ysseo/novel/` 에 같은 경로로 남아 있다.
+**안 올린 것**: `.str`(구조/해 스냅샷), `.out`(solver 출력), 나머지 `.log`, MixedMode 스냅샷(`*_tr_N`), 계산 대기열 스크립트(`queue_*.sh`, 실행 순서와 동시 실행 개수는 각 Step에 기록). 합계 약 5.4 GB로, 연구 서버 `/home/ysseo/novel/` 에 같은 경로로 남아 있다.
 100 MB가 넘는 log 2개는 핵심 열만 뽑은 `*_extract.dat` 로 대신 올렸다.
 
 ---

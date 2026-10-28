@@ -87,12 +87,10 @@ paper/pg-*.png
 !paper/make_process_fig.py
 !1026_sinkrob/plot_robust.py
 !1026_sinkrob/plot_robust_maps.py
-!1026_sinkrob/queue_1026*.sh
 !1026_sinkrob/*.log_tr.log
 !1026_sinkrob/*_partial/NOTE.txt
 !1026_sinkrob/*_partial/NOTE.txt
 !1028_osc/make_osc.py
-!1028_osc/queue_1028.sh
-!1010_calib/queue_cal2.sh
 !1028_osc/plot_osc.py
 !1028_osc/make_osc_schematic.py
+# job queues (queue_*.sh) stay on the server only: run order / parallelism is recorded in README.md
