@@ -1537,6 +1537,13 @@ $$
 - **뜻**: 주기(주파수)는 latch 전압 $V_{on}$, $V_{off}$와 꺼진 상태 곡선 $I_{dev}(V)$로 정해지고, C는 시간을 비례로 늘리기만 한다 → oscillation은 소자의 DC 특성에서 나온다 ("C 때문 아닌가?"에 대한 정량적 답). 반대로 DC Id-Vd만 있으면 원하는 주파수의 $I$, $C$를 미리 설계할 수 있다.
 - 매 주기의 크기가 같은 이유: 충전 시간(0.4–3 ms)이 Si lifetime(10 ns)보다 10⁵배 이상 길어서, body가 매 주기 같은 상태(정공 없음)에서 다시 시작한다. 등온(300 K) 계산이라 발열로 인한 변화도 없다.
 
+> 📝 **논문 초안 반영 (10/28)**: `paper/main.tex`에 Section VIII "전류 구동 oscillation과 설계식 (Current-Driven Oscillation)"을 새로 넣었다. 들어간 내용:
+> - 회로와 설명용 등가 회로 그림 (Fig. 26, `paper/fig/figP_osc_circuit`): 각 STL을 Id-Vd hysteresis로 표시하고 drain에 $I_{in}$ + $C$. 회로 모델로 계산한 것이 아니라 설명용이다. (b)는 두 루프의 전류 창과 계산한 전류.
+> - 식 (1) 섬 전류 보존, (2) $I_{fire}$ / $I_{keep}$, (3) $R_{tap}$ 하한 5.6 MΩ와 루프 분리 상한 0.3 GΩ, (4) 주기 적분식.
+> - 결과: 1/3 nA 오른쪽 루프, 450 nA 왼쪽 루프, 600 nA는 켜진 채 머무름. 주기 모델과 TCAD가 0.5 % 이내 (Fig. 27, `paper/fig/figQ_osc_wave`).
+> - 결론에 한 문장 추가: drain 전류원 하나로 두 루프의 oscillation을 각각 얻고, 창과 주기는 DC 특성만으로 예측된다.
+> - 그림 코드: `paper/make_osc_figs.py` (`build.sh`에서 자동 실행). 넣지 않은 것: `OSC_R_30n` (실행 중), 단독 왼쪽 STL 도핑 의존성 (7e17, 8e17).
+
 **다음**: `OSC_R_30n` (30 nA: 오른쪽 holding 1.2e-8 A보다 크고 오른쪽 latch 점프 꼭대기 약 6e-8 A보다 작음)으로 범위 위쪽 끝을 "꺼지는 점"으로 읽는 것이 맞는지 확인한다.
 
 ---
