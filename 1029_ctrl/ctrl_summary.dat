@@ -1,0 +1,8 @@
+# IDVD: name  V_on_right  V_on_left  V_off_right  V_off_left  n_up_events
+# OSC : name  V_on(mean peak)  V_off(mean trough)  period(s)  n_peaks
+IDVD  SINK_TE8_XS60              1.499 4.616 1.09 2.081 2
+IDVD  CTRL_CUT_IDVD              1.476 4.613 1.085 2.061 2
+IDVD  CTRL_SD_IDVD               1.471 4.428 1.062 2.019 2
+IDVD  NOKILL_TE8_XS60            1.444 1.969 1.037 1.747 2
+OSC  OSC_R_1n                   1.503 1.083 0.0004403 7
+OSC  OSC_L_450n                 4.613 2.081 0.00299 3

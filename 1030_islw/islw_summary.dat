@@ -1,0 +1,16 @@
+# sweep  W_nm  island_tau_s  Lp/W  1st_up_V  2nd_up_V  2nd_down_V  run   (plot_islw.py; nan = no event / run unfinished)
+width     15    1e-08   2.133   1.446    nan    nan  ISLW015
+width     30    1e-08   1.067   1.444  1.969  1.956  NOKILL_TE8_XS60
+width     45    1e-08   0.711   1.446  2.064  1.997  ISLW045
+width     60    1e-08   0.533   1.446  2.193  2.019  ISLW060
+width     90    1e-08   0.356   1.446  2.579  2.037  ISLW090
+width    120    1e-08   0.267   1.446  3.339  2.040  ISLW120
+width    200    1e-08   0.160   1.446  4.314  2.041  ISLW200
+tau       30    1e-12   0.011   1.448  4.779  2.565  DDS_TE8_XS60
+tau       30    1e-11   0.034   1.448  4.776  2.562  ISL_TAU1em11_XS60
+tau       30    1e-10   0.107   1.448  4.742  2.526  ISL_TAU1em10_XS60
+tau       30    1e-09   0.337   1.447  2.985    nan  ISL_TAU1em9_XS60
+tau       30    3e-09   0.584   1.446  2.277  2.179  ISL_TAU3em9_XS60
+tau       30    1e-08   1.067   1.444  1.969  1.956  NOKILL_TE8_XS60
+killed    30    1e-12   0.011   1.448  4.779  2.565  DDS_TE8_XS60
+killed   120    1e-12   0.003   1.449  4.761  2.577  ISLW120_KILL

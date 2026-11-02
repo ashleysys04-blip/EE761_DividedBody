@@ -1,0 +1,4 @@
+# name V_on I_off(V_on-10mV) V_hold I_h(collapse onset) status
+LSTL_P6e17   3.547 2.06e-11 1.146 4.47e-07 done
+LSTL_P7e17   3.881 3.48e-11 1.200 6.64e-07 done
+LSTL_P8e17   4.641 7.29e-11 1.255 8.97e-07 done
