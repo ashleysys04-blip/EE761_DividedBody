@@ -121,3 +121,7 @@ paper/pg-*.png
 !1028_leftstl/*.log_tr.log
 !1030_islw/islw_vs_circuit.py
 !paper/make_coupling_figs.py
+!paper/jeds/
+!paper/jeds/main.tex
+!paper/jeds/main.pdf
+!paper/jeds/build.sh
