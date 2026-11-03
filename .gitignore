@@ -125,3 +125,12 @@ paper/pg-*.png
 !paper/jeds/main.tex
 !paper/jeds/main.pdf
 !paper/jeds/build.sh
+!1103_hcte/
+!1103_hcte/make_hcte.py
+!1103_hcte/queue_hcte.sh
+!1103_hcte/run_when_licensed.sh
+!1103_hcte/*.log_tr.log
+!1103_model/
+!1103_model/extract_balance.py
+!1103_model/model_latch.py
+!1103_hcte/make_hcte_dev.py
