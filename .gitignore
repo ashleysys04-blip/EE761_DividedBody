@@ -139,3 +139,10 @@ paper/pg-*.png
 !paper/ted/main.pdf
 !paper/ted/build.sh
 !paper/make_model_fig.py
+!1103_third/
+!1103_third/make_third.py
+!1103_third/queue_third.sh
+!1103_third/run_when_licensed.sh
+!1103_third/*.log_tr.log
+!1103_model/third_latch.py
+!1103_model/island_transport.py
