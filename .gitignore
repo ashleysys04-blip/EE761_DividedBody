@@ -134,3 +134,8 @@ paper/pg-*.png
 !1103_model/extract_balance.py
 !1103_model/model_latch.py
 !1103_hcte/make_hcte_dev.py
+!paper/ted/
+!paper/ted/main.tex
+!paper/ted/main.pdf
+!paper/ted/build.sh
+!paper/make_model_fig.py

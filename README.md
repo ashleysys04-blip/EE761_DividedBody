@@ -1974,7 +1974,8 @@ SOI body를 n+ 섬으로 나누고(Step 3), 섬을 1e7 Ω으로 접지하고(Ste
 - **실행 중**: 없음.
 - **완료 (11/03)**: 직렬 회로 대비 동작점 곡선 (Step 19, 그림 5).
 - **완료 (11/03)**: 논문 재작성 (`paper/main.tex`): 제목·초록·서론을 "결합 세기를 조절하는 소자 하나"로 바꾸고, 새 Section VII (직렬 회로 대조, 결합이 남은 소자의 동작점, 섬 lifetime·폭 두 손잡이, hysteresis 조절과 W 15 nm 한계, 직렬 회로에서 벗어난 정도; 그림 `paper/fig/figR_series`, `figS_knob`, `figT_holes`, 코드 `paper/make_coupling_figs.py`). 기존 분리 소자 내용(Section III–VI)은 유지하고, 금속 sink와 oscillation은 "결합 0인 끝"으로 위치를 바꿨다.
-- **실행 중 (11/03)**: 결합 소자의 hcte 확인 4개 (Step 20, `1103_hcte/queue_hcte.sh`). 결과에 따라 TED(`paper/jeds/main.tex`를 TED용으로) 또는 SST로 투고.
+- **투고 목표: IEEE TED** (7쪽 = 게재료 없음). 원고 `paper/ted/main.tex` (11/03: Section VII 몸통 정공 수지 모델, 그림 `paper/fig/figU_model`, 7쪽).
+- **실행 중 (11/03)**: 결합 소자의 hcte 확인 (Step 20, `1103_hcte/queue_hcte.sh`). `HCD_W030`은 3.06 V에서 수렴하지 않고 있다.
 - **다음**: 결합이 남은 소자의 oscillation과 등가 회로(body → body 정공 전류원) 모델 (논문 결론의 남은 과제).
 - **멈춘 것**: 캘리브레이션 (Step 14, 첫 래치 재현 실패로 종료). `CTRL_CUT_OSC_*` (만들어 두고 실행 안 함). `ISLW200_KILL` (`ISLW120_KILL`로 대체).
 

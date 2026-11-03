@@ -2,6 +2,7 @@
 
 - `main.pdf` — the paper (Korean body text, English key terms). Every figure caption lists its data file(s), relative to the repository root.
 - `main.tex` — source. `make_figs.py` draws `fig/fig3–fig10` from the simulation logs; Fig. 1–2 are `../docs/fig/paper/`.
+- `jeds/main.tex`, `ted/main.tex` — English submission drafts (J-EDS, then IEEE TED = current target; 7 pages). `make_model_fig.py` draws `fig/figU_model` (body hole-balance model, README Step 21).
 - `make_coupling_figs.py` draws `fig/figR_series`, `figS_knob`, `figT_holes` (Section VII, coupling strength) from `1010_sink/`, `1029_ctrl/`, `1029_isltau/`, `1030_islw/`.
 - `paperdevice.py` — fills the combined-device sentence in Section VI (`paperdevice.tex`) from `1007_ddsplit/ddsplit_summary.dat`.
 
