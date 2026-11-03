@@ -1,0 +1,18 @@
+# (1) M-1 of the left drain junction.  run VD V_isl V_body  E_max(.str) E_max(1D)  M-1: extracted | Selberherr on .str field | 1D junction
+NOKILL_TE8_XS60   2.0  1.175 -0.179   4.56e+05  6.69e+05   0.043 | 0.056 | 0.235
+NOKILL_TE8_XS60   2.5  1.466 -0.087   5.29e+05  6.96e+05   0.071 | 0.088 | 0.268
+NOKILL_TE8_XS60   3.0  1.712 -0.040   6.52e+05  7.22e+05   0.122 | 0.141 | 0.303
+NOKILL_TE8_XS60   3.5  1.431  0.160   9.99e+05  6.57e+05   0.117 | 0.121 | 0.221
+NOKILL_TE8_XS60   4.0  1.486  0.304   1.01e+06  6.45e+05   0.095 | 0.093 | 0.206
+ISLW120           3.5  2.049 -0.010   8.27e+05  7.61e+05   0.195 | 0.218 | 0.359
+ISLW120           4.0  2.207  0.071   1.24e+06  7.70e+05   0.261 | 0.278 | 0.373
+
+# (2) island transmission alpha_T = 1/cosh(W/L_p):  D_p 1.16 cm2/s, tau_p 5.00e-12 s (consrh), L_p = 24.1 nm  (measured eta_II slope: 21.3 nm)
+# W_nm  alpha_T  2*exp(-W/Lp)  measured eta_II   eta_II / alpha_T (= injected holes per I_D)
+  15  8.334e-01  1.074e+00  1.42e-02  0.0170
+  30  5.321e-01  5.763e-01  6.76e-03  0.0127
+  45  3.021e-01  3.094e-01  3.56e-03  0.0118
+  60  1.649e-01  1.661e-01  1.80e-03  0.0109
+  90  4.783e-02  4.785e-02  4.42e-04  0.0092
+ 120  1.379e-02  1.379e-02  1.02e-04  0.0074
+ 200  4.995e-04  4.995e-04  2.36e-06  0.0047

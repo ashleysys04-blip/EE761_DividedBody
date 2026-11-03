@@ -5,7 +5,9 @@
                     onset of the third jump between 30 nm (present) and 45 nm (absent) via exp(-W / L_eff(I)) * eta0 * beta ~ 0.85
   T3_W030_DENSE     1010_sink/NOKILL_TE8_XS60 with extra snapshots at 3.25-3.55 V up and down (around the 3.38 V jump)
   T3_W030_HEAT      the same device with lattice heating (models lat.temp, thermal contact at the substrate bottom, 300 K):
-                    does the third jump survive self-heating at ~6 mA/um?
+                    does the third jump survive self-heating at ~6 mA/um?  (11/03: stopped at the gate-bias solve,
+                    "internal error in linear solver")
+  T3_W030_HEAT2     as HEAT, but lat.temp only in the MixedMode (post-.end) models line; structure and gate bias solved isothermal
 Existing decks are not rewritten."""
 import os, runpy, re
 H = os.path.dirname(os.path.abspath(__file__)); R = os.path.join(H, '..')
@@ -44,3 +46,10 @@ d = base.replace(MOD, MOD + ' lat.temp').replace('contact name=substrate\n',
 d = d.replace('NOKILL_TE8_XS60', 'T3_W030_HEAT')
 write('T3_W030_HEAT', d, '# T3_W030_HEAT : NOKILL_TE8_XS60 with lattice heating (models lat.temp, thermcontact at the substrate '
       'bottom y = $Ybot, 300 K), make_third.py.\n')
+
+# HEAT2: isothermal device section (structure + gate bias), lattice heating only for the MixedMode transient
+d = base.replace('contact name=substrate\n', 'contact name=substrate\nthermcontact num=1 x.min=0 x.max=$Lsd+$Lg+$Lsd y.min=$Ybot y.max=$Ybot ext.temp=300\n')
+i = d.index('.end\n'); d = d[:i] + d[i:].replace(MOD, MOD + ' lat.temp')
+d = d.replace('NOKILL_TE8_XS60', 'T3_W030_HEAT2')
+write('T3_W030_HEAT2', d, '# T3_W030_HEAT2 : NOKILL_TE8_XS60, thermcontact at the substrate bottom (300 K), lat.temp only in the MixedMode '
+      'models line (make_third.py).\n')

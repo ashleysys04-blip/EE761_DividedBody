@@ -146,3 +146,6 @@ paper/pg-*.png
 !1103_third/*.log_tr.log
 !1103_model/third_latch.py
 !1103_model/island_transport.py
+!1103_physics/
+!1103_physics/*.py
+!1103_model/third_onset.py
