@@ -22,7 +22,7 @@
 \renewcommand{\abstractname}{Abstract}
 
 \begin{document}
-\title{Lifetime-Engineered Divided-Body SOI \textit{Single-Transistor Latch}에서의 두 단계 래치: 소자 수준 직렬 STL 구현과 \textit{hole balance} 기반 메커니즘 분석}
+\title{Divided-Body SOI \textit{Single-Transistor Latch}에서 섬을 건너는 정공 결합의 연속 조절: 직렬 STL에서 결합된 두 단계 래치까지}
 
 \author{Yeseul~Seo%
 \thanks{EE762 (KAIST, Fall 2026) project report. Simulation decks, analysis code and raw logs: GitHub \texttt{ashleysys04-blip/EE761\_DividedBody} (paths in captions are relative to the repository root).}}
@@ -31,11 +31,11 @@
 \maketitle
 
 \begin{abstract}
-SOI \textit{single-transistor latch} (STL)는 \textit{floating body}의 \textit{impact ionization}과 기생 \textit{bipolar junction transistor} (BJT)의 양의 되먹임으로 Id-Vd에 급격한 \textit{latch}와 \textit{hysteresis}를 보인다. 본 연구는 두 개의 STL을 직렬로 연결한 회로를 \textbf{소자 하나}로 구현하여 \textbf{래치가 두 번} 일어나는 소자를 Silvaco ATLAS 2D \textit{TCAD}로 설계하였다. Body 도핑 \textit{split}, Si 두께 \textit{split}, \textit{split gate}만으로는 \textit{hole quasi-Fermi level}이 body 전체에서 이어져 래치가 한 번만 일어났다. n$^+$ \textit{island}로 body를 물리적으로 나누어도 두 STL이 직렬 제약(\textit{series constraint})과 가로 p--n$^+$--p 정공 결합 때문에 동시에 래치하였다. 섬을 저항($R_{tap}$)으로 접지하고 섬의 SRH \textit{lifetime} 기준값 $\tau_0$를 1~ps(실효 $5\times10^{-16}$~s)로 줄여 두 결합을 모두 끊자, \textit{drift-diffusion} (DD) \textit{MixedMode} 계산에서 2.25~V(오른쪽 STL)와 3.30~V(왼쪽 STL)에 \textbf{두 번의 급격한 래치}가 \textit{hysteresis}와 함께 나타났다. \texttt{.str} 스냅샷의 \textit{hole balance} 분석으로, 각 래치가 그 STL의 drain 쪽 \textit{impact ionization} 정공이 재결합을 이겨 \textit{source--body barrier}가 무너지는 순간임을 보였다. Si \textit{lifetime}을 $10^{-8}$~s로 줄이면 \textit{holding current}가 올라가 래치가 0.04~V 안에서 급격히 꺼지며, 섬 위치를 $L_g$의 60\%로 옮기면 두 \textit{hysteresis loop}가 1.1~V 간격으로 완전히 분리된다. 86개 \textit{split}으로 두 래치를 독립적으로 조절하는 설계 손잡이를 정리하였다. 에너지 균형(\textit{hydrodynamic}, hcte) 모델에서는 오른쪽 drain 접합의 전자 온도 폭주로 3.6--5.3~V에서 계산이 멈추어, 두 번째 래치는 DD 결과로 제시한다.
+SOI \textit{single-transistor latch} (STL)는 \textit{floating body}의 \textit{impact ionization}과 기생 \textit{bipolar junction transistor} (BJT)의 양의 되먹임으로 Id-Vd에 급격한 \textit{latch}와 \textit{hysteresis}를 보인다. 본 연구는 SOI body를 n$^+$ \textit{island}로 둘로 나누고 섬을 저항 $R_{tap}$으로 접지한 \textbf{소자 하나}에서 래치가 두 번 일어나는 구조를 Silvaco ATLAS 2D \textit{TCAD} (\textit{drift-diffusion}, \textit{MixedMode})로 설계하고, 두 body 사이의 \textbf{정공 결합 세기}가 이 소자의 핵심 설계 변수임을 보였다. Body 도핑, Si 두께, \textit{split gate}만으로는 \textit{hole quasi-Fermi level}이 이어져 래치가 한 번이었고, 섬으로 나누어도 직렬 제약과 섬을 건너는 가로 PNP 정공 결합 때문에 두 STL이 함께 래치하였다. 섬을 접지하고 섬의 SRH \textit{lifetime}을 극단적으로 줄여 결합을 끊으면 두 래치가 분리되고(\texttt{.str} 기반 \textit{hole balance}로 각 래치가 해당 STL의 정공 생성이 재결합을 이기는 순간임을 확인), 섬 위치와 Si \textit{lifetime}으로 두 \textit{hysteresis loop}를 1.1~V 간격으로 떼어 놓을 수 있다. 그러나 결합을 끊은 소자는 따로 계산한 STL 두 개의 직렬 회로와 25~mV 이내로 같아, 그 자체는 회로 대비 새로운 기능이 아니다. 섬을 죽이지 않으면 섬을 건너는 정공이 왼쪽 STL을 추가로 켜서, 직렬 회로로는 나올 수 없는 낮은 2차 래치(1.97 vs 4.61~V), 음의 미분저항, 정공 고리 점프가 나타난다. 이 결합 세기는 섬 \textit{lifetime}($10^{-12}$--$10^{-8}$~s)과 섬 폭(15--200~nm) 두 손잡이로 연속 조절되며, 두 sweep은 섬 정공 확산 길이 대비 폭 $L_p/W_{IS}$ 하나의 축에 모인다. 1차 래치(1.44--1.45~V)는 그대로 둔 채 2차 래치가 1.97--4.78~V, 2차 단계 \textit{hysteresis}가 0--2.27~V로 조절되고, 섬 폭을 바꾼 대조군으로 gate 길이 효과가 없음을 확인하였다. 결합이 가장 강한 15~nm에서는 2차 래치가 연속적 켜짐으로 바뀌어, 조절 범위의 하한을 정한다.
 \end{abstract}
 
 \begin{IEEEkeywords}
-Single-transistor latch (STL), silicon-on-insulator (SOI), floating body, impact ionization, parasitic bipolar transistor, multi-level latch, carrier lifetime engineering, TCAD.
+Single-transistor latch (STL), silicon-on-insulator (SOI), floating body, impact ionization, parasitic bipolar transistor, multi-level latch, hole coupling, carrier lifetime engineering, TCAD.
 \end{IEEEkeywords}
 
 \section{서론 (Introduction)}
@@ -45,7 +45,7 @@ Single-transistor latch (STL), silicon-on-insulator (SOI), floating body, impact
 
 최근 Noh 등은 bulk Si MOSFET 하나에서 STL이 두 번 일어나는 \textit{triristor}를 측정으로 보였다~\cite{noh_triristor}. 이 소자에서 두 래치는 같은 p-well(정공 저장소 하나)을 공유하며, bulk punchthrough 전류(1차)와 표면 subthreshold 전류(2차)라는 \textbf{두 전류 경로}로 구분된다. 그 결과 두 래치는 body 전압과 $V_G$에 따라 하나로 합쳐질 수 있고, 두 래치를 따로 설계하는 공정 변수는 제시되지 않았다. 또 $L_G=3~\mu$m에서 동작 전압은 7--12~V였다. 조사한 범위에서 SOI 소자의 이중 래치는 보고되지 않았다.
 
-본 연구는 SOI 소자 하나 안에 \textbf{물리적으로 분리된 두 floating body}를 두어, 두 STL을 직렬로 연결한 회로(Fig.~\ref{fig:circuit})를 소자 수준에서 구현한다. 두 body 사이의 n$^+$ island를 재결합 sink이자 tap 노드로 사용하면 각 body가 \textbf{독립된 STL}로 동작하여 Id-Vd에 래치가 두 번 나타나고, 세 상태(I, II, III)를 얻는다. Table~\ref{tab:prior}에 선행 연구와의 차이를 정리하였다. 본 논문의 기여는 다음과 같다. (1) SOI divided-body 구조에서 이중 래치를 TCAD로 제안하고, 래치가 한 번이던 원인(정공 준페르미 준위 연속, 직렬 제약, 가로 PNP 결합)을 단계적으로 규명하였다. (2) \texttt{.str} 기반 \textit{hole balance}로 각 래치가 해당 body의 II 정공이 재결합을 이기는 순간임을 정량적으로 보였다. (3) 1차 래치는 오른쪽 body 도핑, 2차 래치는 왼쪽 body 도핑으로 \textbf{독립적으로} 설계되며, 두 \textit{hysteresis loop}를 1.1~V 간격으로 완전히 분리할 수 있음을 86개 \textit{split}으로 보였다.
+본 연구는 SOI 소자 하나 안에 n$^+$ island로 나뉜 \textbf{두 floating body}를 두고, 섬을 $R_{tap}$으로 접지하여 두 STL을 직렬로 연결한 회로(Fig.~\ref{fig:circuit})를 소자 수준에서 만든다. 섬을 건너는 정공을 없애면 각 body가 독립된 STL로 동작하여 래치가 두 번 나타나고 세 상태(I, II, III)를 얻는다. 그런데 이렇게 완전히 떼어 놓은 소자는 STL 두 개를 직렬로 연결한 회로와 같으므로, 소자 하나로 만든 의미는 면적에 그친다. 본 논문은 여기서 한 걸음 더 나아가, 두 body가 \textbf{섬을 건너는 정공으로 결합되는 정도}를 설계 변수로 삼는다. 결합이 남은 소자는 직렬 회로와 다르게 동작하고, 그 결합 세기를 공정 변수로 연속 조절할 수 있다. Table~\ref{tab:prior}에 선행 연구와의 차이를 정리하였다. 기여는 다음과 같다. (1) SOI divided-body 구조에서 래치가 한 번이던 원인(정공 준페르미 준위 연속, 직렬 제약, 가로 PNP 결합)을 단계적으로 규명하고, 결합을 끊으면 두 래치가 분리됨을 \texttt{.str} 기반 \textit{hole balance}로 보였다 (Section~III--V). 두 래치는 서로 다른 body 도핑으로 독립 설계된다 (Section~\ref{sec:design}). (2) 결합을 끊은 소자가 따로 계산한 STL 두 개의 직렬 회로와 같음을 직접 비교로 보이고, 결합이 남은 소자는 동작점, 음의 미분저항, 정공 고리 점프에서 직렬 회로로 설명되지 않음을 보였다. (3) 결합 세기를 섬 \textit{lifetime}과 섬 폭으로 연속 조절하여, 1차 래치는 그대로 둔 채 2차 래치 전압과 \textit{hysteresis}를 바꿀 수 있고 두 손잡이가 $L_p/W_{IS}$ 하나로 정리됨을 보였다 (Section~\ref{sec:coupling}).
 
 \begin{table}[!t]
 \caption{세 상태(ternary) 동작을 위한 선행 연구와 본 연구 비교}
@@ -58,7 +58,7 @@ T-CMOS~\cite{jeong_tcmos} & 1 & bulk & BTBT 누설 경로 & 모든 상태에 정
 NbO$_2$ TS + MOS~\cite{heo_nbo2} & 2 & -- & IMT 문턱 스위치 & 이종 공정, TS 누설 \\
 BTS + MOS~\cite{han_bts,han_ptmos} & 2 & SOI\cite{han_bts} & STL(biristor) + MOSFET & 측정, 직렬 2소자 \\
 triristor~\cite{noh_triristor} & 1 & bulk & 한 p-well, 두 전류 경로의 II & 측정, 7--12~V, 두 래치 결합 \\
-\textbf{본 연구} & \textbf{1} & \textbf{SOI} & \textbf{분리된 두 body의 독립 STL} & TCAD, 1.2--4.8~V, 독립 조절 \\ \bottomrule
+\textbf{본 연구} & \textbf{1} & \textbf{SOI} & \textbf{결합 세기를 조절하는 두 body} & TCAD, 1.4--4.8~V, 2차 래치·\textit{hysteresis} 연속 조절 \\ \bottomrule
 \end{tabular}
 \end{table}
 
@@ -103,7 +103,7 @@ width & 소자 폭 & 0.5 $\mu$m \\ \bottomrule
 \subsection{물리 모델과 수치 방법}
 모델은 \texttt{bgn}, \texttt{consrh}, \texttt{conmob}, \texttt{fldmob}, \texttt{fermi}, \texttt{trap.tunnel}, \texttt{bbt.std}와 Selberherr \textit{impact ionization} (\texttt{impact selb})~\cite{selberherr,maes}이다. \texttt{consrh}는 SRH \textit{lifetime}을 $\tau_{eff}=\tau_0/(1+N/N_{SRH})$, $N_{SRH}=5\times10^{16}$~cm$^{-3}$로 도핑에 따라 줄인다. 따라서 본문의 $\tau_{isl}$, $\tau_{Si}$는 모두 기준값 $\tau_0$이며, 실효값은 $10^{20}$~cm$^{-3}$ island에서 $\tau_0/2001$, $6$--$7\times10^{17}$ body에서 $\tau_0/13$--$\tau_0/15$이다. 기준 소자 \texttt{.str}에서 소수 캐리어 밀도와 재결합률로 구한 body 실효 \textit{lifetime}(켜진 오른쪽 body 6.2~ns)은 이 식과 일치하였다. Auger 재결합은 꺼져 있다. $10^{20}$~cm$^{-3}$에서 Auger \textit{lifetime}($\approx1/C_nN^2\approx0.4$~ns)은 island SRH 실효값보다 6자리 길고, body에서는 $\sim10^{-5}$~s이므로 결과에 미치는 영향은 작을 것으로 추정하였다. 실제로 Auger를 켠 계산에서 기준 소자와 분리 소자(섬 60\%, $\tau_{0,Si}=10^{-8}$~s)의 래치·꺼짐 전압은 2~mV 이내로 같았다 (\dpath{1007\_ddsplit/DDS\_\{BASE,TE8\_XS60\}\_AUGER.log\_tr.log}). 두 가지 \textit{transport}를 사용하였다: \textbf{에너지 균형(hcte)}과 \textbf{drift-diffusion (DD)}~\cite{atlas}. 래치는 S자 I--V(\textit{negative differential resistance})를 만들어 정상상태 전압 sweep이 접힘점에서 수렴하지 않는다. 그래서 drain을 0.7~V/ms로 올렸다 내리는 \textbf{transient ramp}를 사용하였다. 실제 시간 동역학이 불안정 가지를 건너가므로 래치와 \textit{hysteresis}가 바로 나온다. 10배 빠른 ramp(7~V/ms)에서는 래치 전압이 0.1~V 밀려 준정적이 아니므로 0.7~V/ms를 유지하였다. 최종 계산은 \textbf{MixedMode}로 하였다. 소자 구조와 $V_G$ 상태를 \texttt{.str}로 저장한 뒤 회로의 전압원, $R_{tap}$, (필요하면) drain 직렬 저항에 연결한다. MixedMode는 소자 단독 계산과 전류가 4자리까지 일치하면서 약 20배 빨랐다. 오른쪽 drain 접합은 1~nm 격자를 사용하였다.
 
-\textbf{래치 판정.} 같은 인가 전압(2~mV 이내)에서 경로 전류가 1자리 넘게 변하고 실제 전류 수준(왼쪽 $|I_S|>10^{-7}$~A, 오른쪽 $|I_{tap}|>10^{-9}$~A)에 닿으면 래치로 정의하였다. 수치 오류와는 time step 붕괴, KCL 잔차, 내부 상태 변화, gate 변위전류로 구별하였다 (Section~VII).
+\textbf{래치 판정.} 같은 인가 전압(2~mV 이내)에서 경로 전류가 1자리 넘게 변하고 실제 전류 수준(왼쪽 $|I_S|>10^{-7}$~A, 오른쪽 $|I_{tap}|>10^{-9}$~A)에 닿으면 래치로 정의하였다. 수치 오류와는 time step 붕괴, KCL 잔차, 내부 상태 변화, gate 변위전류로 구별하였다 (Section~\ref{sec:limits}).
 
 \section{구조의 진화: 왜 래치가 한 번이었나}
 이 절은 래치를 두 번 얻기까지 시도한 구조를 순서대로 기술한다. 각 단계는 \textbf{목적 $\rightarrow$ 방법 $\rightarrow$ 문제 $\rightarrow$ 해결}의 흐름을 따른다. 요약은 Fig.~\ref{fig:evol}, 각 단계의 상세 데이터는 Fig.~\ref{fig:doping}--\ref{fig:leftx}에 있다.
@@ -201,7 +201,7 @@ drain 직렬 $10^5$~$\Omega$ & 효과 없음 (pA에서 $IR\approx0$) \\
 \end{figure*}
 
 \subsection{섬 전위 올리기: $R_{tap}$}
-B 구조에서 $R_{tap}$을 10~k, 300~k, 1~M$\Omega$로 키웠다 [Fig.~\ref{fig:BR}]. $V_D=4.98$~V에서 오른쪽 $I_D$는 $3.2\times10^{-5}$, $3.2\times10^{-6}$, $1.1\times10^{-6}$~A로 줄고, 섬 전위 상승은 0.32, 0.94, 1.05~V, 왼쪽 $I_S$는 $2.1\times10^{-10}$, $3.3\times10^{-8}$, $7.3\times10^{-8}$~A로 늘었다. 섬 전위는 $V_D$ 1~V당 약 0.73~V씩 오르고 $I_S$는 지수적으로 커졌다. 그러나 왼쪽 도핑 $3\times10^{17}$에서는 $I_S$가 \textbf{점프 없이 매끄럽게} 올랐고, $R_{tap}=1$~M$\Omega$ run은 5.284~V에서 멈추었다. 직전의 음전류 점프는 수치 오류였다 (Section~VII).
+B 구조에서 $R_{tap}$을 10~k, 300~k, 1~M$\Omega$로 키웠다 [Fig.~\ref{fig:BR}]. $V_D=4.98$~V에서 오른쪽 $I_D$는 $3.2\times10^{-5}$, $3.2\times10^{-6}$, $1.1\times10^{-6}$~A로 줄고, 섬 전위 상승은 0.32, 0.94, 1.05~V, 왼쪽 $I_S$는 $2.1\times10^{-10}$, $3.3\times10^{-8}$, $7.3\times10^{-8}$~A로 늘었다. 섬 전위는 $V_D$ 1~V당 약 0.73~V씩 오르고 $I_S$는 지수적으로 커졌다. 그러나 왼쪽 도핑 $3\times10^{17}$에서는 $I_S$가 \textbf{점프 없이 매끄럽게} 올랐고, $R_{tap}=1$~M$\Omega$ run은 5.284~V에서 멈추었다. 직전의 음전류 점프는 수치 오류였다 (Section~\ref{sec:limits}).
 
 \begin{figure}[!t]
 \centering
@@ -273,6 +273,7 @@ B 구조에서 $R_{tap}$을 10~k, 300~k, 1~M$\Omega$로 키웠다 [Fig.~\ref{fig
 \end{figure}
 
 \section{설계 공간 (Design Space)}
+\label{sec:design}
 기준 소자에서 변수 하나씩 바꾼 DD MixedMode \textit{split} 86개를 계산하였다 [Fig.~\ref{fig:knobs}, Table~\ref{tab:knob}]. 48/50개(1--3차)에서 래치가 두 번이었다. 두 래치는 서로 다른 손잡이로 \textbf{독립적으로} 조절된다. $N_{A,R}$은 첫 번째 래치(1.24--2.51~V), $N_{A,L}$은 두 번째 래치(2.28--4.01~V)를 움직인다. $V_G$는 둘을 함께 움직이고, $R_{tap}$은 래치 전압이 아니라 두 점프의 크기를 나눈다(첫 번째 4.3$\rightarrow$1.9자리, 두 번째 0.7$\rightarrow$3.9자리, $R_{tap}=3\times10^5\rightarrow3\times10^8~\Omega$). 섬 \textit{lifetime}은 $10^{-10}$~s까지는 분리가 유지되고 $10^{-9}$~s에서 두 래치가 합쳐진다. 섬 폭 100~nm에서는 왼쪽 래치가 사라진다.
 
 \begin{figure}[!t]
@@ -310,7 +311,7 @@ Fig.~\ref{fig:ddsplit}은 변수 하나씩 바꾼 split의 Id-Vd를 변수별로
 
 \textbf{$V_G$} [Fig.~\ref{fig:ddsplit}(d)]. $V_G$를 $-1.0$에서 $+0.2$~V로 올리면 두 래치가 함께 내려간다(첫 번째 2.31$\rightarrow$1.31~V, 두 번째 3.70$\rightarrow$2.27~V). $V_G\ge0$에서는 채널이 약하게 열려 상태 I의 누설이 늘고 첫 번째 래치가 완만해진다. $V_G\le-0.5$~V에서는 첫 번째 래치가 2.3--2.4~V에서 더 오르지 않는다.
 
-\textbf{섬 \textit{lifetime}} [Fig.~\ref{fig:ddsplit}(e)]. $\tau_{0,isl}=10^{-13}$--$10^{-10}$~s(실효 $5\times10^{-17}$--$5\times10^{-14}$~s)에서는 결과가 거의 같다(두 번째 래치 3.23--3.30~V). $\tau_{0,isl}=10^{-9}$~s(실효 $5\times10^{-13}$~s)에서는 두 래치가 2.248/2.250~V로 \textbf{합쳐진다}. Island 정공 확산 계수를 $D_p\approx1.3$~cm$^2$/s로 두면 확산 길이 $L_p=\sqrt{D_p\tau_{eff}}$는 각각 약 2.5~nm와 8~nm이고, 30~nm island를 건너는 정공 비율 $\sim e^{-W_{IS}/L_p}$는 $10^{-5}$에서 $10^{-2}$ 수준으로 커진다(추정). 이 정도면 가로 PNP 결합이 되살아난다. 따라서 분리에 필요한 island 실효 \textit{lifetime}은 약 $5\times10^{-14}$~s 이하, 즉 $L_p\ll W_{IS}$이다. 섬 \textit{lifetime} 기본값($\tau_0=10^{-7}$~s, 실효 $5\times10^{-11}$~s)에서 결합이 일어난 Section~III의 결과와도 일치한다.
+\textbf{섬 \textit{lifetime}} [Fig.~\ref{fig:ddsplit}(e)]. $\tau_{0,isl}=10^{-13}$--$10^{-10}$~s(실효 $5\times10^{-17}$--$5\times10^{-14}$~s)에서는 결과가 거의 같다(두 번째 래치 3.23--3.30~V). $\tau_{0,isl}=10^{-9}$~s(실효 $5\times10^{-13}$~s)에서는 두 래치가 2.248/2.250~V로 \textbf{합쳐진다}. Island 정공 확산 계수를 $D_p\approx2$~cm$^2$/s로 두면 확산 길이 $L_p=\sqrt{D_p\tau_{eff}}$는 각각 약 3~nm와 10~nm이고, 30~nm island를 건너는 정공 비율 $\sim e^{-W_{IS}/L_p}$는 $10^{-4}$에서 $5\times10^{-2}$ 수준으로 커진다(추정). 이 정도면 가로 PNP 결합이 되살아난다. 따라서 분리에 필요한 island 실효 \textit{lifetime}은 약 $5\times10^{-14}$~s 이하, 즉 $L_p\ll W_{IS}$이다. 섬 \textit{lifetime} 기본값($\tau_0=10^{-7}$~s, 실효 $5\times10^{-11}$~s)에서 결합이 일어난 Section~III의 결과와도 일치한다. 이 결합을 끊어야 할 문제가 아니라 조절 변수로 다루는 것이 Section~\ref{sec:coupling}이다.
 
 \textbf{섬 폭과 위치} [Fig.~\ref{fig:ddsplit}(f),(g)]. 섬 폭을 20$\rightarrow$50~nm로 넓히면 두 body가 짧아져 두 래치가 2.36/3.53에서 1.92/2.79~V로 내려간다. 100~nm에서는 왼쪽 래치가 사라지고 오른쪽은 0.88~V에서 완만하게 켜진다. 섬을 source 쪽(40\%)으로 옮기면 오른쪽 body가 길어져 첫 번째 래치가 2.65~V로 오르고 두 번째(2.66~V)와 합쳐진다. Drain 쪽(60\%)으로 옮기면 1.08/3.72~V로 \textbf{두 래치 간격이 2.6~V}까지 벌어진다.
 
@@ -361,7 +362,90 @@ $N_{A,L}$은 여기서도 두 번째 래치만 움직인다(5e17: 3.32, 5.5e17: 
 \label{fig:rect}
 \end{figure}
 
+\section{결합 세기: 직렬 STL과 결합된 소자 하나 (Coupling Strength as a Design Knob)}
+\label{sec:coupling}
+Section~III--V는 섬을 건너는 정공을 \textit{lifetime killing}으로 없애 두 STL을 떼어 놓은 소자였다. 이 절은 먼저 그렇게 떼어 놓은 소자가 \textbf{직렬로 연결한 STL 두 개와 정확히 같음}을 보이고, 이어서 섬을 죽이지 않으면 소자 하나 안의 두 body가 정공으로 결합되어 직렬 회로로는 나올 수 없는 거동을 보이며, 그 결합 세기를 섬 \textit{lifetime}과 섬 폭으로 \textbf{연속적으로} 조절할 수 있음을 보인다. 기준은 Section~\ref{sec:design}의 분리 소자(섬 60\%, $\tau_{0,Si}=10^{-8}$~s; 왼쪽 body 165~nm, 오른쪽 body 105~nm, 섬 30~nm, $V_G=-0.2$~V, $R_{tap}=10$~M$\Omega$)이고 모델과 sweep은 같다.
+
+\subsection{대조군: 결합을 끊으면 직렬 STL이다}
+섬 자리에 Si 관통 금속 코어를 둔 소자(Section~\ref{sec:limits})를 코어 한가운데에서 잘라 왼쪽·오른쪽 STL을 \textbf{각각 독립된 ATLAS 소자}로 만들고, MixedMode에서 같은 $R_{tap}$과 같은 gate로 직렬 연결하였다(CUT). 현실적인 개별 소자 한 쌍(내부 노드를 500~nm n$^+$ S/D와 윗면 contact로 만든 SD)도 계산하였다. Table~\ref{tab:ctrl}과 Fig.~\ref{fig:series}(a)에서 CUT은 금속 코어 소자를 2차 래치 3~mV, 나머지 점 25~mV 이내로 재현한다. 즉 섬을 건너는 정공이 없는 소자는 \textbf{직렬 STL 회로 그 자체}이며, 처음의 ``물리적으로 나뉜 두 래치''는 그것만으로는 회로 대비 새로운 기능이 아니다. 반면 섬 \textit{lifetime}을 줄이지 않은 소자(coupled, $\tau_{0,isl}=10^{-8}$~s)는 2차 래치가 2.6~V 낮고, 3.38~V에 직렬 회로에 없는 점프가 있다.
+
+\begin{table}[!t]
+\caption{직렬 회로 대조 (단위 V; 꺼짐 = $|I_S|<10^{-8}$~A). 데이터: \dpath{1029\_ctrl/ctrl\_summary.dat} (덱 생성: \dpath{1029\_ctrl/make\_ctrl.py})}
+\label{tab:ctrl}
+\centering\footnotesize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & 1차 켜짐 & 2차 켜짐 & 2차 꺼짐 \\ \midrule
+금속 코어 소자 하나 & 1.499 & 4.616 & 2.081 \\
+STL 두 개 직렬 (CUT) & 1.476 & \textbf{4.613} & 2.061 \\
+STL 두 개 직렬 (SD) & 1.471 & 4.428 & 2.019 \\
+결합이 남은 소자 하나 & 1.444 & \textbf{1.969} & 1.747 \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{결합이 남은 소자는 직렬 회로로 설명되지 않는다}
+직렬 회로에서는 각 STL의 전류가 자기 단자 전압만으로 정해지므로, 왼쪽 STL의 동작점($|I_S|$, $V_{tap}$)은 같은 형상의 standalone 왼쪽 STL I--V 위에 있어야 한다. 두 body 길이가 모든 덱에서 같으므로 하나의 standalone 소자(\dpath{1028\_leftstl/LSTL\_P6e17})가 기준이 된다. Fig.~\ref{fig:series}(b)의 내려오는 sweep에서 섬을 죽인 소자는 1--3~mA에서 standalone 곡선과 0.03~V 이내로 겹친다(1~mA: 2.269 vs 2.272~V). 결합이 남은 소자는 같은 전류를 훨씬 낮은 전압으로 흘리고(1~mA: 1.724~V, 3~mA: 1.519 vs 2.469~V), 1~mA를 넘으면 전류가 늘수록 전압이 내려가는 음의 미분저항을 보인다. Standalone STL의 on 가지는 단조 증가하므로 이 거동은 직렬 회로로 만들 수 없다. 원인은 오른쪽 body의 정공이 섬을 건너 왼쪽 body를 추가로 켜는 가로 PNP 결합이다. \texttt{.str} 스냅샷의 body별 정공 수지(\textit{impact ionization} 생성, 재결합, 섬 경계의 $\int J_p\,dy$)에서, 왼쪽 body로 들어오는 정공 중 섬을 건너온 몫은 up 3.0~V에서 23\%, 3.38~V 점프를 지난 3.5~V에서 \textbf{59\%}였다. 오른쪽 body $\rightarrow$ 섬 $\rightarrow$ 왼쪽 body로 정공이 도는 n--p--n--p--n 고리가 닫히는 것이 3.38~V 점프이며, 섬을 죽이면 이 몫은 0이고 점프도 없다. 이 점프는 전류 변화가 2.5배에 불과하고 약 6~mA/$\mu$m의 발열 영역(등온 계산)에서 일어나므로 네 번째 상태로 주장하지 않고 결합의 증거로만 쓴다. 등가 회로(Fig.~\ref{fig:circuit})로 표현하려면 $R_{tap}$ 노드 외에 body$\rightarrow$body 정공 전류원이 필요하며, 이 전류원의 크기가 아래의 ``결합 세기''이다.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.92\textwidth]{figR_series.pdf}
+\caption{직렬 회로 대조. (a) $|I_D|$--$V_D$ (실선 up, 점선 down): 금속 코어 소자 하나, 따로 계산한 STL 두 개의 직렬(CUT, SD), 섬 결합이 남은 소자. CUT은 금속 코어 소자와 겹친다. (b) 왼쪽 STL 동작점 ($V_{tap}$ vs $|I_S|$, 내려오는 sweep)과 standalone 왼쪽 STL ($V_D$ vs $|I_D|$, 회색): 직렬 회로라면 회색 곡선 위에 있어야 한다. 데이터: \dpath{1010\_sink/\{SINK,NOKILL\}\_TE8\_XS60.log\_tr.log}, \dpath{1029\_ctrl/CTRL\_\{CUT,SD\}\_IDVD.log\_tr.log}, \dpath{1007\_ddsplit/DDS\_TE8\_XS60.log\_tr.log}, \dpath{1029\_isltau/ISL\_TAU3em9\_XS60.log\_tr.log}, \dpath{1028\_leftstl/LSTL\_P6e17.log\_tr.log}; 정공 수지: \dpath{1029\_isltau/third\_loop.dat} (코드 \dpath{1029\_isltau/third\_loop.py}). 그림: \dpath{paper/make\_coupling\_figs.py}.}
+\label{fig:series}
+\end{figure*}
+
+\subsection{두 손잡이: 섬 \textit{lifetime}과 섬 폭}
+결합 세기는 섬 안 정공 확산 길이 $L_p=\sqrt{D_p\tau_{eff}}$와 섬 폭 $W_{IS}$의 비로 정해질 것이다. $10^{20}$~cm$^{-3}$ 섬에서 $\tau_{eff}=\tau_{0,isl}/2001$, $D_p\approx2$~cm$^2$/s로 두면 $L_p\approx32~\mathrm{nm}\times\sqrt{\tau_{0,isl}/10^{-8}~\mathrm{s}}$이다. 이를 두 방법으로 바꾸었다. (i) 섬 \textit{lifetime} sweep: $W_{IS}=30$~nm에서 $\tau_{0,isl}=10^{-12}$--$10^{-8}$~s (섬과 via의 \textit{lifetime} 두 줄만 다름). (ii) 섬 폭 sweep: $\tau_{0,isl}=\tau_{0,Si}=10^{-8}$~s에서 $W_{IS}=15$--200~nm. 폭 sweep은 두 body 길이를 그대로 두고 섬만 넓히므로 $L_g=270~\mathrm{nm}+W_{IS}$가 함께 늘어난다. 이 영향을 가르려고 $W_{IS}=120$~nm에서 섬을 죽인 대조군도 계산하였다.
+
+결과를 Table~\ref{tab:couple}과 Fig.~\ref{fig:knob}에 정리하였다. 1차 래치(오른쪽 STL)는 모든 경우 1.444--1.449~V로 그대로이고 \textbf{2차 래치만} 움직인다. \textit{Lifetime} sweep에서 2차 래치는 $\tau_{0,isl}\le10^{-10}$~s까지 4.74--4.78~V(직렬 회로)에 머물다가 $10^{-9}$~s에서 2.99~V, $10^{-8}$~s에서 1.97~V로 내려간다. 폭 sweep에서는 200, 120, 90, 60, 45, 30~nm에서 4.31, 3.34, 2.58, 2.19, 2.06, 1.97~V로 내려간다. 두 sweep의 점은 $L_p/W_{IS}$ 하나의 축에서 한 곡선에 놓인다 [Fig.~\ref{fig:knob}(b)]. 같은 $L_p/W_{IS}$에서 두 sweep의 차이는 최대 약 0.3~V로, $L_p/W_{IS}$가 섬 가장자리 접합과 1차원 확산을 근사한 지표이기 때문으로 본다. $W_{IS}=120$~nm에서 섬을 죽이면 4.761/2.577~V로, 30~nm를 죽인 소자(4.779/2.565~V)와 같다. 따라서 $L_g$가 0.30에서 0.39~$\mu$m로 길어진 효과는 없고, 폭 sweep의 변화는 \textbf{모두 결합에서 온다}. 결합 세기의 공정상 손잡이로는 섬 폭(마스크 치수)이 극단적인 국부 \textit{lifetime killing}보다 현실적이다.
+
+\begin{table}[!t]
+\caption{결합 세기에 따른 2차 래치 (켜짐/꺼짐: 같은 인가 전압에서 1자리 이상 점프, 단위 V; 점프: 2차 켜짐에서 $|I_D|$의 자리 수). 데이터: \dpath{1030\_islw/islw\_summary.dat} (코드 \dpath{1030\_islw/plot\_islw.py}; 덱 생성 \dpath{1030\_islw/make\_islw.py}, \dpath{1029\_isltau/make\_isltau.py})}
+\label{tab:couple}
+\centering\scriptsize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+ & $L_p/W_{IS}$ & 2차 켜짐 & 2차 꺼짐 & \textit{hyst.} & 점프 \\ \midrule
+$W_{IS}$ 15~nm & 2.13 & 연속$^a$ & 같은 곡선 & 0 & 없음 \\
+30~nm ($\tau_{0,isl}$ $10^{-8}$~s) & 1.07 & 1.969 & 1.956 & 0.01 & 0.8 \\
+45~nm & 0.71 & 2.064 & 1.997 & 0.07 & 1.3 \\
+60~nm & 0.53 & 2.193 & 2.019 & 0.17 & 1.8 \\
+90~nm & 0.36 & 2.579 & 2.037 & 0.54 & 2.5 \\
+120~nm & 0.27 & 3.339 & 2.040 & 1.30 & 3.2 \\
+200~nm & 0.16 & 4.314 & 2.041 & 2.27 & 4.1 \\ \midrule
+$\tau_{0,isl}$ $3\times10^{-9}$~s (30~nm) & 0.58 & 2.277 & 2.179 & 0.10 & 1.4 \\
+$10^{-9}$~s & 0.34 & 2.985 & -- & -- & -- \\
+$10^{-10}$~s & 0.11 & 4.742 & 2.526 & 2.22 & 3.7 \\
+$10^{-11}$~s & 0.03 & 4.776 & 2.562 & 2.21 & 3.7 \\ \midrule
+섬 죽임 ($10^{-12}$~s), 30~nm & 0.01 & 4.779 & 2.565 & 2.21 & 3.7 \\
+섬 죽임, 120~nm & 0.003 & 4.761 & 2.577 & 2.18 & 3.6 \\ \bottomrule
+\end{tabular}\\[2pt]
+{\raggedright $^a$ 1.86--2.0~V에서 점프 없이 켜짐. $\tau_{0,isl}=10^{-9}$~s는 5~h 제한으로 5.45~V에서 멈춤.\par}
+\end{table}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figS_knob.pdf}
+\caption{결합 세기의 연속 조절. (a) 섬 폭 sweep의 왼쪽 STL 전류 $|I_S|$ (실선 up, 점선 down; 검정: 120~nm, 섬 죽임). (b) 2차 래치 켜짐(채움)과 꺼짐(빈 기호) vs $L_p/W_{IS}$: 빨강 = 폭 sweep, 파랑 = 섬 \textit{lifetime} sweep, $\times$ = 섬 죽임(30, 120~nm). 15~nm는 래치 없이 연속적으로 켜지는 구간(막대)으로 표시. (c) 2차 단계 \textit{hysteresis} (켜짐$-$꺼짐; 15~nm는 0). (d) 왼쪽 STL 동작점이 직렬 회로(standalone 왼쪽 STL)에서 벗어난 정도, 같은 $|I_S|$ 3~mA(실선)/1~mA(점선), 내려오는 sweep. 데이터: \dpath{1030\_islw/ISLW*.log\_tr.log}, \dpath{1029\_isltau/ISL\_TAU*\_XS60.log\_tr.log}, \dpath{1010\_sink/NOKILL\_TE8\_XS60.log\_tr.log}, \dpath{1007\_ddsplit/DDS\_TE8\_XS60.log\_tr.log}; 표: \dpath{1030\_islw/islw\_summary.dat}, \dpath{1030\_islw/islw\_vs\_circuit.dat} (코드 \dpath{1030\_islw/islw\_vs\_circuit.py}). 그림: \dpath{paper/make\_coupling\_figs.py}.}
+\label{fig:knob}
+\end{figure*}
+
+\subsection{\textit{Hysteresis} 조절과 그 한계}
+2차 꺼짐 전압은 결합이 남은 모든 폭(45--200~nm)에서 2.00--2.04~V로 거의 같다. 섬 폭은 켜짐만 바꾸므로 2차 단계 \textit{hysteresis}가 $W_{IS}$로 \textbf{2.27~V에서 0까지 연속} 조절된다 [Fig.~\ref{fig:knob}(c)]. 같은 120~nm 구조에서 결합이 남으면 2.04~V, 섬을 죽이면 2.58~V에 꺼지므로 꺼짐이 낮은 것도 결합 때문이다. Fig.~\ref{fig:holes2}의 3.0~V 정공 지도에서 두 소자 모두 올라갈 때는 왼쪽 body가 비어 있고 내려갈 때는 차 있다(\textit{hysteresis} 안). 차이는 섬이다. 결합이 남은 섬은 내려갈 때 $10^{16}$--$10^{17}$~cm$^{-3}$의 정공을 담아 왼쪽 body에 정공을 계속 공급하고, 죽인 섬은 $10^{4}$~cm$^{-3}$ 아래로 비어 있다. 즉 켜지기 전에는 넓은 섬이 결합을 막지만, 켜진 뒤에는 섬을 건너는 정공이 많아 결합이 다시 강해지고 왼쪽 STL이 낮은 전압까지 유지된다. 오른쪽 STL의 꺼짐도 1.035~V(결합)와 1.228~V(죽임)로 같은 방향이다.
+
+결합에는 대가가 있다. 2차 켜짐의 점프 크기가 4.1자리(200~nm)에서 3.2, 2.5, 1.8, 1.3, 0.8자리(30~nm)로 줄고, 15~nm에서는 왼쪽 STL이 1.86--2.0~V에서 점프 없이 켜지며 내려올 때도 같은 곡선을 따른다(2.0~V에서 $|I_S|$ up = down = $5.2\times10^{-6}$~A; Fig.~\ref{fig:holes2} 아래 행에서 두 body가 같은 분포). 결합이 가장 강하면 두 body가 하나의 정공 저장소처럼 동작하여 2차 래치 자체가 사라진다. 따라서 급격한 2차 래치를 쓰는 조절 범위의 하한은 $W_{IS}=15$--30~nm 사이이고, 실제 조절 범위는 30--120~nm로 잡는다. 200~nm($L_g=0.47~\mu$m)는 섬이 두 body보다 넓어 ``n$^+$로 이은 두 transistor''에 가까우므로 결합이 0으로 가는 극한점으로만 쓴다(그래도 죽인 섬과 0.47~V 차이가 있어 결합은 완전히 0이 아니다). 3.38~V의 고리 점프는 15~nm에서도 3.10--3.15~V에 남는다.
+
+\subsection{직렬 회로에서 벗어난 정도}
+Fig.~\ref{fig:series}(b)의 판정을 모든 덱에 적용하였다 [Fig.~\ref{fig:knob}(d)]. 같은 왼쪽 전류 3~mA에서 $V_{tap}-V_{D,\mathrm{standalone}}$은 $W_{IS}=15$, 30, 45, 60, 90, 120, 200~nm에서 $-1.29$, $-0.95$, $-0.70$, $-0.53$, $-0.31$, $-0.22$, $-0.11$~V이고, 섬을 죽이면 $W_{IS}$와 관계없이 $-0.03$, $+0.07$~V로 직렬 회로에 돌아온다. \textit{Lifetime} sweep도 같은 곡선 위에 있다($\tau_{0,isl}=3\times10^{-9}$~s, $L_p/W_{IS}=0.58$: $-0.47$~V; 폭 60~nm, 0.53: $-0.53$~V). 1--10~$\mu$A에서는 모든 덱이 $\pm0.13$~V 안이어서, 결합은 왼쪽 STL이 많이 켜져 섬을 건너는 정공이 많을 때 드러난다. 즉 ``직렬 STL과 다르다''는 한 점이 아니라 조절 범위 전체에서 성립하고, 그 차이의 크기를 결합 세기가 정한다.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figT_holes.pdf}
+\caption{정공 밀도 $\log_{10}p$ (Si 막, \texttt{.str}을 Python으로 읽음; 점선: source 끝, 섬 양끝, drain 끝). 위: $W_{IS}=120$~nm 결합, 가운데: 120~nm 섬 죽임, 3.0~V 올라갈 때(왼쪽)/내려갈 때(오른쪽). 아래: 15~nm 결합, 2.5~V. 데이터: \dpath{1030\_islw/ISLW120\{,\_KILL\}\_T\_tr\_\{4,12\}}, \dpath{1030\_islw/ISLW015\_T\_tr\_\{3,13\}}. 그림: \dpath{paper/make\_coupling\_figs.py}.}
+\label{fig:holes2}
+\end{figure}
+
 \section{모델의 한계 (Model Limitations)}
+\label{sec:limits}
 \textbf{DD vs hcte.} DD는 국소 전계로 \textit{impact ionization}을 계산하므로 짧은 채널에서 과대평가한다. 실제로 standalone 왼쪽 STL에서 DD 래치 전압은 hcte보다 0.7--0.8~V 낮았다. 또 4e17, 5e17에서는 $V_D<E_g/q$ 부근의 래치가 나타났다 [Fig.~\ref{fig:left}(b)]. hcte로는 각 STL 단독의 래치와 본 소자의 첫 번째 래치까지 확인하였다. 그러나 전체 소자를 hcte로 계산하면 \textbf{3.6--5.3~V에서 모두 멈추었다} [Fig.~\ref{fig:hcte}]. 증상은 매번 같았다: 오른쪽 drain 접합 표면($x\approx285$~nm)의 전자 온도가 $10^4$~K를 넘고 time step이 $10^{-25}$~s로 붕괴한다. 연립 Newton, 1~nm 격자, 온도 허용치 완화, MixedMode, graded drain, 전자 온도만 계산(\texttt{hcte.el}), $R_{tap}$ 10--100~M$\Omega$를 모두 시도하였다. 그러나 멈추는 위치를 두 번째 래치(약 5.6--7~V)까지 옮기지 못하였다. 오히려 $R_{tap}$이 클수록 일찍 멈추었다. 따라서 두 번째 래치는 DD 결과이며, 절대 전압은 hcte 대비 낮게 추정된 값이다.
 
 \begin{figure}[!t]
@@ -422,7 +506,7 @@ hcte 실패를 완화하려는 12가지 시도를 Table~\ref{tab:hcte}에 정리
 \end{tabular}
 \end{table}
 
-\textbf{공정 구현.} 분리 조건은 island 실효 \textit{lifetime} $\le5\times10^{-14}$~s, 즉 정공 확산 길이가 island 폭보다 훨씬 짧은 것이다. 이온 주입 손상으로 얻을 수 있는 Si \textit{lifetime}은 ps 수준이므로 이 값을 손상만으로 만들기는 어렵다. 같은 역할을 기대할 수 있는 후보는 \textbf{Si 두께를 관통하는 전도성 접촉(금속 또는 silicide 코어)}이다. 섬 자리에 이 코어를 두면 섬으로 들어온 정공이 반대편 body로 가기 전에 접촉에서 재결합한다. 단, 본 계산은 이 코어를 ATLAS의 이상적인 ohmic 경계(접촉면에서 캐리어가 평형값을 유지 = 표면 재결합 속도 무한대)로 모델링하였으며, 실제 금속--Si 접촉의 장벽, 접촉저항, 유한한 재결합 속도는 포함하지 않았다. 따라서 아래 결과는 공정 가능성의 증명이 아니라 \textbf{lifetime 극단값 가정을 대체할 수 있는 구조적 경로}를 보이는 것이다. 이때 Section~III의 top contact(C)처럼 contact가 얕으면 정공이 그 아래로 지나가므로 \textbf{Si 전체 두께를 관통}해야 한다. 이를 TCAD로 확인하였다 [Fig.~\ref{fig:sink}]. 섬 자리에 Si 두께 전체를 관통하는 금속 코어(tap 전극, 10~nm)와 n$^+$ shell을 두고, 섬의 \textit{lifetime}은 줄이지 않았다. 대조군으로 \textit{lifetime}을 줄이지 않은 n$^+$ 섬(아래쪽 tap)을 계산하면 두 번째 래치가 4.78에서 1.97~V로 내려와 두 루프가 겹친다(분리 간격 0.30~V; 이후 3.4~V에 추가 점프). 이는 정공이 섬을 건너 왼쪽 body를 일찍 켜기 때문이다. 금속 코어를 넣으면 두 래치가 1.50/4.62~V(shell 10~nm), 1.50/4.71~V(shell 5~nm)로 다시 분리되고, 분리 간격은 0.58, 0.70~V이다. lifetime을 줄인 이상적인 섬(1.12~V)보다는 작지만, shell이 얇을수록 이상적인 경우에 가까워진다. 단, 기준 소자($\tau_{0,Si}=10^{-7}$~s, 섬 50\%)에서는 금속 코어만으로 두 루프가 분리되지 않았다(두 번째 래치 2.76~V). 따라서 금속 sink는 Si \textit{lifetime}을 줄이고 섬을 drain 쪽으로 옮긴 설계와 함께 써야 한다. 제안하는 공정 경로를 Fig.~\ref{fig:process}에 정리하였다. 핵심은 (i) 고온 공정(활성화, S/D RTA)을 모두 마친 뒤 코어를 넣고, (ii) 연속 gate 대신 섬 위에 간격을 둔 두 gate를 같은 전압으로 묶어 코어를 위에서 꺼내며, (iii) gate 간격 안의 spacer로 코어 양쪽 n$^+$ Si 폭을 정해(self-aligned) 두 번의 노광 정렬 오차를 피하는 것이다. 이 경로는 실험으로 검증하지 않았으며, 각 단계(얇은 SOI의 silicide 접촉, 좁은 trench 충전)에는 별도의 공정 개발이 필요하다. Body의 $\tau_{0,Si}=10^{-8}$~s(실효 0.7~ns)는 Au/Pt 확산이나 전자선/양성자 조사 같은 기존 \textit{lifetime control} 기술의 범위이며(floating-body 메모리의 lifetime engineering 예~\cite{kim_lifetime}), $R_{tap}$(1--10~M$\Omega$)은 고저항 poly-Si 저항으로 집적할 수 있다.
+\textbf{공정 구현.} 분리 조건은 island 실효 \textit{lifetime} $\le5\times10^{-14}$~s, 즉 정공 확산 길이가 island 폭보다 훨씬 짧은 것이다. 이온 주입 손상으로 얻을 수 있는 Si \textit{lifetime}은 ps 수준이므로 이 값을 손상만으로 만들기는 어렵다. 같은 역할을 기대할 수 있는 후보는 \textbf{Si 두께를 관통하는 전도성 접촉(금속 또는 silicide 코어)}이다. 섬 자리에 이 코어를 두면 섬으로 들어온 정공이 반대편 body로 가기 전에 접촉에서 재결합한다. 단, 본 계산은 이 코어를 ATLAS의 이상적인 ohmic 경계(접촉면에서 캐리어가 평형값을 유지 = 표면 재결합 속도 무한대)로 모델링하였으며, 실제 금속--Si 접촉의 장벽, 접촉저항, 유한한 재결합 속도는 포함하지 않았다. 따라서 아래 결과는 공정 가능성의 증명이 아니라 \textbf{lifetime 극단값 가정을 대체할 수 있는 구조적 경로}를 보이는 것이다. 이때 Section~III의 top contact(C)처럼 contact가 얕으면 정공이 그 아래로 지나가므로 \textbf{Si 전체 두께를 관통}해야 한다. 이를 TCAD로 확인하였다 [Fig.~\ref{fig:sink}]. 섬 자리에 Si 두께 전체를 관통하는 금속 코어(tap 전극, 10~nm)와 n$^+$ shell을 두고, 섬의 \textit{lifetime}은 줄이지 않았다. \textit{Lifetime}을 줄이지 않은 n$^+$ 섬(아래쪽 tap)에서는 두 번째 래치가 4.78에서 1.97~V로 내려와 두 루프가 겹친다(분리 간격 0.30~V; 이후 3.4~V에 추가 점프). 이는 정공이 섬을 건너 왼쪽 body를 일찍 켜기 때문이며, 이 결합 상태 자체는 Section~\ref{sec:coupling}에서 조절 변수로 다룬다. 금속 코어를 넣으면 두 래치가 1.50/4.62~V(shell 10~nm), 1.50/4.71~V(shell 5~nm)로 다시 분리되고, 분리 간격은 0.58, 0.70~V이다. lifetime을 줄인 이상적인 섬(1.12~V)보다는 작지만, shell이 얇을수록 이상적인 경우에 가까워진다. 단, 기준 소자($\tau_{0,Si}=10^{-7}$~s, 섬 50\%)에서는 금속 코어만으로 두 루프가 분리되지 않았다(두 번째 래치 2.76~V). 따라서 금속 sink는 Si \textit{lifetime}을 줄이고 섬을 drain 쪽으로 옮긴 설계와 함께 써야 한다. 금속 코어로 결합을 끊은 소자는 직렬 STL 회로와 같으므로(Table~\ref{tab:ctrl}), 이 경로는 결합이 0인 끝점을 공정으로 만드는 방법이고, 중간 결합 세기는 섬 폭으로 정하는 것이 현실적이다(Section~\ref{sec:coupling}). 제안하는 공정 경로를 Fig.~\ref{fig:process}에 정리하였다. 핵심은 (i) 고온 공정(활성화, S/D RTA)을 모두 마친 뒤 코어를 넣고, (ii) 연속 gate 대신 섬 위에 간격을 둔 두 gate를 같은 전압으로 묶어 코어를 위에서 꺼내며, (iii) gate 간격 안의 spacer로 코어 양쪽 n$^+$ Si 폭을 정해(self-aligned) 두 번의 노광 정렬 오차를 피하는 것이다. 이 경로는 실험으로 검증하지 않았으며, 각 단계(얇은 SOI의 silicide 접촉, 좁은 trench 충전)에는 별도의 공정 개발이 필요하다. Body의 $\tau_{0,Si}=10^{-8}$~s(실효 0.7~ns)는 Au/Pt 확산이나 전자선/양성자 조사 같은 기존 \textit{lifetime control} 기술의 범위이며(floating-body 메모리의 lifetime engineering 예~\cite{kim_lifetime}), $R_{tap}$(1--10~M$\Omega$)은 고저항 poly-Si 저항으로 집적할 수 있다.
 
 \begin{figure}[!t]
 \centering
@@ -440,7 +524,7 @@ hcte 실패를 완화하려는 12가지 시도를 Table~\ref{tab:hcte}에 정리
 
 
 \section{전류 구동 oscillation과 설계식 (Current-Driven Oscillation)}
-STL을 latch 켜짐과 꺼짐 사이의 일정 전류로 구동하면 relaxation oscillation이 일어난다. 이중 래치 소자에서는 \textbf{drain 전류원 하나}로 두 전압 범위에서 각각 oscillation을 얻을 수 있는지 확인하였다. 소자는 금속 sink 설계(섬 60\%, $\tau_{0,Si}=10^{-8}$~s, Si 관통 코어 + n$^+$ shell 10~nm; Fig.~\ref{fig:sink})이고, $V_G=-0.2$~V, $R_{tap}=10$~M$\Omega$는 Id-Vd와 같다. 회로는 drain 전압원 대신 전류원 $I_{in}$과 drain--GND 커패시터 $C$이다 [Fig.~\ref{fig:osccirc}(a)]. 그림의 등가 회로는 각 STL을 Id-Vd의 hysteresis로 나타낸 설명용 표현이며, 별도의 회로 모델로 계산한 것이 아니다. 모든 결과는 TCAD MixedMode transient이다.
+STL을 latch 켜짐과 꺼짐 사이의 일정 전류로 구동하면 relaxation oscillation이 일어난다. 이중 래치 소자에서는 \textbf{drain 전류원 하나}로 두 전압 범위에서 각각 oscillation을 얻을 수 있는지 확인하였다. 소자는 금속 sink 설계(섬 60\%, $\tau_{0,Si}=10^{-8}$~s, Si 관통 코어 + n$^+$ shell 10~nm; Fig.~\ref{fig:sink})이고, $V_G=-0.2$~V, $R_{tap}=10$~M$\Omega$는 Id-Vd와 같다. 회로는 drain 전압원 대신 전류원 $I_{in}$과 drain--GND 커패시터 $C$이다 [Fig.~\ref{fig:osccirc}(a)]. 그림의 등가 회로는 각 STL을 Id-Vd의 hysteresis로 나타낸 설명용 표현이며, 별도의 회로 모델로 계산한 것이 아니다. 모든 결과는 TCAD MixedMode transient이다. 이 소자는 결합이 0인 끝(직렬 STL과 같은 소자, Table~\ref{tab:ctrl})이므로 아래 설계식은 직렬 STL 회로에도 그대로 적용된다. 결합이 남은 소자에서는 섬 노드의 KCL (\ref{eq:kcl})에 body$\rightarrow$body 정공 전류가 더해져 $V_{on,L}$과 $V_{hold,L}$이 Table~\ref{tab:couple}처럼 바뀌며, 이 경우의 oscillation은 계산하지 않았다.
 
 \textbf{켜짐과 유지 조건.} 오른쪽 STL을 지나 섬에 도착한 전류는 왼쪽 STL과 $R_{tap}$으로 나뉜다:
 \begin{equation}
@@ -485,7 +569,7 @@ T=\int_{V_{off}}^{V_{on}}\frac{C\,dV}{I_{in}-I_{dev}(V)}+\int_{V_{off}}^{V_{on}}
 \end{figure*}
 
 \section{결론 (Conclusion)}
-두 개의 직렬 STL을 한 SOI 소자로 구현하여 \textbf{두 번의 래치}를 얻었다. 이를 위해 세 가지가 필요했다: (1) n$^+$ island로 body를 물리적으로 나누기, (2) island를 $R_{tap}$으로 접지하여 직렬 제약을 풀기, (3) island \textit{lifetime}을 줄여 가로 PNP 결합을 끊기. 여기에 왼쪽 body를 래치 가능한 도핑($6\times10^{17}$)으로 정하였다. \texttt{.str} 기반 \textit{hole balance}로 각 래치가 해당 STL의 \textit{impact ionization} 정공이 재결합을 이겨 장벽이 무너지는 순간임을 보였다. 꺼짐의 급격함은 Si \textit{lifetime}이 정하는 \textit{holding current}로 설명하였다. 두 래치는 $N_{A,R}$, $N_{A,L}$, $V_G$, $R_{tap}$으로 독립 조절되며, 섬 위치 60\%와 $\tau_{Si}=10^{-8}$~s에서 두 \textit{hysteresis loop}가 1.1~V 간격으로 분리된다. 섬의 강한 재결합은 Si 두께를 관통하는 금속 sink로 대체할 수 있음을 확인하였다(분리 간격 0.58--0.70~V). 또 drain 전류원 하나로 전류 크기에 따라 두 루프의 oscillation(1.09--1.50~V, 2.08--4.61~V)을 각각 얻었고, 그 전류 창과 주기는 DC 특성만으로 예측된다(\ref{eq:firekeep})--(\ref{eq:period}). 남은 과제는 에너지 균형 모델에서의 두 번째 래치 확인과, 본 SOI 구조의 측정으로 \textit{impact ionization} 계수를 보정하여 절대 전압의 불확실성($\pm$20\% 수준)을 줄이는 것이다.
+SOI body를 n$^+$ island로 나누고 섬을 $R_{tap}$으로 접지한 소자 하나에서 래치를 두 번 얻었고, 두 body 사이의 정공 결합 세기가 이 소자의 핵심 설계 변수임을 보였다. 래치가 두 번 일어나려면 (1) body를 물리적으로 나누고, (2) 섬을 접지하여 직렬 제약을 풀고, (3) 섬을 건너는 정공 결합을 줄여야 한다. 결합을 끊으면 \texttt{.str} 기반 \textit{hole balance}로 보인 것처럼 각 래치는 해당 STL의 정공 생성이 재결합을 이기는 순간이고, 두 래치는 $N_{A,R}$, $N_{A,L}$, $V_G$, $R_{tap}$으로 독립 조절되며 섬 위치 60\%와 $\tau_{Si}=10^{-8}$~s에서 1.1~V 간격으로 분리된다. 그러나 이렇게 완전히 떼어 놓은 소자는 따로 계산한 STL 두 개의 직렬 회로와 25~mV 이내로 같다. 결합이 남으면 왼쪽 STL의 동작점이 직렬 회로에서 벗어나고(3~mA에서 최대 1.29~V), 음의 미분저항과 정공 고리 점프가 생긴다. 이 결합 세기는 섬 \textit{lifetime}과 섬 폭으로 연속 조절되며 두 손잡이는 $L_p/W_{IS}$ 하나로 정리된다. 1차 래치(1.44--1.45~V)를 그대로 둔 채 2차 래치는 1.97--4.78~V, 2차 단계 \textit{hysteresis}는 0--2.27~V로 바뀌고, 섬을 죽인 대조군으로 gate 길이 효과가 없음을 확인하였다. 결합이 가장 강한 15~nm에서는 2차 래치가 연속적 켜짐으로 바뀌므로, 급격한 2차 래치를 쓰려면 섬 폭은 15--30~nm보다 넓어야 한다. 결합을 끊은 끝은 Si 관통 금속 sink로, 중간 결합은 마스크로 정하는 섬 폭으로 만들 수 있다. 결합을 끊은 소자에서는 drain 전류원 하나로 두 루프의 oscillation을 각각 얻었고 그 전류 창과 주기는 DC 특성만으로 예측된다. 남은 과제는 결합이 남은 소자의 oscillation과 등가 회로(body$\rightarrow$body 정공 전류원) 모델, 에너지 균형 모델에서의 두 번째 래치 확인, 그리고 측정으로 \textit{impact ionization} 계수를 보정하여 절대 전압의 불확실성($\pm$20\% 수준)을 줄이는 것이다.
 
 \appendix[전체 DD split 결과]
 Table~\ref{tab:all}은 계산한 모든 DD MixedMode split의 래치 지표이다. 이름은 기준 소자(\texttt{BASE}: Table~\ref{tab:param})에서 바꾼 변수이다: R($R_{tap}$), NL/NR(왼/오른쪽 도핑), VG, TAU(섬 \textit{lifetime}), TE(Si \textit{lifetime}; TE8 $=10^{-8}$~s), WISL(섬 폭 nm), XS(섬 위치 \%), TSI, RATE(V/ms), RD(drain 직렬 $\Omega$), SNAP(\texttt{.str} 스냅샷 저장 run).

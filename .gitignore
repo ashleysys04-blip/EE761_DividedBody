@@ -119,3 +119,5 @@ paper/pg-*.png
 !1028_leftstl/plot_leftstl.py
 !1028_leftstl/queue_lstl.sh
 !1028_leftstl/*.log_tr.log
+!1030_islw/islw_vs_circuit.py
+!paper/make_coupling_figs.py
