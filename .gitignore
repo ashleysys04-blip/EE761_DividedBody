@@ -149,3 +149,4 @@ paper/pg-*.png
 !1103_physics/
 !1103_physics/*.py
 !1103_model/third_onset.py
+!paper/make_window_fig.py

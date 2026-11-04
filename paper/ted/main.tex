@@ -99,44 +99,22 @@ one device, coupled island & 1.444 & \textbf{1.969} & 1.747 \\ \bottomrule
 \section{Coupling Strength as a Design Knob}
 Holes entering the n$^+$ island diffuse as minority carriers over $L_p=\sqrt{D_p\tau_{eff}}$; with $\tau_{eff}=\tau_{0,isl}/2001$ and $D_p\approx2$~cm$^2$/s, $L_p\approx32~\mathrm{nm}\times\sqrt{\tau_{0,isl}/10^{-8}~\mathrm{s}}$ (Section~VII derives 21~nm, with the simulator hole diffusivity and the loss into the via under the island; this rescales the $L_p/W_{IS}$ axis uniformly). The coupling should therefore scale with $L_p/W_{IS}$, and it was varied in two ways from the reference: (i) the island lifetime $\tau_{0,isl}=10^{-12}$--$10^{-8}$~s at $W_{IS}=30$~nm (only the two lifetime lines of the deck differ), and (ii) the island width $W_{IS}=15$--200~nm at $\tau_{0,isl}=\tau_{0,Si}=10^{-8}$~s. The width sweep keeps both body lengths and widens only the island, so $L_g=270~\mathrm{nm}+W_{IS}$ grows with it; a killed island at $W_{IS}=120$~nm separates this gate-length effect.
 
-The results are listed in Table~\ref{tab:couple} and Fig.~\ref{fig:knob}. The first latch (right STL) stays at 1.444--1.449~V in every case; only the second latch moves. In the lifetime sweep it stays at 4.74--4.78~V (series circuit) up to $\tau_{0,isl}=10^{-10}$~s and falls to 2.99~V at $10^{-9}$~s and 1.97~V at $10^{-8}$~s. In the width sweep it falls from 4.31~V (200~nm) through 3.34, 2.58, 2.19 and 2.06 to 1.97~V (30~nm). The two sweeps fall on one curve versus $L_p/W_{IS}$ [Fig.~\ref{fig:knob}(b)]; at equal $L_p/W_{IS}$ they differ by at most $\approx0.3$~V, which we attribute to the one-dimensional diffusion picture behind $L_p/W_{IS}$. Killing the 120~nm island gives 4.761/2.577~V, the same as the killed 30~nm island (4.779/2.565~V), although $L_g$ grows from 0.30 to 0.39~$\mu$m; the width dependence of the coupled devices is therefore entirely due to coupling. The island width, a mask dimension, is the practical knob, whereas the lifetime knob needs a local, extreme lifetime control.
-
-\begin{table}[!t]
-\caption{Second Latch Versus Coupling Strength. On/Off: One-Decade Jump at Fixed Applied Voltage (V); Jump: Decades of $|I_D|$ at Turn-On}
-\label{tab:couple}
-\centering\scriptsize\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}lccccc@{}}
-\toprule
- & $L_p/W_{IS}$ & 2nd on & 2nd off & hyst. & jump \\ \midrule
-$W_{IS}$ = 15~nm & 2.13 & cont.$^a$ & same curve & 0 & none \\
-30~nm ($\tau_{0,isl}=10^{-8}$~s) & 1.07 & 1.969 & 1.956 & 0.01 & 0.8 \\
-45~nm & 0.71 & 2.064 & 1.997 & 0.07 & 1.3 \\
-60~nm & 0.53 & 2.193 & 2.019 & 0.17 & 1.8 \\
-90~nm & 0.36 & 2.579 & 2.037 & 0.54 & 2.5 \\
-120~nm & 0.27 & 3.339 & 2.040 & 1.30 & 3.2 \\
-200~nm & 0.16 & 4.314 & 2.041 & 2.27 & 4.1 \\ \midrule
-$\tau_{0,isl}=3\times10^{-9}$~s (30~nm) & 0.58 & 2.277 & 2.179 & 0.10 & 1.4 \\
-$10^{-9}$~s & 0.34 & 2.985 & --$^b$ & -- & -- \\
-$10^{-10}$~s & 0.11 & 4.742 & 2.526 & 2.22 & 3.7 \\
-$10^{-11}$~s & 0.03 & 4.776 & 2.562 & 2.21 & 3.7 \\ \midrule
-killed ($10^{-12}$~s), 30~nm & 0.01 & 4.779 & 2.565 & 2.21 & 3.7 \\
-killed, 120~nm & 0.003 & 4.761 & 2.577 & 2.18 & 3.6 \\ \bottomrule
-\end{tabular}\\[2pt]
-{\raggedright\scriptsize $^a$ Continuous turn-on between 1.86 and 2.0~V. $^b$ Run stopped at 5.45~V (time limit).\par}
-\end{table}
+The latch windows are summarized in Fig.~\ref{fig:window}; I--V curves are shown in Fig.~\ref{fig:window}(a), (b) and Fig.~\ref{fig:model}(d), (e). The first latch (right STL) stays at 1.444--1.449~V in every case; only the second latch moves. In the lifetime sweep it stays at 4.74--4.78~V (series circuit) up to $\tau_{0,isl}=10^{-10}$~s and falls to 2.99~V at $10^{-9}$~s and 1.97~V at $10^{-8}$~s. In the width sweep it falls from 4.31~V (200~nm) through 3.34, 2.58, 2.19 and 2.06 to 1.97~V (30~nm). The two sweeps fall on one curve versus $L_p/W_{IS}$ [Fig.~\ref{fig:window}(c)--(e)]; at equal $L_p/W_{IS}$ they differ by at most $\approx0.3$~V, which we attribute to the one-dimensional diffusion picture behind $L_p/W_{IS}$. Killing the 120~nm island gives 4.761/2.577~V, the same as the killed 30~nm island (4.779/2.565~V), although $L_g$ grows from 0.30 to 0.39~$\mu$m; the width dependence of the coupled devices is therefore entirely due to coupling. The island width, a mask dimension, is the practical knob, whereas the lifetime knob needs a local, extreme lifetime control.
 
 \begin{figure*}[!t]
 \centering
-\includegraphics[width=\textwidth]{figS_knob.pdf}
-\caption{Continuous tuning of the coupling. (a) Left-STL current of the width sweep (solid: up, dashed: down; black: 120~nm, island killed). (b) Second-latch turn-on (filled) and turn-off (open) versus $L_p/W_{IS}$: red, width sweep; blue, island-lifetime sweep; $\times$, killed islands (30, 120~nm); the bar marks the continuous turn-on at 15~nm. (c) Second-stage hysteresis (0 at 15~nm). (d) Deviation of the left-STL operating point from the series circuit (standalone left STL) at $|I_S|$ = 3~mA (solid) and 1~mA (dotted), down sweep.}
-\label{fig:knob}
+\includegraphics[width=\textwidth]{figV_windows.pdf}
+\caption[Latch windows]{Latch windows. (a), (b) $|I_D|$--$V_D$ of the width sweep ($\tau_{0,isl}=10^{-8}$~s) and the lifetime sweep ($W_{IS}=30$~nm); solid: up, dashed: down; filled/open circles: second latch-up $V_{LU,2}$ / latch-down $V_{LD,2}$; bar: one second-stage window. The 1~ns run has no down sweep. (c), (d) $V_{LU}$ (filled) and $V_{LD}$ (open) of the first (gray) and second (red) latches and the third jump (green) extracted from every run, versus island width at $\tau_{0,isl}=10^{-8}$~s and versus island lifetime at $W_{IS}=30$~nm; shaded: hysteresis windows; bar at 15~nm: continuous turn-on; thick lines: model of Section~\ref{sec:model} (solid $V_{LU,2}$, dashed $V_{LD,2}$); black lines in (c): killed 120~nm island; top axis of (d): $L/W_{IS}$, $L=21~\mathrm{nm}\times\sqrt{\tau_{0,isl}/10^{-8}~\mathrm{s}}$. (e) Second-stage hysteresis versus $L/W_{IS}$ for both knobs. (f) Jump heights of the second (red) and third (green) latches; band: predicted onset of the third jump.
+Data (draft only; paths in the repository): I--V logs \path{1030_islw/ISLW{015,045,060,090,120,200,120_KILL}.log_tr.log}, \path{1103_third/ISLW{035,040}.log_tr.log}, \path{1010_sink/NOKILL_TE8_XS60.log_tr.log} (30~nm, 10~ns), \path{1029_isltau/ISL_TAU{1em11,1em10,1em9,3em9}_XS60.log_tr.log}, \path{1007_ddsplit/DDS_TE8_XS60.log_tr.log} (1~ps); extracted windows and jumps of (c)--(f): \path{paper/fig/figV_windows.dat}; third jump: \path{1103_model/third_onset.dat}; model: \path{1103_physics/stl_hybrid.py}; plot: \path{paper/make_window_fig.py}.}
+\label{fig:window}
 \end{figure*}
 
-\textit{Hysteresis.} The second turn-off stays at 2.00--2.04~V for all coupled widths from 45 to 200~nm, so the width moves only the turn-on and the second-stage hysteresis is tuned continuously from 2.27~V to zero [Fig.~\ref{fig:knob}(c)]. The low turn-off is itself a coupling effect (2.04~V coupled vs 2.58~V killed at 120~nm): at 3.0~V on the down sweep the coupled island holds $10^{16}$--$10^{17}$~cm$^{-3}$ holes and keeps feeding the left body, whereas the killed island stays below $10^{4}$~cm$^{-3}$ (Section~\ref{sec:model}).
+
+\textit{Hysteresis.} The second turn-off stays at 2.00--2.04~V for all coupled widths from 45 to 200~nm, so the width moves only the turn-on and the second-stage hysteresis is tuned continuously from 2.27~V to zero [Fig.~\ref{fig:window}(c), (e)]. The low turn-off is itself a coupling effect (2.04~V coupled vs 2.58~V killed at 120~nm): at 3.0~V on the down sweep the coupled island holds $10^{16}$--$10^{17}$~cm$^{-3}$ holes and keeps feeding the left body, whereas the killed island stays below $10^{4}$~cm$^{-3}$ (Section~\ref{sec:model}).
 
 \textit{Limit of strong coupling.} The height of the second jump falls from 4.1 decades (200~nm) to 0.8 decades (30~nm), and at 15~nm the left STL turns on without a jump between 1.86 and 2.0~V and returns along the same curve: the two bodies behave as one hole reservoir. We take 30--120~nm as the tuning range and 200~nm, where the island is wider than either body, as the limit toward zero coupling.
 
-\textit{Deviation from the series circuit.} With the operating-point test of Fig.~\ref{fig:series}(b) applied to every run [Fig.~\ref{fig:knob}(d)], the left-STL voltage at 3~mA lies $-1.29$ to $-0.11$~V from the standalone characteristic for $W_{IS}$ = 15 to 200~nm and returns to $-0.03$/$+0.07$~V when the 30/120~nm islands are killed; the lifetime sweep lies on the same curve. The departure from a series STL pair thus holds over the whole tuning range, and its size is set by the coupling strength.
+\textit{Deviation from the series circuit.} With the operating-point test of Fig.~\ref{fig:series}(b) applied to every run, the left-STL voltage at 3~mA lies $-1.29$ to $-0.11$~V from the standalone characteristic for $W_{IS}$ = 15 to 200~nm and returns to $-0.03$/$+0.07$~V when the 30/120~nm islands are killed; the lifetime sweep lies on the same curve. The departure from a series STL pair thus holds over the whole tuning range, and its size is set by the coupling strength.
 
 
 \section{Two-Body Hole-Balance Model}
